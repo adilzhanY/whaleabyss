@@ -1,0 +1,37 @@
+import fs from "fs";
+const data = JSON.parse(fs.readFileSync("services/locations.json", "utf-8"));
+const getBg = (name) => {
+  if (name.includes("Мондштадт")) return "/images/services/mondstadt.jpg";
+  if (name.includes("Драконий Хребет")) return "/images/services/drakoniy_hrebet.jpg";
+  if (name.includes("Ли Юэ + Долина")) return "/images/services/dolina_chen_yuy.jpg";
+  if (name.includes("Долина Чэньюй")) return "/images/services/dolina_chen_yuy.jpg";
+  if (name.includes("Ли Юэ")) return "/images/services/li_yue.jpg";
+  if (name.includes("Разлом Верхний")) return "/images/services/razlom_verh.jpg";
+  if (name.includes("Разлом Нижний")) return "/images/services/razlom_niz.jpg";
+  if (name.includes("Разлом 100%")) return "/images/services/razlom_100.jpg";
+  if (name.includes("Энканомия")) return "/images/services/enkanomiya.jpg";
+  if (name.includes("Инадзума")) return "/images/services/inazuma.jpg";
+  if (name.includes("Тропики")) return "/images/services/tropiki_sumeru.jpg";
+  if (name.includes("Араньяка + Сбор")) return "/images/services/aranar_and_aranyaka.jpg";
+  if (name.includes("Араньяка")) return "/images/services/aranyaka.jpg";
+  if (name.includes("Пустыня Сумеру")) return "/images/services/pustynya_sumeru.jpg";
+  if (name.includes("Оазис")) return "/images/services/oasis.jpg";
+  if (name.includes("Пустыня 100%")) return "/images/services/pustynya_sumeru.jpg";
+  if (name.includes("Фонтейн 4.0")) return "/images/services/fontein_40.jpg";
+  if (name.includes("Фонтейн 4.1")) return "/images/services/fontein_41.jpg";
+  if (name.includes("Фонтейн 4.2")) return "/images/services/fontein_42.jpg";
+  if (name.includes("Фонтейн 4.6")) return "/images/services/fontein_46.jpg";
+  if (name.includes("Фонтейн 100%")) return "/images/services/fontein_40.jpg";
+  if (name.includes("Море Древности")) return "/images/services/fontein_46.jpg";
+  if (name.includes("Натлан 5.0")) return "/images/services/natlan_50.jpg";
+  if (name.includes("Натлан 5.2")) return "/images/services/natlan_52.jpg";
+  if (name.includes("Натлан 5.5")) return "/images/services/natlan_55.jpg";
+  if (name.includes("Натлан 5.8")) return "/images/services/natlan_58.jpg";
+  if (name.includes("Натлан 100%")) return "/images/services/natlan_50.jpg";
+  if (name.includes("НОД Край 6.0")) return "/images/services/nod_krai_60.jpg";
+  if (name.includes("НОД Край 6.3")) return "/images/services/nod_krai_63.jpg";
+  return "/images/services/mondstadt.jpg";
+};
+const updatedData = data.map(item => ({...item, background: getBg(item.name)}));
+fs.writeFileSync("services/locations.json", JSON.stringify(updatedData, null, 2));
+

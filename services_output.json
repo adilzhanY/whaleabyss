@@ -1,0 +1,226 @@
+[
+  {
+    "id": "service_0",
+    "title": "МОНДШТАДТ 100%",
+    "subtitle": "Мондштадт",
+    "price": 700,
+    "isWide": true,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_1",
+    "title": "ДРАКОНИЙ ХРЕБЕТ 100%",
+    "subtitle": "Драконий Хребет",
+    "price": 900,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_2",
+    "title": "ЛИ ЮЭ 100%",
+    "subtitle": "Ли Юэ",
+    "price": 2200,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_3",
+    "title": "РАЗЛОМ ВЕРХНИЙ",
+    "subtitle": "Разлом Верхний",
+    "price": 700,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_4",
+    "title": "РАЗЛОМ НИЖНИЙ",
+    "subtitle": "Разлом Нижний",
+    "price": 700,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_5",
+    "title": "РАЗЛОМ 100%",
+    "subtitle": "Разлом",
+    "price": 1200,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_6",
+    "title": "ДОЛИНА ЧЭНЬЮЙ 100%",
+    "subtitle": "Долина Чэньюй",
+    "price": 2000,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_7",
+    "title": "ЛИ ЮЭ + ДОЛИНА ЧЭНЬЮЙ 100%",
+    "subtitle": "Ли Юэ и Долина Чэньюй",
+    "price": 3800,
+    "isWide": true,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_8",
+    "title": "ИНАДЗУМА 100%",
+    "subtitle": "Инадзума",
+    "price": 3000,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_9",
+    "title": "ТРОПИКИ СУМЕРУ 100%",
+    "subtitle": "Тропики Сумеру",
+    "price": 3000,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_10",
+    "title": "АРАНЬЯКА",
+    "subtitle": "Араньяка",
+    "price": 1500,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_11",
+    "title": "АРАНЬЯКА + СБОР АРАНАР",
+    "subtitle": "Араньяка и Сбор Аранар",
+    "price": 2000,
+    "isWide": true,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_12",
+    "title": "ПУСТЫНЯ СУМЕРУ 100%",
+    "subtitle": "Пустыня Сумеру",
+    "price": 4000,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_13",
+    "title": "ОАЗИС СУМЕРУ 100%",
+    "subtitle": "Оазис Сумеру",
+    "price": 1500,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_14",
+    "title": "ПУСТЫНЯ 100%",
+    "subtitle": "Пустыня",
+    "price": 5000,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_15",
+    "title": "СУМЕРУ 100% (ТРОПИКИ И ПУСТЫНЯ)",
+    "subtitle": "Сумеру (Тропики и Пустыня)",
+    "price": 7000,
+    "isWide": true,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_16",
+    "title": "ФОНТЕЙН 4.0",
+    "subtitle": "Фонтейн 4.0",
+    "price": 1500,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_17",
+    "title": "ФОНТЕЙН 4.1",
+    "subtitle": "Фонтейн 4.1",
+    "price": 1500,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_18",
+    "title": "ФОНТЕЙН 4.2",
+    "subtitle": "Фонтейн 4.2",
+    "price": 1500,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_19",
+    "title": "ФОНТЕЙН 100%",
+    "subtitle": "Фонтейн",
+    "price": 4200,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_20",
+    "title": "МОРЕ ДРЕВНОСТИ 100%",
+    "subtitle": "Море Древности",
+    "price": 1300,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_21",
+    "title": "НАТЛАН 5.0",
+    "subtitle": "Натлан 5.0",
+    "price": 2500,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_22",
+    "title": "НАТЛАН 5.2",
+    "subtitle": "Натлан 5.2",
+    "price": 2300,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_23",
+    "title": "НАТЛАН 5.5",
+    "subtitle": "Натлан 5.5",
+    "price": 2000,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_24",
+    "title": "НАТЛАН 5.8",
+    "subtitle": "Натлан 5.8",
+    "price": 1500,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_25",
+    "title": "НАТЛАН 100%",
+    "subtitle": "Натлан",
+    "price": 7800,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_26",
+    "title": "НОД КРАЙ 6.0",
+    "subtitle": "НОД Край 6.0",
+    "price": 2000,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  },
+  {
+    "id": "service_27",
+    "title": "НОД КРАЙ 6.3",
+    "subtitle": "НОД Край 6.3",
+    "price": 2000,
+    "isWide": false,
+    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+  }
+]

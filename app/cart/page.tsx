@@ -5,6 +5,7 @@ import { useCart } from "@/store/useCart";
 import Header from "@/components/Header";
 import { Trash2, Info, Eye, CheckCircle2, ChevronRight, Plus, Minus } from "lucide-react";
 import Link from "next/link";
+import Footer from "@/components/Footer";
 
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity, cartTotal } = useCart();
@@ -238,6 +239,7 @@ export default function CartPage() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

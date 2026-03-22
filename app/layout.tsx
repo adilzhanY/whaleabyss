@@ -15,7 +15,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Китовая Бездна — Профессиональный буст аккаунтов",
+  title: "Whale Abyss — Профессиональный буст аккаунтов",
   description: "Быстро, безопасно и качественно прокачаем ваш аккаунт Genshin Impact",
 };
 

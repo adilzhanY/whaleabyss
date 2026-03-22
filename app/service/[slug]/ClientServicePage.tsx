@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import CartModal from "@/components/CartModal";
 import AuthModal from "@/components/AuthModal";
 import { ServiceItem } from "@/lib/services";
@@ -144,6 +145,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
           </div>
         </div>
       </main>
+      <Footer />
     </>
   );
 }

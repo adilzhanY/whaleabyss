@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { MousePointerClick, CreditCard, Trophy, Star, ChevronDown } from "lucide-react";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import CartModal from "@/components/CartModal";
 import AuthModal from "@/components/AuthModal";
 import ServiceCard from "@/components/ServiceCard";
+import SuggestServiceModal from "@/components/SuggestServiceModal";
 
 // ── Service data ────────────────────────────────────────────────────────────
 import { SERVICES } from "@/lib/services";
@@ -57,68 +59,17 @@ const TESTIMONIALS = [
   },
 ];
 
-// ── FAQ data ─────────────────────────────────────────────────────────────────
-const FAQ_ITEMS = [
-  {
-    q: "Безопасно ли передавать данные аккаунта?",
-    a: "Мы используем VPN вашего региона и никогда не меняем данные профиля. За более чем 3 000 выполненных заказов не было ни одного бана.",
-  },
-  {
-    q: "Сколько времени занимает буст?",
-    a: "В зависимости от региона — от 1 до 12 часов. Точные сроки указаны в описании каждой услуги.",
-  },
-  {
-    q: "Что если что-то пойдёт не так?",
-    a: "Мы гарантируем возврат средств в полном объёме, если не сможем выполнить заказ.",
-  },
-  {
-    q: "Нужно ли мне быть онлайн во время буста?",
-    a: "Нет. Вы можете спокойно заниматься своими делами, пока наш бустер работает над вашим аккаунтом.",
-  },
-];
-
-function FaqItem({ q, a }: { q: string; a: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div
-      className="rounded-xl border overflow-hidden"
-      style={{ borderColor: "var(--accent-border)", backgroundColor: "var(--bg-card)" }}
-    >
-      <button
-        className="flex w-full items-center justify-between px-6 py-4 text-left font-semibold text-sm"
-        style={{ color: "var(--text-primary)" }}
-        onClick={() => setOpen(!open)}
-      >
-        <span>{q}</span>
-        <ChevronDown
-          className="h-4 w-4 shrink-0 transition-transform ml-4"
-          style={{
-            color: "var(--accent-primary)",
-            transform: open ? "rotate(180deg)" : "rotate(0deg)",
-          }}
-        />
-      </button>
-      {open && (
-        <div
-          className="border-t px-6 py-4 text-sm leading-relaxed"
-          style={{ borderColor: "var(--accent-border)", color: "var(--text-secondary)" }}
-        >
-          {a}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── Main page ────────────────────────────────────────────────────────────────
 export default function Home() {
   const [authOpen, setAuthOpen] = useState(false);
+  const [suggestOpen, setSuggestOpen] = useState(false);
 
   return (
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
       <CartModal />
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+      <SuggestServiceModal isOpen={suggestOpen} onClose={() => setSuggestOpen(false)} />
 
       {/* ── HERO ─────────────────────────────────────────────────────── */}
       <section
@@ -251,16 +202,27 @@ export default function Home() {
         style={{ backgroundColor: "var(--bg-highlight)" }}
       >
         <div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "75rem" }}>
-          <div className="mb-12 text-center">
-            <h2
-              className="text-3xl font-black"
-              style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "var(--text-primary)" }}
+          <div className="mb-12 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-center sm:text-left">
+              <h2
+                className="text-3xl font-black"
+                style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "var(--text-primary)" }}
+              >
+                Услуги
+              </h2>
+              <p className="mt-2 text-sm" style={{ color: "var(--text-secondary)" }}>
+                Исследование регионов — 100% сундуков, достижений и заданий
+              </p>
+            </div>
+            <button
+              onClick={() => setSuggestOpen(true)}
+              className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none"
+              style={{ backgroundColor: "var(--accent-primary)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary-hover)")}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary)")}
             >
-              Услуги
-            </h2>
-            <p className="mt-2 text-sm" style={{ color: "var(--text-secondary)" }}>
-              Исследование регионов — 100% сундуков, достижений и заданий
-            </p>
+              Предложить услугу
+            </button>
           </div>
           <div
             className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
@@ -328,43 +290,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── FAQ ──────────────────────────────────────────────────────── */}
-      <section
-        id="faq"
-        className="py-20"
-        style={{ backgroundColor: "var(--bg-highlight)" }}
-      >
-        <div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "50rem" }}>
-          <div className="mb-12 text-center">
-            <h2
-              className="text-3xl font-black"
-              style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "var(--text-primary)" }}
-            >
-              Часто задаваемые вопросы
-            </h2>
-          </div>
-          <div className="flex flex-col gap-3">
-            {FAQ_ITEMS.map((item) => (
-              <FaqItem key={item.q} q={item.q} a={item.a} />
-            ))}
-          </div>
-        </div>
-      </section>
+      
 
-      {/* ── FOOTER ────────────────────────────────────────────────────── */}
-      <footer
-        className="border-t py-8 text-center text-sm"
-        style={{
-          borderColor: "var(--accent-border)",
-          backgroundColor: "var(--bg-card)",
-          color: "var(--text-secondary)",
-        }}
-      >
-        <p>© 2026 Китовая Бездна. Все права защищены.</p>
-        <p className="mt-1 text-xs opacity-60">
-          Не является официальным сервисом miHoYo / HoYoverse.
-        </p>
-      </footer>
+      <Footer />
     </div>
   );
 }

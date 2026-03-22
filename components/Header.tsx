@@ -26,17 +26,17 @@ export default function Header({ onAuthOpen }: HeaderProps) {
       >
         {/* Logo */}
         <a href="/" className="flex items-center gap-2 font-bold text-lg" style={{ color: "var(--accent-primary)", fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
-          <img src="/images/whaleabyss.png" alt="Китовая Бездна" className="h-8 w-auto" />
-          <span>Китовая Бездна</span>
+          <img src="/images/whaleabyss.png" alt="Whale Abyss" className="h-8 w-auto" />
+          <span>Whale Abyss</span>
         </a>
 
         {/* Nav */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
           {[
-            { label: "Главная", href: "#hero" },
-            { label: "Услуги", href: "#services" },
-            { label: "Отзывы", href: "#testimonials" },
-            { label: "FAQ", href: "#faq" },
+            { label: "Главная", href: "/" },
+            { label: "Услуги", href: "/#services" },
+            { label: "Отзывы", href: "/reviews" },
+            { label: "FAQ", href: "/faq" },
           ].map((link) => (
             <a
               key={link.href}

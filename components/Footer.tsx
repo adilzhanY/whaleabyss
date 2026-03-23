@@ -9,7 +9,7 @@ export default function Footer() {
         {/* Left Side: Logo and Links */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8 lg:gap-16">
           <Link href="/" className="flex items-center">
-            <Image src="/images/whaleabyss.png" alt="Whale Abyss" width={100} height={100} className="w-24 h-auto" />
+            <Image src="/icons/whale_abyss_logo.jpg" alt="Whale Abyss" width={80} height={80} className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover" />
           </Link>
 
           <div className="flex gap-16 text-sm font-medium">

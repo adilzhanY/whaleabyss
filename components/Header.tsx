@@ -25,8 +25,8 @@ export default function Header({ onAuthOpen }: HeaderProps) {
         style={{ maxWidth: "75rem" }}
       >
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2 font-bold text-lg" style={{ color: "var(--accent-primary)", fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
-          <img src="/images/whaleabyss.png" alt="Whale Abyss" className="h-8 w-auto" />
+        <a href="/" className="flex items-center gap-2.5 font-bold text-xl" style={{ color: "var(--accent-primary)", fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
+          <img src="/icons/whale_abyss_logo.jpg" alt="Whale Abyss" className="h-11 w-11 rounded-full object-cover" />
           <span>Whale Abyss</span>
         </a>
 

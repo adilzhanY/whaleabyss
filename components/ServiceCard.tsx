@@ -27,7 +27,7 @@ export default function ServiceCard({ item }: ServiceCardProps) {
   return (
     <Link
       href={`/service/${item.id}`}
-      className={`group flex flex-col rounded-3xl cursor-pointer ${item.isWide ? "col-span-1 sm:col-span-2" : "col-span-1"}`}
+      className={`group flex flex-col rounded-3xl cursor-pointer ${item.isWide ? "col-span-1 sm:col-span-2 xl:col-span-2" : "col-span-1"}`}
       style={{
         backgroundColor: "#f5f7ff",
         padding: "1rem",
@@ -42,11 +42,12 @@ export default function ServiceCard({ item }: ServiceCardProps) {
     >
       {/* Image placeholder */}
       <div
-        className="mb-4 w-full flex items-center justify-center relative overflow-hidden"
+        className="mb-4 w-full flex items-center justify-center relative overflow-hidden shrink-0"
         style={{
           borderRadius: "1rem",
-          aspectRatio: item.isWide ? "21/9" : "4/3",
-          background: item.background ? `url('${item.background}') center/cover` : (item.gradient || "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"),
+          height: item.isSquare ? "auto" : item.isExtraTall ? "min-content" : item.isTall ? "min-content" : "180px",
+          aspectRatio: item.isSquare ? "1/1" : item.isExtraTall ? "380/712" : item.isTall ? "380/632" : "auto",
+          background: item.background ? `url('${item.background}') center/cover` : (item.gradient || "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"),
           boxShadow: "inset 0 0 0 1000px rgba(0,0,0,0.2)"
         }}
       >

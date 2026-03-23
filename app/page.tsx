@@ -9,8 +9,8 @@ import AuthModal from "@/components/AuthModal";
 import ServiceCard from "@/components/ServiceCard";
 import SuggestServiceModal from "@/components/SuggestServiceModal";
 
-// ── Service data ────────────────────────────────────────────────────────────
-import { SERVICES } from "@/lib/services";
+// ── Service data ──────────────────────────────────────────────────────────
+import { SERVICE_CATEGORIES } from "@/lib/services";
 
 // ── How-it-works steps ───────────────────────────────────────────────────────
 const STEPS = [
@@ -86,14 +86,14 @@ export default function Home() {
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(135deg, rgba(15,23,42,0.72) 0%, rgba(120,53,15,0.60) 50%, rgba(79,70,229,0.45) 100%)",
+              "linear-gradient(135deg, rgba(15,23,42,0.72) 0%, rgba(120,53,15,0.60) 50%, rgba(30,58,138,0.45) 100%)",
           }}
         />
 
         <div className="relative mx-auto px-4 sm:px-6 text-center" style={{ maxWidth: "75rem" }}>
           <span
             className="mb-4 inline-block rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-widest"
-            style={{ backgroundColor: "rgba(79,70,229,0.25)", color: "#a5b4fc", border: "1px solid rgba(79,70,229,0.4)" }}
+            style={{ backgroundColor: "rgba(30,58,138,0.25)", color: "#93c5fd", border: "1px solid rgba(30,58,138,0.4)" }}
           >
             #1 Буст-сервис Genshin Impact
           </span>
@@ -105,7 +105,7 @@ export default function Home() {
             }}
           >
             Профессиональный{" "}
-            <span style={{ color: "#6366f1" }}>буст аккаунтов</span>{" "}
+            <span style={{ color: "#1e3a8a" }}>буст аккаунтов</span>{" "}
             Genshin Impact
           </h1>
           <p
@@ -224,12 +224,30 @@ export default function Home() {
               Предложить услугу
             </button>
           </div>
-          <div
-            className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
-            style={{ gridAutoFlow: "dense" }}
-          >
-            {SERVICES.map((item) => (
-              <ServiceCard key={item.id} item={item} />
+          <div className="flex flex-col gap-12">
+            {SERVICE_CATEGORIES.map((category) => (
+              <div key={category.id} className="flex flex-col gap-6">
+                <h3
+                  className="text-2xl font-bold"
+                  style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "var(--text-primary)" }}
+                >
+                  {category.title}
+                </h3>
+                <div
+                  className={
+                    category.id === "missions" || category.items.length <= 4
+                      ? "flex flex-wrap items-center justify-center gap-6 sm:justify-evenly"
+                      : "grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+                  }
+                  style={category.id === "missions" || category.items.length <= 4 ? {} : { gridAutoFlow: "dense" }}
+                >
+                  {category.items.map((item) => (
+                    <div key={item.id} className={category.id === "missions" || category.items.length <= 4 ? "w-full sm:w-64" : ""}>
+                      <ServiceCard item={item} />
+                    </div>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -290,7 +308,7 @@ export default function Home() {
         </div>
       </section>
 
-      
+
 
       <Footer />
     </div>

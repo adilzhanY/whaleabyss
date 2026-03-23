@@ -84,7 +84,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <input
                   type="text"
                   placeholder="Введите имя"
-                  className="w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors focus:border-[#4f46e5]"
+                  className="w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors focus:border-[#1e3a8a]"
                   style={{ borderColor: "var(--accent-border)", color: "var(--text-primary)", backgroundColor: "var(--bg-main)" }}
                 />
               </div>
@@ -96,7 +96,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <input
                 type="email"
                 placeholder="example@mail.com"
-                className="w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors focus:border-[#4f46e5]"
+                className="w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors focus:border-[#1e3a8a]"
                 style={{ borderColor: "var(--accent-border)", color: "var(--text-primary)", backgroundColor: "var(--bg-main)" }}
               />
             </div>
@@ -107,7 +107,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <input
                 type="password"
                 placeholder="••••••••"
-                className="w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors focus:border-[#4f46e5]"
+                className="w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors focus:border-[#1e3a8a]"
                 style={{ borderColor: "var(--accent-border)", color: "var(--text-primary)", backgroundColor: "var(--bg-main)" }}
               />
             </div>

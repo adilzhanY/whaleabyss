@@ -41,7 +41,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
             <a
               key={link.href}
               href={link.href}
-              className="transition-colors hover:text-[#4f46e5]"
+              className="transition-colors hover:text-[#1e3a8a]"
             >
               {link.label}
             </a>

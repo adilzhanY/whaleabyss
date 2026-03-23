@@ -5,7 +5,7 @@
     "subtitle": "Мондштадт",
     "price": 700,
     "isWide": true,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_1",
@@ -13,7 +13,7 @@
     "subtitle": "Драконий Хребет",
     "price": 900,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_2",
@@ -21,7 +21,7 @@
     "subtitle": "Ли Юэ",
     "price": 2200,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_3",
@@ -29,7 +29,7 @@
     "subtitle": "Разлом Верхний",
     "price": 700,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_4",
@@ -37,7 +37,7 @@
     "subtitle": "Разлом Нижний",
     "price": 700,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_5",
@@ -45,7 +45,7 @@
     "subtitle": "Разлом",
     "price": 1200,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_6",
@@ -53,7 +53,7 @@
     "subtitle": "Долина Чэньюй",
     "price": 2000,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_7",
@@ -61,7 +61,7 @@
     "subtitle": "Ли Юэ и Долина Чэньюй",
     "price": 3800,
     "isWide": true,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_8",
@@ -69,7 +69,7 @@
     "subtitle": "Инадзума",
     "price": 3000,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_9",
@@ -77,7 +77,7 @@
     "subtitle": "Тропики Сумеру",
     "price": 3000,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_10",
@@ -85,7 +85,7 @@
     "subtitle": "Араньяка",
     "price": 1500,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_11",
@@ -93,7 +93,7 @@
     "subtitle": "Араньяка и Сбор Аранар",
     "price": 2000,
     "isWide": true,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_12",
@@ -101,7 +101,7 @@
     "subtitle": "Пустыня Сумеру",
     "price": 4000,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_13",
@@ -109,7 +109,7 @@
     "subtitle": "Оазис Сумеру",
     "price": 1500,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_14",
@@ -117,7 +117,7 @@
     "subtitle": "Пустыня",
     "price": 5000,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_15",
@@ -125,7 +125,7 @@
     "subtitle": "Сумеру (Тропики и Пустыня)",
     "price": 7000,
     "isWide": true,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_16",
@@ -133,7 +133,7 @@
     "subtitle": "Фонтейн 4.0",
     "price": 1500,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_17",
@@ -141,7 +141,7 @@
     "subtitle": "Фонтейн 4.1",
     "price": 1500,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_18",
@@ -149,7 +149,7 @@
     "subtitle": "Фонтейн 4.2",
     "price": 1500,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_19",
@@ -157,7 +157,7 @@
     "subtitle": "Фонтейн",
     "price": 4200,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_20",
@@ -165,7 +165,7 @@
     "subtitle": "Море Древности",
     "price": 1300,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_21",
@@ -173,7 +173,7 @@
     "subtitle": "Натлан 5.0",
     "price": 2500,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_22",
@@ -181,7 +181,7 @@
     "subtitle": "Натлан 5.2",
     "price": 2300,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_23",
@@ -189,7 +189,7 @@
     "subtitle": "Натлан 5.5",
     "price": 2000,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_24",
@@ -197,7 +197,7 @@
     "subtitle": "Натлан 5.8",
     "price": 1500,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_25",
@@ -205,7 +205,7 @@
     "subtitle": "Натлан",
     "price": 7800,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_26",
@@ -213,7 +213,7 @@
     "subtitle": "НОД Край 6.0",
     "price": 2000,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   },
   {
     "id": "service_27",
@@ -221,6 +221,6 @@
     "subtitle": "НОД Край 6.3",
     "price": 2000,
     "isWide": false,
-    "gradient": "linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%)"
+    "gradient": "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"
   }
 ]

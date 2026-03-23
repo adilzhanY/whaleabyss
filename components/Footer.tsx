@@ -14,11 +14,11 @@ export default function Footer() {
 
           <div className="flex gap-16 text-sm font-medium">
             <div className="flex flex-col gap-4">
-              <Link href="/about" className="transition-colors hover:text-indigo-400">О нас</Link>
-              <Link href="/faq" className="transition-colors hover:text-indigo-400">FAQ</Link>
+              <Link href="/about" className="transition-colors hover:text-blue-400">О нас</Link>
+              <Link href="/faq" className="transition-colors hover:text-blue-400">FAQ</Link>
             </div>
             <div className="flex flex-col gap-4">
-              <Link href="/reviews" className="transition-colors hover:text-indigo-400">Отзывы</Link>
+              <Link href="/reviews" className="transition-colors hover:text-blue-400">Отзывы</Link>
             </div>
           </div>
         </div>

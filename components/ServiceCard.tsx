@@ -51,20 +51,9 @@ export default function ServiceCard({ item }: ServiceCardProps) {
           boxShadow: "inset 0 0 0 1000px rgba(0,0,0,0.2)"
         }}
       >
-        <span
-          className="text-white text-center z-10"
-          style={{
-            fontFamily: "var(--font-montserrat), Montserrat, sans-serif",
-            fontWeight: 900,
-            fontSize: item.isWide ? "1.75rem" : "1.375rem",
-            letterSpacing: "0.05em",
-            textShadow: "2px 2px 0 rgba(0,0,0,0.5), -1px -1px 0 rgba(0,0,0,0.5), 1px -1px 0 rgba(0,0,0,0.5), -1px 1px 0 rgba(0,0,0,0.5), 1px 1px 0 rgba(0,0,0,0.5)",
-            padding: "0 10px"
-          }}
-        >
-          {item.title}
-        </span>
-      </div>      {/* Subtitle */}
+      </div>
+
+      {/* Subtitle */}
       <div className="flex-1 mb-4">
         <p className="text-sm font-medium" style={{ color: "#334155" }}>
           {item.subtitle}

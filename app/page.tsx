@@ -104,8 +104,7 @@ export default function Home() {
               color: "#ffffff",
             }}
           >
-            Профессиональный{" "}
-            <span style={{ color: "#1e3a8a" }}>буст аккаунтов</span>{" "}
+            Профессиональный буст аккаунтов
             Genshin Impact
           </h1>
           <p
@@ -128,7 +127,7 @@ export default function Home() {
             <div className="flex items-center gap-6 text-xs font-medium" style={{ color: "#cbd5e1" }}>
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-green-400" />
-                3 000+ заказов
+                500+ заказов
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-green-400" />

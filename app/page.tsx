@@ -238,13 +238,27 @@ export default function Home() {
                       ? "flex flex-wrap items-center justify-center gap-6 sm:justify-evenly"
                       : "grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
                   }
-                  style={category.id === "missions" || category.items.length <= 4 ? {} : { gridAutoFlow: "dense" }}
+                  style={category.id === "missions" || category.items.length <= 4 ? {} : { gridAutoFlow: "dense", gridAutoRows: "200px" }}
                 >
-                  {category.items.map((item) => (
-                    <div key={item.id} className={category.id === "missions" || category.items.length <= 4 ? "w-full sm:w-64" : ""}>
-                      <ServiceCard item={item} />
-                    </div>
-                  ))}
+                  {category.items.map((item) => {
+                    let spanClasses = "h-70 sm:h-auto";
+                    if (category.id !== "missions" && category.items.length > 4) {
+                      spanClasses = "col-span-1 row-span-1";
+                      if (item.isWide) spanClasses = "col-span-1 sm:col-span-2 xl:col-span-2 row-span-1";
+                      if (item.isTall) spanClasses = "col-span-1 sm:row-span-2";
+                      if (item.isExtraTall) spanClasses = "col-span-1 sm:row-span-3";
+                      if (item.isSquare) spanClasses = "col-span-1 row-span-1";
+                    }
+
+                    return (
+                      <div
+                        key={item.id}
+                        className={category.id === "missions" || category.items.length <= 4 ? "w-full sm:w-64 h-70" : `${spanClasses} h-full`}
+                      >
+                        <ServiceCard item={item} />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))}

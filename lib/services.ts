@@ -40,7 +40,6 @@ const categoryTitles: Record<string, string> = {
   locations: "Исследование регионов",
   boost: "Буст",
   missions: "Задания",
-  plots: "Сюжеты",
   abyss_theater: "Бездна и Театр"
 };
 

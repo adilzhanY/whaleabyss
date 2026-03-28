@@ -271,17 +271,11 @@ export default function Home() {
                 >
                   {category.title}
                 </h3>
-                <div
-                  className={
-                    category.id === "missions" || category.items.length <= 4
-                      ? "flex flex-wrap items-center justify-center gap-6 sm:justify-evenly"
-                      : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
-                  }
-                >
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                   {category.items.map((item) => (
                     <div
                       key={item.id}
-                      className={category.id === "missions" || category.items.length <= 4 ? "w-full sm:w-64" : "w-full"}
+                      className="w-full"
                       style={{ height: "300px" }}
                     >
                       <ServiceCard item={item} />

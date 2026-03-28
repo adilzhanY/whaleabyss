@@ -117,10 +117,8 @@ export default function Home() {
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a
               href="#services"
-              className="inline-flex items-center gap-2 rounded-xl px-8 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
-              style={{ backgroundColor: "var(--accent-primary)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary-hover)")}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary)")}
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3.5 text-sm font-bold transition-all hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-lg hover:shadow-white/20"
+              style={{ color: "var(--accent-primary)" }}
             >
               Выбрать услугу
             </a>

@@ -197,19 +197,60 @@ export default function Home() {
       {/* ── SERVICES GRID ─────────────────────────────────────────────── */}
       <section
         id="services"
-        className="py-20"
-        style={{ backgroundColor: "var(--bg-highlight)" }}
+        className="py-20 relative overflow-hidden"
+        style={{
+          background: "linear-gradient(to bottom, #090e17 0%, #111a2e 100%)",
+        }}
       >
-        <div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "75rem" }}>
+        {/* CSS/SVG Starry Nebula Background */}
+        <div className="absolute inset-0 pointer-events-none z-0">
+          {/* Nebula clouds */}
+          <div
+            className="absolute inset-0 opacity-50"
+            style={{
+              background: `
+                radial-gradient(circle at 15% 75%, rgba(45, 120, 160, 0.3) 0%, transparent 35%),
+                radial-gradient(circle at 85% 25%, rgba(60, 90, 140, 0.3) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(20, 40, 70, 0.4) 0%, transparent 60%)
+              `,
+              filter: "blur(40px)"
+            }}
+          />
+          {/* Stars overlay */}
+          <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="star-pattern" x="0" y="0" width="300" height="300" patternUnits="userSpaceOnUse">
+                <circle cx="25" cy="45" r="1" fill="#ffffff" opacity="0.8" />
+                <circle cx="85" cy="115" r="1.5" fill="#fdf8ff" opacity="0.9" filter="drop-shadow(0 0 2px #fff)" />
+                <circle cx="150" cy="20" r="0.8" fill="#ffffff" opacity="0.5" />
+                <circle cx="210" cy="80" r="2" fill="#ffe0b2" opacity="0.8" filter="drop-shadow(0 0 3px #ffe0b2)" />
+                <circle cx="265" cy="190" r="1" fill="#ffffff" opacity="0.7" />
+                <circle cx="45" cy="225" r="1.2" fill="#ffffff" opacity="0.6" />
+                <circle cx="120" cy="275" r="0.8" fill="#ffffff" opacity="0.4" />
+                <circle cx="185" cy="165" r="1.8" fill="#e0f7fa" opacity="0.9" filter="drop-shadow(0 0 2px #e0f7fa)" />
+                <circle cx="280" cy="40" r="0.5" fill="#ffffff" opacity="0.5" />
+                <circle cx="70" cy="180" r="0.5" fill="#ffffff" opacity="0.6" />
+                {/* Tiny background stars */}
+                <circle cx="10" cy="10" r="0.3" fill="#ffffff" opacity="0.3" />
+                <circle cx="130" cy="130" r="0.4" fill="#ffffff" opacity="0.4" />
+                <circle cx="240" cy="240" r="0.3" fill="#ffffff" opacity="0.3" />
+                <circle cx="190" cy="290" r="0.4" fill="#ffffff" opacity="0.5" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#star-pattern)" />
+          </svg>
+        </div>
+
+        <div className="mx-auto px-4 sm:px-6 relative z-10" style={{ maxWidth: "75rem" }}>
           <div className="mb-12 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-center sm:text-left">
               <h2
                 className="text-3xl font-black"
-                style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "var(--text-primary)" }}
+                style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "#ffffff" }}
               >
                 Услуги
               </h2>
-              <p className="mt-2 text-sm" style={{ color: "var(--text-secondary)" }}>
+              <p className="mt-2 text-sm" style={{ color: "#e2e8f0" }}>
                 Исследование регионов — 100% сундуков, достижений и заданий
               </p>
             </div>
@@ -228,7 +269,7 @@ export default function Home() {
               <div key={category.id} className="flex flex-col gap-6">
                 <h3
                   className="text-2xl font-bold"
-                  style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "var(--text-primary)" }}
+                  style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "#ffffff" }}
                 >
                   {category.title}
                 </h3>
@@ -236,29 +277,18 @@ export default function Home() {
                   className={
                     category.id === "missions" || category.items.length <= 4
                       ? "flex flex-wrap items-center justify-center gap-6 sm:justify-evenly"
-                      : "grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+                      : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
                   }
-                  style={category.id === "missions" || category.items.length <= 4 ? {} : { gridAutoFlow: "dense", gridAutoRows: "200px" }}
                 >
-                  {category.items.map((item) => {
-                    let spanClasses = "h-70 sm:h-auto";
-                    if (category.id !== "missions" && category.items.length > 4) {
-                      spanClasses = "col-span-1 row-span-1";
-                      if (item.isWide) spanClasses = "col-span-1 sm:col-span-2 xl:col-span-2 row-span-1";
-                      if (item.isTall) spanClasses = "col-span-1 sm:row-span-2";
-                      if (item.isExtraTall) spanClasses = "col-span-1 sm:row-span-3";
-                      if (item.isSquare) spanClasses = "col-span-1 row-span-1";
-                    }
-
-                    return (
-                      <div
-                        key={item.id}
-                        className={category.id === "missions" || category.items.length <= 4 ? "w-full sm:w-64 h-70" : `${spanClasses} h-full`}
-                      >
-                        <ServiceCard item={item} />
-                      </div>
-                    );
-                  })}
+                  {category.items.map((item) => (
+                    <div
+                      key={item.id}
+                      className={category.id === "missions" || category.items.length <= 4 ? "w-full sm:w-64" : "w-full"}
+                      style={{ height: "300px" }}
+                    >
+                      <ServiceCard item={item} />
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}

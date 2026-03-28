@@ -12,14 +12,29 @@ export default function CartModal() {
 
   // For animation
   const [mounted, setMounted] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
-      setMounted(true);
+      setIsAnimating(true);
       document.body.style.overflow = "hidden";
     } else {
+      setIsAnimating(false);
       document.body.style.overflow = "";
-      const timer = setTimeout(() => setMounted(false), 300);
+    }
+  }, [isOpen]);
+
+  // Keep it always rendered if mounted, to let CSS transitions work properly
+  const [shouldRender, setShouldRender] = useState(false);
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+    } else {
+      const timer = setTimeout(() => setShouldRender(false), 300);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
@@ -27,7 +42,10 @@ export default function CartModal() {
   if (!mounted) return null;
 
   return (
-    <div className={`fixed inset-0 z-50 transition-opacity duration-300 ${isOpen ? "opacity-100" : "opacity-0"}`} style={{ pointerEvents: isOpen ? "auto" : "none" }}>
+    <div
+      className={`fixed inset-0 z-50 transition-opacity duration-300 ease-out ${isAnimating ? "opacity-100" : "opacity-0"}`}
+      style={{ pointerEvents: isAnimating ? "auto" : "none", visibility: shouldRender ? "visible" : "hidden" }}
+    >
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
@@ -36,7 +54,7 @@ export default function CartModal() {
 
       {/* Slide-out panel */}
       <aside
-        className={`absolute right-0 top-0 flex h-full w-full flex-col sm:w-105 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${isOpen ? "translate-x-0" : "translate-x-full"}`}
+        className={`absolute right-0 top-0 flex h-full w-full flex-col sm:w-105 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${isAnimating ? "translate-x-0" : "translate-x-full"}`}
         style={{ backgroundColor: "var(--bg-card)", boxShadow: "-4px 0 24px rgba(0,0,0,0.12)" }}
       >
         {/* Header */}

@@ -271,12 +271,11 @@ export default function Home() {
                 >
                   {category.title}
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
                   {category.items.map((item) => (
                     <div
                       key={item.id}
-                      className="w-full"
-                      style={{ height: "300px" }}
+                      className="w-full h-full"
                     >
                       <ServiceCard item={item} />
                     </div>

@@ -14,6 +14,8 @@ const inter = Inter({
   weight: ["400", "500", "600", "700"],
 });
 
+import { Providers } from "./Providers";
+
 export const metadata: Metadata = {
   title: "Whale Abyss — Профессиональный буст аккаунтов",
   description: "Быстро, безопасно и качественно прокачаем ваш аккаунт Genshin Impact",
@@ -27,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className={`${montserrat.variable} ${inter.variable} antialiased`}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

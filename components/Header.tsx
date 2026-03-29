@@ -2,6 +2,8 @@
 
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/store/useCart";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 interface HeaderProps {
   onAuthOpen: () => void;
@@ -10,6 +12,7 @@ interface HeaderProps {
 export default function Header({ onAuthOpen }: HeaderProps) {
   const { cartCount, openCart } = useCart();
   const count = cartCount();
+  const { data: session } = useSession();
 
   return (
     <header
@@ -50,18 +53,33 @@ export default function Header({ onAuthOpen }: HeaderProps) {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
-          <button
-            onClick={onAuthOpen}
-            className="hidden sm:inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors"
-            style={{
-              backgroundColor: "var(--accent-primary)",
-              borderRadius: "var(--btn-radius)",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary-hover)")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary)")}
-          >
-            Войти / Регистрация
-          </button>
+          {session ? (
+            <Link
+              href="/profile"
+              className="hidden sm:inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors"
+              style={{
+                backgroundColor: "var(--accent-primary)",
+                borderRadius: "var(--btn-radius)",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary-hover)")}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary)")}
+            >
+              Профиль
+            </Link>
+          ) : (
+            <button
+              onClick={onAuthOpen}
+              className="hidden sm:inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors"
+              style={{
+                backgroundColor: "var(--accent-primary)",
+                borderRadius: "var(--btn-radius)",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary-hover)")}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary)")}
+            >
+              Войти / Регистрация
+            </button>
+          )}
 
           {/* Cart icon */}
           <button

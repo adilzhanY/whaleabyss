@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     });
 
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
+      from: `"Whale Abyss Support" <${process.env.EMAIL_FROM}>`,
       to: email,
       subject: "Ваш код подтверждения - Whale Abyss",
       html: `

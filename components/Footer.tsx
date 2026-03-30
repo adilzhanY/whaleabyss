@@ -35,6 +35,11 @@ export default function Footer() {
           <Link href="/public_offer" className="hover:text-white transition-colors">Публичная оферта</Link>
         </div>
       </div>
+
+      {/* Legal Entity Info */}
+      <div className="mx-auto max-w-7xl mt-6 text-xs text-gray-500 text-center md:text-left">
+        Самозанятая Гурова Майя Павловна, ИНН: 230412509070
+      </div>
     </footer>
   );
 }

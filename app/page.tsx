@@ -245,7 +245,7 @@ export default function Home() {
               <div key={category.id} className="flex flex-col gap-6">
                 <h3
                   className="text-2xl font-bold"
-                  style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "#0f172a" }}
+                  style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "black" }}
                 >
                   {category.title}
                 </h3>

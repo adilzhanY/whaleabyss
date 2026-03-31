@@ -13,6 +13,7 @@ export interface ServiceItem {
   isTall?: boolean;
   isExtraTall?: boolean;
   isSquare?: boolean;
+  isPerDay?: boolean;
 }
 
 export interface ServiceCategory {
@@ -67,6 +68,7 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = Object.entries(servicesData
       const is_square = nameLower.includes("задание") || is_nod_krai;
       const is_tall = is_plot && !is_nod_krai;
       const is_extra_tall = is_tall && !nameLower.includes("мондштадт");
+      const is_per_day = nameLower.includes("уход за аккаунтом");
 
       const index = globalIndex++;
 
@@ -81,6 +83,7 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = Object.entries(servicesData
         isTall: is_tall,
         isExtraTall: is_extra_tall,
         isSquare: is_square,
+        isPerDay: is_per_day,
         gradient: gradients[index % gradients.length]
       };
     })

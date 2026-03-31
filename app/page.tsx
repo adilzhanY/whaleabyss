@@ -120,14 +120,14 @@ export default function Home() {
               <a
                 href="#services"
                 className="inline-flex items-center justify-center gap-2 rounded-3xl px-8 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5"
-                style={{ backgroundColor: "var(--accent-primary)", boxShadow: "0 10px 15px -3px rgba(30, 58, 138, 0.2)" }}
+                style={{ backgroundColor: "var(--accent-primary)", boxShadow: "0 10px 15px -3px rgba(30, 58, 138, 0.2)", fontFamily: "var(--font-montserrat), Montserrat, sans-serif", }}
               >
                 Выбрать услугу
               </a>
               <a
                 href="#how"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-8 py-3.5 text-sm font-bold transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/5"
-                style={{ color: "var(--accent-primary)" }}
+                className="inline-flex items-center justify-center gap-2 rounded-3xl bg-white px-8 py-3.5 text-sm font-bold transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/5"
+                style={{ color: "var(--accent-primary)", fontFamily: "var(--font-montserrat), Montserrat, sans-serif", }}
               >
                 Узнать больше
               </a>

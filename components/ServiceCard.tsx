@@ -57,7 +57,7 @@ export default function ServiceCard({ item }: ServiceCardProps) {
 
       {/* Subtitle */}
       <div className="flex-1 mb-3 sm:mb-4">
-        <p className="text-xs sm:text-sm font-medium line-clamp-2 text-slate-700 transition-colors duration-300 group-hover:text-blue-900">
+        <p className="text-3xl sm:text-sm font-medium line-clamp-2 text-slate-700 transition-colors duration-300 group-hover:text-blue-900">
           {item.subtitle}
         </p>
       </div>
@@ -65,7 +65,7 @@ export default function ServiceCard({ item }: ServiceCardProps) {
       {/* Price + add button */}
       <div className="flex items-center justify-between">
         <span
-          className="text-base sm:text-lg font-bold whitespace-nowrap text-[#1e3a8a] transition-colors duration-300 group-hover:text-blue-800"
+          className="text-base sm:text-2xl font-bold whitespace-nowrap text-[#1e3a8a] transition-colors duration-300 group-hover:text-blue-800"
           style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}
         >
           {item.price.toLocaleString("ru-RU")} {item.isPerDay ? "₽/день" : "₽"}

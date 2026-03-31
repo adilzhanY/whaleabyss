@@ -240,28 +240,6 @@ export default function Home() {
         </div>
 
         <div className="mx-auto px-4 sm:px-6 relative z-10" style={{ maxWidth: "75rem" }}>
-          <div className="mb-12 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-center sm:text-left">
-              <h2
-                className="text-3xl font-black"
-                style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "#ffffff" }}
-              >
-                Услуги
-              </h2>
-              <p className="mt-2 text-sm" style={{ color: "#e2e8f0" }}>
-                Исследование регионов — 100% сундуков, достижений и заданий
-              </p>
-            </div>
-            <button
-              onClick={() => setSuggestOpen(true)}
-              className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none"
-              style={{ backgroundColor: "var(--accent-primary)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary-hover)")}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary)")}
-            >
-              Предложить услугу
-            </button>
-          </div>
           <div className="flex flex-col gap-12">
             {SERVICE_CATEGORIES.map((category) => (
               <div key={category.id} className="flex flex-col gap-6">
@@ -283,6 +261,27 @@ export default function Home() {
                 </div>
               </div>
             ))}
+          </div>
+
+          <div className="mt-16 flex justify-center">
+            <button
+              onClick={() => setSuggestOpen(true)}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl px-12 py-5 text-xl font-bold transition-all hover:-translate-y-1 hover:shadow-xl focus:outline-none"
+              style={{
+                backgroundColor: "#ffffff",
+                color: "var(--accent-primary)"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-4px)";
+                e.currentTarget.style.boxShadow = "0 20px 25px -5px rgba(255, 255, 255, 0.1), 0 10px 10px -5px rgba(255, 255, 255, 0.04)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            >
+              Предложить услугу
+            </button>
           </div>
         </div>
       </section>

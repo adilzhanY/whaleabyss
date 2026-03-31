@@ -44,8 +44,12 @@ export default function ServiceCard({ item }: ServiceCardProps) {
         className="mb-3 sm:mb-4 w-full flex items-center justify-center relative overflow-hidden shrink-0 h-30 sm:h-45"
         style={{
           borderRadius: "0.75rem",
-          background: item.background ? `url('${item.background}') center/cover` : (item.gradient || "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"),
-          boxShadow: "inset 0 0 0 1000px rgba(0,0,0,0.2)"
+          background: item.background
+            ? `url('${item.background}') ${item.background.includes('mondstadt_plot.jpg')
+              ? 'center 55% / 120% no-repeat'
+              : 'center / cover no-repeat'
+            }`
+            : (item.gradient || "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"),
         }}
       >
       </div>

@@ -238,7 +238,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
             </div>
 
             {/* Feature Cards below image */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="hidden sm:grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* Card 1 */}
               <div className="bg-white rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] p-6 flex flex-col items-center justify-center text-center">
                 <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-3 text-blue-800 shadow-sm border border-blue-100">

@@ -56,8 +56,9 @@ export default function ServiceCard({ item }: ServiceCardProps) {
       </div>
 
       {/* Subtitle */}
-      <div className="flex-1 mb-3 sm:mb-4">
-        <p className="text-3xl sm:text-sm font-medium line-clamp-2 text-slate-700 transition-colors duration-300 group-hover:text-blue-900">
+      <div className="flex-1 mb-3 sm:mb-4"
+        style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
+        <p className="text-xl sm:text-sm font-medium line-clamp-2 text-slate-700 transition-colors duration-300 group-hover:text-blue-900">
           {item.subtitle}
         </p>
       </div>

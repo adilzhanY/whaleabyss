@@ -88,49 +88,59 @@ export default function Home() {
           `,
         }}
       >
-        <div className="relative mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-12 lg:gap-8 items-center" style={{ maxWidth: "75rem" }}>
-          <div className="text-left">
+        {/* TEXT CONTENT */}
+        <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-between gap-8 px-4 sm:px-12 lg:flex-row">
+          <div className="text-left w-full sm:w-auto">
             <span
-              className="mb-4 inline-block rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest"
+              className="mb-4 inline-block rounded-full px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-center sm:text-left wrap-break-word max-w-full"
               style={{ backgroundColor: "rgba(30,58,138,0.05)", color: "var(--accent-primary)", border: "1px solid rgba(30,58,138,0.15)" }}
             >
               #1 Буст-сервис Genshin Impact
             </span>
             <h1
-              className="mb-6 max-w-3xl text-4xl font-black leading-tight sm:text-5xl lg:text-6xl tracking-tight text-slate-800"
+              className="mb-6 max-w-3xl text-3xl font-black leading-tight sm:text-5xl lg:text-6xl tracking-tight text-slate-800 wrap-break-word w-full overflow-hidden"
               style={{
                 fontFamily: "var(--font-montserrat), Montserrat, sans-serif",
                 color: "#1e293b",
+                wordBreak: "break-word",
+                hyphens: "auto"
               }}
             >
               Профессиональный
-              <br />
-              <span style={{ color: "var(--accent-primary)" }}>буст</span> аккаунтов
+              <br className="hidden sm:block" />
+              <span style={{ color: "var(--accent-primary)" }}> буст</span> аккаунтов
               <br />
               <span style={{ fontWeight: "bold" }}>Genshin Impact</span>
             </h1>
             <p
-              className="mb-10 max-w-xl text-base sm:text-lg leading-relaxed text-slate-600 font-medium"
+              className="mb-10 max-w-xl text-sm sm:text-lg leading-relaxed text-slate-600 font-medium wrap-break-word w-full"
             >
-              Быстро, безопасно и с гарантией результата. Позвольте
-              экспертам позаботиться о вашей рутине, пока вы
-              наслаждаетесь историей Тейвата.
+              Быстро, безопасно и с гарантией результата. Позвольте экспертам позаботиться о вашей рутине, пока вы наслаждаетесь историей Тейвата.
             </p>
-            <div className="flex flex-wrap items-center justify-start gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-3 w-full max-w-[100vw]">
               <a
                 href="#services"
-                className="inline-flex items-center justify-center gap-2 rounded-3xl px-8 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-3xl px-4 sm:px-8 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5"
                 style={{ backgroundColor: "var(--accent-primary)", boxShadow: "0 10px 15px -3px rgba(30, 58, 138, 0.2)", fontFamily: "var(--font-montserrat), Montserrat, sans-serif", }}
               >
                 Выбрать услугу
               </a>
               <a
                 href="#how"
-                className="inline-flex items-center justify-center gap-2 rounded-3xl bg-white px-8 py-3.5 text-sm font-bold transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/5"
-                style={{ color: "var(--accent-primary)", fontFamily: "var(--font-montserrat), Montserrat, sans-serif", }}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-3xl bg-white px-4 sm:px-8 py-3.5 text-sm font-bold transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/5"
+                style={{ color: "var(--accent-primary)", fontFamily: "var(--font-montserrat), Montserrat, sans-serif", border: "1px solid rgba(30,58,138,0.1)" }}
               >
                 Узнать больше
               </a>
+            </div>
+
+            <div className="mt-12 flex flex-wrap items-center justify-start gap-8">
+              {/* <div className="flex items-center gap-2">
+                <ChevronDown className="h-5 w-5 animate-bounce text-accent-primary" />
+                <span className="text-xs font-medium uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>
+                  Прокрутите вниз, чтобы увидеть услуги
+                </span>
+              </div> */}
             </div>
           </div>
 

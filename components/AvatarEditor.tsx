@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Cropper from "react-easy-crop";
 import getCroppedImg from "@/lib/cropUtils";
 import { Edit2, Upload, X } from "lucide-react";
@@ -17,19 +18,23 @@ export default function AvatarEditor({ currentAvatarUrl, userName, onUploadSucce
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const initial = userName ? userName.charAt(0).toUpperCase() : "?";
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const initial = userName ? userName.charAt(0).toUpperCase() : "?"; const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const src = URL.createObjectURL(e.target.files[0]);
       setFile(src);
     }
   };
 
-  const onCropComplete = useCallback((croppedArea: any, croppedAreaPx: any) => {
+  const onCropComplete = useCallback((croppedArea: unknown, croppedAreaPx: { x: number; y: number; width: number; height: number }) => {
+    // @ts-expect-error setting typed pixel area
     setCroppedAreaPixels(croppedAreaPx);
   }, []);
 
@@ -98,8 +103,8 @@ export default function AvatarEditor({ currentAvatarUrl, userName, onUploadSucce
         className="hidden"
       />
 
-      {file && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      {mounted && file && createPortal(
+        <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden" style={{ backgroundColor: "var(--bg-card)" }}>
             <div className="relative w-full h-64 sm:h-80 bg-black/20">
               <Cropper
@@ -144,7 +149,8 @@ export default function AvatarEditor({ currentAvatarUrl, userName, onUploadSucce
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

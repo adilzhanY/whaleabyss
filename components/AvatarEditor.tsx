@@ -82,7 +82,7 @@ export default function AvatarEditor({ currentAvatarUrl, userName, onUploadSucce
             className="w-full h-full object-cover"
           />
         ) : (
-          <span className="text-4xl text-white font-bold">{initial}</span>
+          <span className="text-4xl font-bold" style={{ color: "var(--text-primary)" }}>{initial}</span>
         )}
       </div>
 

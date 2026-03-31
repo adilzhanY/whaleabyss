@@ -53,7 +53,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
           >
             <Menu className="h-6 w-6" />
           </button>
-          
+
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 font-bold text-xl" style={{ color: "var(--accent-primary)", fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
             <img src="/icons/whale_abyss_logo.jpg" alt="Whale Abyss" className="h-10 w-10 sm:h-11 sm:w-11 rounded-full object-cover" />
@@ -92,8 +92,8 @@ export default function Header({ onAuthOpen }: HeaderProps) {
               {session.user?.image ? (
                 <img src={session.user.image} alt="User Avatar" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-500">
-                  <User className="h-5 w-5" />
+                <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-900 font-bold text-base uppercase">
+                  {session.user?.name ? session.user.name.charAt(0) : <User className="h-5 w-5 text-slate-700" />}
                 </div>
               )}
             </Link>
@@ -134,13 +134,13 @@ export default function Header({ onAuthOpen }: HeaderProps) {
       </div>
 
       {/* Mobile Menu Backdrop */}
-      <div 
+      <div
         className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity duration-300 md:hidden ${isMobileMenuOpen ? "opacity-100 block" : "opacity-0 hidden pointer-events-none"}`}
         onClick={() => setIsMobileMenuOpen(false)}
       />
 
       {/* Mobile Menu Panel */}
-      <div 
+      <div
         className={`fixed inset-y-0 left-0 z-50 w-[80%] max-w-sm bg-white shadow-2xl transition-transform duration-300 ease-in-out md:hidden flex flex-col ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
         style={{ fontFamily: 'var(--font-montserrat), Montserrat, sans-serif' }}
       >
@@ -149,7 +149,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
             <img src="/icons/whale_abyss_logo.jpg" alt="Whale Abyss Logo" className="h-10 w-10 rounded-full object-cover" />
             <span className="font-bold text-slate-800 text-lg">Меню</span>
           </div>
-          <button 
+          <button
             onClick={() => setIsMobileMenuOpen(false)}
             className="p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-slate-100 transition-colors"
           >

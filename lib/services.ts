@@ -76,7 +76,7 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = Object.entries(servicesData
       return {
         id: `${generateSlug(item.name)}-${index}`,
         title: item.name.toUpperCase(),
-        subtitle: item.name.replace(" 100%", "").replace(/\+/g, "и").trim(),
+        subtitle: item.name,
         price: item.price,
         description: item.description,
         background: item.background,

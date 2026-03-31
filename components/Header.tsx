@@ -34,7 +34,11 @@ export default function Header({ onAuthOpen }: HeaderProps) {
         </a>
 
         {/* Nav */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium"
+          style={{
+            color: "var(--text-secondary)",
+            fontFamily: "var(--font-montserrat), Montserrat, sans-serif"
+          }}>
           {[
             { label: "Главная", href: "/" },
             { label: "Услуги", href: "/#services" },
@@ -56,10 +60,10 @@ export default function Header({ onAuthOpen }: HeaderProps) {
           {session ? (
             <Link
               href="/profile"
-              className="hidden sm:inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors"
+              className="hidden sm:inline-flex items-center rounded-3xl px-4 py-2 text-sm font-semibold text-white transition-colors cursor-pointer"
               style={{
                 backgroundColor: "var(--accent-primary)",
-                borderRadius: "var(--btn-radius)",
+                fontFamily: "var(--font-montserrat), Montserrat, sans-serif"
               }}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary-hover)")}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary)")}
@@ -69,10 +73,10 @@ export default function Header({ onAuthOpen }: HeaderProps) {
           ) : (
             <button
               onClick={onAuthOpen}
-              className="hidden sm:inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors"
+              className="hidden sm:inline-flex items-center rounded-3xl px-4 py-2 text-sm font-semibold text-white transition-colors cursor-pointer"
               style={{
                 backgroundColor: "var(--accent-primary)",
-                borderRadius: "var(--btn-radius)",
+                fontFamily: "var(--font-montserrat), Montserrat, sans-serif"
               }}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary-hover)")}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary)")}

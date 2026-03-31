@@ -71,76 +71,90 @@ export default function Home() {
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
       <SuggestServiceModal isOpen={suggestOpen} onClose={() => setSuggestOpen(false)} />
 
-      {/* ── HERO ─────────────────────────────────────────────────────── */}
+      {/* ── HERO ─────────────────────────────────────────────────────────────── */}
       <section
         id="hero"
         className="relative overflow-hidden py-24 sm:py-32"
         style={{
-          backgroundImage: "url('/images/genshin_background.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundColor: "#ffffff",
+          backgroundImage: `
+            radial-gradient(at 40% 20%, hsla(210,100%,74%,0.3) 0px, transparent 50%),
+            radial-gradient(at 80% 0%, hsla(250,100%,79%,0.3) 0px, transparent 50%),
+            radial-gradient(at 0% 50%, hsla(350,100%,89%,0.3) 0px, transparent 50%),
+            radial-gradient(at 80% 50%, hsla(180,100%,74%,0.3) 0px, transparent 50%),
+            radial-gradient(at 0% 100%, hsla(290,100%,84%,0.3) 0px, transparent 50%),
+            radial-gradient(at 80% 100%, hsla(20,100%,89%,0.3) 0px, transparent 50%),
+            radial-gradient(at 0% 0%, hsla(220,100%,79%,0.3) 0px, transparent 50%)
+          `,
         }}
       >
-        {/* Semi-transparent dark + orange overlay */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(15,23,42,0.72) 0%, rgba(120,53,15,0.60) 50%, rgba(30,58,138,0.45) 100%)",
-          }}
-        />
-
-        <div className="relative mx-auto px-4 sm:px-6 text-center" style={{ maxWidth: "75rem" }}>
-          <span
-            className="mb-4 inline-block rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-widest"
-            style={{ backgroundColor: "rgba(30,58,138,0.25)", color: "#93c5fd", border: "1px solid rgba(30,58,138,0.4)" }}
-          >
-            #1 Буст-сервис Genshin Impact
-          </span>
-          <h1
-            className="mx-auto mb-6 max-w-3xl text-4xl font-black leading-tight sm:text-5xl lg:text-6xl"
-            style={{
-              fontFamily: "var(--font-montserrat), Montserrat, sans-serif",
-              color: "#ffffff",
-            }}
-          >
-            Профессиональный буст аккаунтов
-            Genshin Impact
-          </h1>
-          <p
-            className="mx-auto mb-10 max-w-xl text-base sm:text-lg leading-relaxed"
-            style={{ color: "#e2e8f0" }}
-          >
-            Быстро, безопасно и с гарантией результата. Опытные игроки прокачают
-            ваш аккаунт, пока вы занимаетесь другими делами.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <a
-              href="#services"
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3.5 text-sm font-bold transition-all hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-lg hover:shadow-white/20"
-              style={{ color: "var(--accent-primary)" }}
+        <div className="relative mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-12 lg:gap-8 items-center" style={{ maxWidth: "75rem" }}>
+          <div className="text-left">
+            <span
+              className="mb-4 inline-block rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest"
+              style={{ backgroundColor: "rgba(30,58,138,0.05)", color: "var(--accent-primary)", border: "1px solid rgba(30,58,138,0.15)" }}
             >
-              Выбрать услугу
-            </a>
-            <div className="flex items-center gap-6 text-xs font-medium" style={{ color: "#cbd5e1" }}>
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-green-400" />
-                500+ заказов
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-green-400" />
-                0 банов
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-green-400" />
-                Гарантия возврата
-              </span>
+              #1 Буст-сервис Genshin Impact
+            </span>
+            <h1
+              className="mb-6 max-w-3xl text-4xl font-black leading-tight sm:text-5xl lg:text-6xl tracking-tight text-slate-800"
+              style={{
+                fontFamily: "var(--font-montserrat), Montserrat, sans-serif",
+                color: "#1e293b",
+              }}
+            >
+              Профессиональный
+              <br />
+              <span style={{ color: "var(--accent-primary)" }}>буст</span> аккаунтов
+              <br />
+              <span style={{ fontWeight: "bold" }}>Genshin Impact</span>
+            </h1>
+            <p
+              className="mb-10 max-w-xl text-base sm:text-lg leading-relaxed text-slate-600 font-medium"
+            >
+              Быстро, безопасно и с гарантией результата. Позвольте
+              экспертам позаботиться о вашей рутине, пока вы
+              наслаждаетесь историей Тейвата.
+            </p>
+            <div className="flex flex-wrap items-center justify-start gap-4">
+              <a
+                href="#services"
+                className="inline-flex items-center justify-center gap-2 rounded-3xl px-8 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5"
+                style={{ backgroundColor: "var(--accent-primary)", boxShadow: "0 10px 15px -3px rgba(30, 58, 138, 0.2)" }}
+              >
+                Выбрать услугу
+              </a>
+              <a
+                href="#how"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-8 py-3.5 text-sm font-bold transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/5"
+                style={{ color: "var(--accent-primary)" }}
+              >
+                Узнать больше
+              </a>
+            </div>
+          </div>
+
+          <div className="relative hidden md:flex justify-center lg:justify-end mt-10 lg:mt-0">
+            <div
+              className="relative w-full max-w-sm aspect-square transform transition-transform duration-500 hover:rotate-0 hover:scale-[1.02]"
+              style={{ transform: "rotate(4deg)" }}
+            >
+              {/* Subtle Drop shadow / glow behind the tilted image */}
+              <div className="absolute inset-0 rounded-[2.5rem] bg-blue-900/10 blur-2xl transform shadow-2xl translate-y-8 translate-x-4 mix-blend-multiply"></div>
+
+              <img
+                src="/icons/whale_abyss_logo.jpg"
+                alt="Whale Abyss"
+                className="relative w-full h-full object-cover rounded-[2.5rem] shadow-2xl"
+                style={{
+                  border: "2px solid rgba(255,255,255,0.4)",
+                  boxShadow: "0 25px 50px -12px rgba(30, 58, 138, 0.3)"
+                }}
+              />
             </div>
           </div>
         </div>
-      </section>
-
-      {/* ── HOW IT WORKS ─────────────────────────────────────────────── */}
+      </section>      {/* ── HOW IT WORKS ───────────────────────────────────────────────────────── */}
       <section id="how" className="py-20">
         <div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "75rem" }}>
           <div className="mb-12 text-center">
@@ -200,42 +214,28 @@ export default function Home() {
           background: "linear-gradient(to bottom, #090e17 0%, #111a2e 100%)",
         }}
       >
-        {/* CSS/SVG Starry Nebula Background */}
-        <div className="absolute inset-0 pointer-events-none z-0">
-          {/* Nebula clouds */}
+        <div className="absolute inset-0 pointer-events-none z-0 bg-white">
+          {/* Subtle Icy Blue Tech Glows */}
           <div
-            className="absolute inset-0 opacity-50"
+            className="absolute inset-0 opacity-70"
             style={{
               background: `
-                radial-gradient(circle at 15% 75%, rgba(45, 120, 160, 0.3) 0%, transparent 35%),
-                radial-gradient(circle at 85% 25%, rgba(60, 90, 140, 0.3) 0%, transparent 40%),
-                radial-gradient(circle at 50% 50%, rgba(20, 40, 70, 0.4) 0%, transparent 60%)
-              `,
+        radial-gradient(circle at 0% 0%, rgba(220, 235, 255, 0.5) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(200, 225, 250, 0.4) 0%, transparent 50%)
+      `,
               filter: "blur(40px)"
             }}
           />
-          {/* Stars overlay */}
-          <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          {/* Engineering / Blueprint Grid */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <pattern id="star-pattern" x="0" y="0" width="300" height="300" patternUnits="userSpaceOnUse">
-                <circle cx="25" cy="45" r="1" fill="#ffffff" opacity="0.8" />
-                <circle cx="85" cy="115" r="1.5" fill="#fdf8ff" opacity="0.9" filter="drop-shadow(0 0 2px #fff)" />
-                <circle cx="150" cy="20" r="0.8" fill="#ffffff" opacity="0.5" />
-                <circle cx="210" cy="80" r="2" fill="#ffe0b2" opacity="0.8" filter="drop-shadow(0 0 3px #ffe0b2)" />
-                <circle cx="265" cy="190" r="1" fill="#ffffff" opacity="0.7" />
-                <circle cx="45" cy="225" r="1.2" fill="#ffffff" opacity="0.6" />
-                <circle cx="120" cy="275" r="0.8" fill="#ffffff" opacity="0.4" />
-                <circle cx="185" cy="165" r="1.8" fill="#e0f7fa" opacity="0.9" filter="drop-shadow(0 0 2px #e0f7fa)" />
-                <circle cx="280" cy="40" r="0.5" fill="#ffffff" opacity="0.5" />
-                <circle cx="70" cy="180" r="0.5" fill="#ffffff" opacity="0.6" />
-                {/* Tiny background stars */}
-                <circle cx="10" cy="10" r="0.3" fill="#ffffff" opacity="0.3" />
-                <circle cx="130" cy="130" r="0.4" fill="#ffffff" opacity="0.4" />
-                <circle cx="240" cy="240" r="0.3" fill="#ffffff" opacity="0.3" />
-                <circle cx="190" cy="290" r="0.4" fill="#ffffff" opacity="0.5" />
+              <pattern id="tech-grid" width="64" height="64" patternUnits="userSpaceOnUse">
+                <path d="M 64 0 L 0 0 0 64" fill="none" stroke="#334155" strokeWidth="1" opacity="0.08" />
+                {/* Adds tiny crosshairs at the grid intersections for a tech feel */}
+                <path d="M -4 0 L 4 0 M 0 -4 L 0 4" fill="none" stroke="#334155" strokeWidth="2" opacity="0.15" />
               </pattern>
             </defs>
-            <rect width="100%" height="100%" fill="url(#star-pattern)" />
+            <rect width="100%" height="100%" fill="url(#tech-grid)" />
           </svg>
         </div>
 
@@ -245,7 +245,7 @@ export default function Home() {
               <div key={category.id} className="flex flex-col gap-6">
                 <h3
                   className="text-2xl font-bold"
-                  style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "#ffffff" }}
+                  style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "#0f172a" }}
                 >
                   {category.title}
                 </h3>
@@ -268,8 +268,8 @@ export default function Home() {
               onClick={() => setSuggestOpen(true)}
               className="inline-flex items-center justify-center gap-2 rounded-2xl px-12 py-5 text-xl font-bold transition-all hover:-translate-y-1 hover:shadow-xl focus:outline-none"
               style={{
-                backgroundColor: "#ffffff",
-                color: "var(--accent-primary)"
+                backgroundColor: "var(--accent-primary)",
+                color: "#ffffff"
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "translateY(-4px)";
@@ -297,7 +297,7 @@ export default function Home() {
               Отзывы клиентов
             </h2>
             <p className="mt-2 text-sm" style={{ color: "var(--text-secondary)" }}>
-              Более 3 000 довольных игроков по всей России
+              Более 500 довольных игроков по всей России
             </p>
           </div>
           <div className="grid gap-6 sm:grid-cols-3">

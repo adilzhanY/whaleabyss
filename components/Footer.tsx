@@ -22,7 +22,7 @@ export default function Footer() {
             <a href="https://t.me/whaleabyss" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all overflow-hidden">
               <Image src="/icons/tg_logo.png" alt="Telegram" width={40} height={40} className="w-full h-full object-cover" />
             </a>
-            <a href="https://www.tiktok.com/@whaleabyss" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all overflow-hidden">
+            <a href="https://www.tiktok.com/@whaleyuureiq" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all overflow-hidden">
               <Image src="/icons/tiktok_logo.jpg" alt="TikTok" width={40} height={40} className="w-full h-full object-cover" />
             </a>
           </div>

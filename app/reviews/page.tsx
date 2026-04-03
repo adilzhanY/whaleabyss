@@ -7,31 +7,31 @@ import { Star } from "lucide-react";
 
 const TESTIMONIALS = [
   {
-    name: "Никита",
+    name: "Migyiness",
     avatar: "/images/reviews/ava1.jpg",
     text: "заказывал Исследование натлана 100%, сделали быстро и качественно",
     rating: 5,
   },
   {
-    name: "Анастасия",
+    name: "yuzuru",
     avatar: "/images/reviews/ava2.jpg",
     text: "очень всегда быстро помогает и за приятную цену, огромное спасибо за помощь, не сомневаюсь, что если снова понадобится помощь, то обращусь именно к whale abyss 🥺",
     rating: 5,
   },
   {
-    name: "Кирилл",
+    name: "kio.lyn",
     avatar: "/images/reviews/ava3.jpg",
     text: "беру уже 2 раз!! делает работу быстро. общение очень доброжелательное, цены 🔥 всем советую)",
     rating: 5,
   },
   {
-    name: "Екатерина",
+    name: "алина",
     avatar: "/images/reviews/ava4.jpg",
     text: "Очень качественная услуга за такую цену, супер-довольна, сделано все быстро!",
     rating: 5,
   },
   {
-    name: "Денис",
+    name: "f0rget_me",
     avatar: "/images/reviews/ava5.jpg",
     text: "заказывал театр на 10 актов, сделали оч быстро и все цветочки ещё собрали, я доволен",
     rating: 5,

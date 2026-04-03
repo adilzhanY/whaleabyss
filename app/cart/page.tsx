@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import { Trash2, Info, Eye, CheckCircle2, ChevronRight, Plus, Minus } from "lucide-react";
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import DataSecurityModal from "@/components/DataSecurityModal";
 
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity, cartTotal } = useCart();
@@ -15,10 +16,12 @@ export default function CartPage() {
   // Selected state for the form
   const [replenishMethod, setReplenishMethod] = useState("Заявка");
   const [paymentMethod, setPaymentMethod] = useState("sbp");
+  const [isDataSecurityModalOpen, setIsDataSecurityModalOpen] = useState(false);
 
   return (
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
       <Header onAuthOpen={() => { }} />
+      <DataSecurityModal isOpen={isDataSecurityModalOpen} onClose={() => setIsDataSecurityModalOpen(false)} />
 
       <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8">
         {/* Breadcrumb */}
@@ -85,7 +88,7 @@ export default function CartPage() {
 
             {/* Данные */}
             <div className="space-y-4">
-              <div className="flex items-center gap-1.5 mb-1">
+              <div className="flex items-center gap-1.5 mb-1 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setIsDataSecurityModalOpen(true)}>
                 <Info className="w-4 h-4 text-blue-800" />
                 <span className="text-sm font-semibold text-slate-700">Данные для входа:</span>
               </div>
@@ -132,7 +135,7 @@ export default function CartPage() {
             {/* Способ оплаты */}
             <div className="space-y-4">
               <h3 className="font-bold text-blue-950">Способ оплаты</h3>
-              <p className="text-slate-500 font-medium">Оплата в разработке</p>
+              <p className="text-2xl font-bold text-slate-800 tracking-tight">Оплата в разработке</p>
             </div>
 
             {/* Промокод */}

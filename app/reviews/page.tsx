@@ -8,7 +8,7 @@ import { Star } from "lucide-react";
 const TESTIMONIALS = [
   {
     name: "Никита",
-    avatar: "НИ",
+    avatar: "/images/reviews/ava1.jpg",
     text: "заказывал Исследование натлана 100%, сделали быстро и качественно",
     rating: 5,
   },
@@ -20,19 +20,19 @@ const TESTIMONIALS = [
   },
   {
     name: "Кирилл",
-    avatar: "КИ",
+    avatar: "/images/reviews/ava3.jpg",
     text: "беру уже 2 раз!! делает работу быстро. общение очень доброжелательное, цены 🔥 всем советую)",
     rating: 5,
   },
   {
     name: "Екатерина",
-    avatar: "ЕК",
+    avatar: "/images/reviews/ava4.jpg",
     text: "Очень качественная услуга за такую цену, супер-довольна, сделано все быстро!",
     rating: 5,
   },
   {
     name: "Денис",
-    avatar: "/images/reviews/ava6.jpg",
+    avatar: "/images/reviews/ava5.jpg",
     text: "заказывал театр на 10 актов, сделали оч быстро и все цветочки ещё собрали, я доволен",
     rating: 5,
   },
@@ -83,11 +83,12 @@ export default function ReviewsPage() {
                     &ldquo;{t.text}&rdquo;
                   </p>
                   <div className="flex items-center gap-3 mt-auto">
-                    <div
-                      className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-white shrink-0"
-                      style={{ backgroundColor: "var(--accent-primary)" }}
-                    >
-                      {t.avatar}
+                    <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full">
+                      <img
+                        src={t.avatar}
+                        alt={t.name}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
                     <div>
                       <p className="text-base font-bold" style={{ color: "var(--text-primary)" }}>

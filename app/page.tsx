@@ -37,20 +37,20 @@ const STEPS = [
 // ── Testimonials ─────────────────────────────────────────────────────────────
 const TESTIMONIALS = [
   {
-    name: "Migyiness",
-    avatar: "MI",
+    name: "Никита",
+    avatar: "/images/reviews/ava1.jpg",
     text: "заказывал Исследование натлана 100%, сделали быстро и качественно",
     rating: 5,
   },
   {
     name: "Анастасия",
-    avatar: "АН",
+    avatar: "/images/reviews/ava2.jpg",
     text: "очень всегда быстро помогает и за приятную цену, огромное спасибо за помощь, не сомневаюсь, что если снова понадобится помощь, то обращусь именно к whale abyss 🥺",
     rating: 5,
   },
   {
     name: "Кирилл",
-    avatar: "КИ",
+    avatar: "/images/reviews/ava3.jpg",
     text: "беру уже 2 раз!! делает работу быстро. общение очень доброжелательное, цены 🔥 всем советую)",
     rating: 5,
   },
@@ -331,11 +331,12 @@ export default function Home() {
                     &ldquo;{t.text}&rdquo;
                   </p>
                   <div className="flex items-center gap-3 mt-auto">
-                    <div
-                      className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-white shrink-0"
-                      style={{ backgroundColor: "var(--accent-primary)" }}
-                    >
-                      {t.avatar}
+                    <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full">
+                      <img
+                        src={t.avatar}
+                        alt={t.name}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
                     <div>
                       <p className="text-base font-bold" style={{ color: "var(--text-primary)" }}>

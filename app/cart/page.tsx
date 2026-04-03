@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useCart } from "@/store/useCart";
 import Header from "@/components/Header";
-import { Trash2, Info, Eye, CheckCircle2, ChevronRight, Plus, Minus } from "lucide-react";
+import { Trash2, Info, Eye, EyeOff, CheckCircle2, ChevronRight, Plus, Minus } from "lucide-react";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import DataSecurityModal from "@/components/DataSecurityModal";
@@ -17,6 +17,7 @@ export default function CartPage() {
   const [replenishMethod, setReplenishMethod] = useState("Заявка");
   const [paymentMethod, setPaymentMethod] = useState("sbp");
   const [isDataSecurityModalOpen, setIsDataSecurityModalOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
@@ -95,8 +96,18 @@ export default function CartPage() {
               <div className="grid grid-cols-2 gap-4">
                 <input type="text" placeholder="Почта/логин" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
                 <div className="relative">
-                  <input type="password" placeholder="Пароль" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
-                  <Eye className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 cursor-pointer" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Пароль"
+                    className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-400 focus:outline-none transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
 

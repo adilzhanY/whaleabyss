@@ -27,7 +27,7 @@
   --color-background: var(--bg-main);
   --color-foreground: var(--text-primary);
   --font-heading: var(--font-montserrat);
-  --font-body: var(--font-inter);
+  --font-body: var(--font-montserrat);
 }
 
 html {
@@ -38,7 +38,8 @@ html {
 body {
   background: var(--bg-main);
   color: var(--text-primary);
-  font-family: var(--font-inter), "Inter", sans-serif;
+  font-family:
+    var(--font-montserrat), "Montserrat", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 

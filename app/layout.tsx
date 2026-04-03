@@ -28,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      <body className={`${montserrat.variable} ${inter.variable} antialiased`}>
+      <body className={`${montserrat.variable} ${inter.variable} antialiased font-montserrat`}>
         <Providers>{children}</Providers>
       </body>
     </html>

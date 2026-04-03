@@ -83,22 +83,6 @@ export default function CartPage() {
           {/* Right Column - Order Form */}
           <div className="lg:col-span-5 bg-slate-50/80 rounded-3xl p-6 sm:p-8 border border-slate-100 flex flex-col gap-6 shadow-sm">
 
-            {/* Способ пополнения */}
-            <div className="space-y-3">
-              <h3 className="font-bold text-blue-950">Способ пополнения</h3>
-              <div className="flex items-center gap-3">
-                <button
-                  className="flex-1 rounded-xl py-3 font-semibold transition-all border border-blue-200 bg-blue-100/50 text-blue-950"
-                >
-                  Заявка
-                </button>
-                <div className="flex gap-1.5 items-center text-sm font-medium text-blue-900 cursor-pointer hover:text-blue-800 transition-colors">
-                  <Info className="w-4 h-4" />
-                  В чём разница?
-                </div>
-              </div>
-            </div>
-
             {/* Данные */}
             <div className="space-y-4">
               <div className="flex items-center gap-1.5 mb-1">
@@ -148,43 +132,7 @@ export default function CartPage() {
             {/* Способ оплаты */}
             <div className="space-y-4">
               <h3 className="font-bold text-blue-950">Способ оплаты</h3>
-              <div className="grid grid-cols-3 gap-3">
-                <button
-                  onClick={() => setPaymentMethod("sbp")}
-                  className={`relative flex flex-col items-center justify-center p-3 rounded-xl border bg-white transition-all ${paymentMethod === "sbp" ? "border-blue-400 ring-1 ring-blue-400" : "border-slate-100"
-                    }`}
-                >
-                  {paymentMethod === "sbp" && <span className="absolute -top-2 px-2 py-0.5 bg-blue-200 text-blue-800 text-[9px] font-bold rounded-full uppercase">Основной</span>}
-                  <div className="w-8 h-8 rounded-full border border-blue-100 flex items-center justify-center mb-1">
-                    <span className="text-blue-500 font-bold text-xs" style={{ letterSpacing: '-1px' }}>СБП</span>
-                  </div>
-                  <span className="text-xs font-semibold text-slate-700">СБП</span>
-                </button>
-
-                <button
-                  onClick={() => setPaymentMethod("cards_rf")}
-                  className={`relative flex flex-col items-center justify-center p-3 rounded-xl border bg-white transition-all ${paymentMethod === "cards_rf" ? "border-blue-400 ring-1 ring-blue-400" : "border-slate-100"
-                    }`}
-                >
-                  <span className="absolute -top-2 px-2 py-0.5 bg-slate-200 text-slate-600 text-[9px] font-bold rounded-full uppercase">РФ</span>
-                  <div className="w-8 h-8 rounded-full border border-slate-100 flex items-center justify-center mb-1">
-                    <div className="w-4 h-3 bg-blue-500 rounded-sm"></div>
-                  </div>
-                  <span className="text-xs font-semibold text-slate-700 text-center leading-tight">Карты / SberPay</span>
-                </button>
-
-                <button
-                  onClick={() => setPaymentMethod("cards_world")}
-                  className={`relative flex flex-col items-center justify-center p-3 rounded-xl border bg-white transition-all ${paymentMethod === "cards_world" ? "border-blue-400 ring-1 ring-blue-400" : "border-slate-100"
-                    }`}
-                >
-                  <span className="absolute -top-2 px-2 py-0.5 bg-blue-200 text-blue-800 text-[9px] font-bold rounded-full uppercase">Зарубежные</span>
-                  <div className="w-8 h-8 rounded-full border border-slate-100 flex items-center justify-center mb-1">
-                    <div className="w-4 h-3 bg-slate-400 rounded-sm"></div>
-                  </div>
-                  <span className="text-xs font-semibold text-slate-700">Карты</span>
-                </button>
-              </div>
+              <p className="text-slate-500 font-medium">Оплата в разработке</p>
             </div>
 
             {/* Промокод */}
@@ -217,23 +165,6 @@ export default function CartPage() {
                   {total.toLocaleString("ru-RU")} ₽
                 </span>
               </div>
-
-              {/* Checkbox */}
-              <label className="flex items-start gap-3 cursor-pointer mt-1 group">
-                <div className="relative flex items-center justify-center w-5 h-5 rounded border-2 border-slate-300 group-hover:border-blue-500 mt-0.5 bg-white transition-colors">
-                  <input type="checkbox" className="opacity-0 absolute inset-0 cursor-pointer w-full h-full p-0 m-0 z-10" required />
-                  <CheckCircle2 className="w-4 h-4 text-blue-900 hidden group-has-checked:block absolute" strokeWidth={3} />
-                </div>
-                <span className="text-xs text-slate-500 leading-snug">
-                  Согласен(а) на обработку персональных данных согласно{' '}
-                  <a href="#" className="text-blue-900 hover:underline">Политике конфиденциальности</a>
-                </span>
-              </label>
-
-              {/* Оформить заказ */}
-              <button className="w-full mt-2 py-4 rounded-xl font-bold text-white shadow-lg shadow-blue-900/20 transition-all hover:-translate-y-0.5 hover:shadow-blue-900/30" style={{ backgroundColor: "#4b22b4" }}>
-                Оформить заказ
-              </button>
             </div>
 
           </div>

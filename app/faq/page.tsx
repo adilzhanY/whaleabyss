@@ -5,54 +5,82 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ChevronDown } from "lucide-react";
 
-const FAQ_ITEMS = [
+import { ReactNode } from "react";
+
+const FAQ_ITEMS: { q: string; a: ReactNode }[] = [
   {
-    q: "Безопасно ли передавать данные аккаунта?",
-    a: "Мы используем VPN вашего региона и никогда не меняем данные профиля. За более чем 3 000 выполненных заказов не было ни одного бана.",
+    q: "1. Как оформить заказ?",
+    a: (
+      <>
+        Вы можете оформить заказ самостоятельно на нашем официальном сайте: <a href="https://whaleabyss.ru" className="text-blue-500 hover:underline" target="_blank" rel="noreferrer">https://whaleabyss.ru</a>. В случае возникновения технических сложностей или при желании сделать заказ напрямую, пожалуйста, свяжитесь с нами в Telegram: <a href="https://t.me/whaleabyss_official" className="text-blue-500 hover:underline" target="_blank" rel="noreferrer">@whaleabyss_official</a>
+      </>
+    ),
   },
   {
-    q: "Сколько времени занимает буст?",
-    a: "В зависимости от региона — от 1 до 12 часов. Точные сроки указаны в описании каждой услуги.",
+    q: "2. Какие гарантии честности вы предоставляете?",
+    a: (
+      <>
+        Мы работаем на рынке уже более двух лет и дорожим своей репутацией, а также доверием наших клиентов. Ознакомиться с отзывами о нашей работе вы можете на сайте или в Telegram-канале: <a href="https://t.me/whaleabyss" className="text-blue-500 hover:underline" target="_blank" rel="noreferrer">https://t.me/whaleabyss</a>
+      </>
+    ),
   },
   {
-    q: "Что если что-то пойдёт не так?",
-    a: "Мы гарантируем возврат средств в полном объёме, если не сможем выполнить заказ.",
+    q: "3. Сколько времени занимает выполнение заказа?",
+    a: "Срок обработки заказа — до 5 дней, выполнение занимает до 7 дней. Время реализации может варьироваться в зависимости от типа услуги и загруженности сервиса. Уточнить точные сроки исполнения можно у вашего исполнителя.",
   },
   {
-    q: "Нужно ли мне быть онлайн во время буста?",
-    a: "Нет. Вы можете спокойно заниматься своими делами, пока наш бустер работает над вашим аккаунтом.",
+    q: "4. Кто занимается выполнением заказов?",
+    a: "На данный момент я курирую и выполняю все заказы самостоятельно, что гарантирует персональный контроль качества. Однако наш проект активно развивается, и в ближайшее время к работе присоединятся квалифицированные специалисты. Это позволит нам сократить время ожидания и обрабатывать большее количество заявок без потери качества",
+  },
+  {
+    q: "5. Какие данные необходимы для оформления заказа?",
+    a: "Для выполнения услуги вам потребуется предоставить адрес электронной почты и пароль от вашей учетной записи, а также указать игровой сервер. Пожалуйста, внимательно проверяйте корректность данных перед отправкой — это поможет нам приступить к работе без задержек",
+  },
+  {
+    q: "6. Где посмотреть отзывы о вашей работе?",
+    a: (
+      <>
+        Все отзывы реальных покупателей собраны на нашем сайте и в официальном Telegram-сообществе: <a href="https://t.me/whaleabyss/6" className="text-blue-500 hover:underline" target="_blank" rel="noreferrer">https://t.me/whaleabyss/6</a>. Мы будем благодарны, если после выполнения заказа вы также поделитесь своим впечатлением!
+      </>
+    ),
   },
 ];
 
-function FaqItem({ q, a }: { q: string; a: string }) {
+function FaqItem({ q, a }: { q: string; a: ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
     <div
-      className="rounded-xl border overflow-hidden"
-      style={{ borderColor: "var(--accent-border)", backgroundColor: "var(--bg-card)" }}
+      className="rounded-2xl border overflow-hidden cursor-pointer"
+      style={{ borderColor: "var(--accent-border)", backgroundColor: "var(--bg-card)", fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}
+      onClick={() => setOpen(!open)}
     >
-      <button
-        className="flex w-full items-center justify-between px-6 py-4 text-left font-semibold text-sm"
+      <div
+        className="flex w-full items-center justify-between px-6 py-5 text-left font-semibold text-lg sm:text-xl transition-colors"
         style={{ color: "var(--text-primary)" }}
-        onClick={() => setOpen(!open)}
       >
         <span>{q}</span>
         <ChevronDown
-          className="h-4 w-4 shrink-0 transition-transform ml-4"
+          className="h-6 w-6 shrink-0 transition-transform duration-300 ml-4"
           style={{
             color: "var(--accent-primary)",
             transform: open ? "rotate(180deg)" : "rotate(0deg)",
           }}
         />
-      </button>
-      {open && (
-        <div
-          className="border-t px-6 py-4 text-sm leading-relaxed"
-          style={{ borderColor: "var(--accent-border)", color: "var(--text-secondary)" }}
-        >
-          {a}
+      </div>
+      <div
+        className={`grid transition-all duration-300 ease-in-out ${open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          }`}
+      >
+        <div className="overflow-hidden">
+          <div
+            className="border-t px-6 py-5 text-base sm:text-lg leading-relaxed"
+            style={{ borderColor: "var(--accent-border)", color: "var(--text-secondary)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {a}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

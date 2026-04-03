@@ -294,12 +294,8 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">СТОИМОСТЬ</p>
                   <div className="flex items-baseline gap-1" style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
                     <span className="text-4xl font-bold text-slate-800">{totalPrice.toLocaleString("ru-RU")}</span>
-                    <span className="text-3xl font-bold text-slate-800">₽</span>
+                    <span className="text-3xl font-bold text-slate-800">{service.isPerDay ? "₽/день" : "₽"}</span>
                   </div>
-                </div>
-                <div className="text-right flex flex-col items-end">
-                  <p className="text-[11px] font-bold text-slate-400">Примерное время</p>
-                  <p className="text-sm font-bold text-blue-800">24-48 часов</p>
                 </div>
               </div>
 

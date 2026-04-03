@@ -28,17 +28,26 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Right Side: Legal Links */}
-        <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm">
-          <Link href="/privacy" className="hover:text-blue-600 transition-colors">Конфиденциальность</Link>
-          <span className="text-slate-300">|</span>
-          <Link href="/public_offer" className="hover:text-blue-600 transition-colors">Публичная оферта</Link>
+        {/* Right Side: Legal Links and Contact */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 text-xs sm:text-sm">
+          <div className="flex flex-wrap items-center gap-4">
+            <Link href="/privacy" className="hover:text-blue-600 transition-colors">Конфиденциальность</Link>
+            <span className="text-slate-300 hidden sm:inline">|</span>
+            <Link href="/public_offer" className="hover:text-blue-600 transition-colors">Публичная оферта</Link>
+          </div>
         </div>
       </div>
 
-      {/* Legal Entity Info */}
-      <div className="mx-auto max-w-300 mt-6 text-xs text-slate-500 text-center md:text-left">
-        Самозанятая Гурова Майя Павловна, ИНН: 230412509070
+      {/* Legal Entity Info & Contacts */}
+      <div className="mx-auto flex flex-col md:flex-row justify-between items-start md:items-center max-w-300 mt-6 text-xs text-slate-500 gap-4">
+        <div>
+          Самозанятая Гурова Майя Павловна, ИНН: 230412509070
+        </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-6">
+          <a href="mailto:support@whaleabyss.ru" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+            support@whaleabyss.ru
+          </a>
+        </div>
       </div>
     </footer>
   );

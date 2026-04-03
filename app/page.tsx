@@ -30,7 +30,7 @@ const STEPS = [
     icon: <Trophy className="h-7 w-7" />,
     number: "03",
     title: "Получаете результат",
-    desc: "Наши бустеры выполняют заказ быстро и конфиденциально. Уведомим вас о готовности.",
+    desc: "Наши специалисты выполняют заказ быстро и конфиденциально. Мы уведомим вас о готовности.",
   },
 ];
 
@@ -39,14 +39,14 @@ const TESTIMONIALS = [
   {
     name: "Алексей К.",
     avatar: "АК",
-    text: "Заказал прокачку Мондштадта — всё сделали за 2 часа. Никаких проблем с аккаунтом. Рекомендую!",
+    text: "Заказал исследование Мондштадта — всё сделали за пару часов. Никаких проблем с аккаунтом. Рекомендую!",
     rating: 5,
     service: "Мондштадт 100%",
   },
   {
     name: "Мария П.",
     avatar: "МП",
-    text: "Брала буст Инадзумы и Энканомии. Ребята профессионалы, оперативно и аккуратно. Уже второй раз покупаю.",
+    text: "Брала услугу сопровождения Инадзумы и Энканомии. Ребята профессионалы, оперативно и аккуратно. Уже второй раз обращаюсь.",
     rating: 5,
     service: "Инадзума и Энканомия 100%",
   },
@@ -95,7 +95,7 @@ export default function Home() {
               className="mb-4 inline-block rounded-full px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-center sm:text-left wrap-break-word max-w-full"
               style={{ backgroundColor: "rgba(30,58,138,0.05)", color: "var(--accent-primary)", border: "1px solid rgba(30,58,138,0.15)" }}
             >
-              #1 Буст-сервис Genshin Impact
+              #1 Сервис сопровождения Genshin Impact
             </span>
             <h1
               className="mb-6 max-w-3xl text-3xl font-black leading-tight sm:text-5xl lg:text-6xl tracking-tight text-slate-800 wrap-break-word w-full overflow-hidden"
@@ -106,9 +106,9 @@ export default function Home() {
                 hyphens: "auto"
               }}
             >
-              Профессиональный
+              Ваш персональный
               <br className="hidden sm:block" />
-              <span style={{ color: "var(--accent-primary)" }}> буст</span> аккаунтов
+              <span style={{ color: "var(--accent-primary)" }}> игровой ассистент</span> в
               <br />
               <span style={{ fontWeight: "bold" }}>Genshin Impact</span>
             </h1>

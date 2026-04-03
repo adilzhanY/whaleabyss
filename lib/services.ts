@@ -39,7 +39,7 @@ const gradients = [
 
 const categoryTitles: Record<string, string> = {
   locations: "Исследование регионов",
-  boost: "Буст",
+  boost: "Сопровождение",
   missions: "Задания",
   abyss_theater: "Бездна и Театр",
   other: "Прочее"

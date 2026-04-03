@@ -17,8 +17,8 @@ const inter = Inter({
 import { Providers } from "./Providers";
 
 export const metadata: Metadata = {
-  title: "Whale Abyss — Профессиональный буст аккаунтов",
-  description: "Быстро, безопасно и качественно прокачаем ваш аккаунт Genshin Impact",
+  title: "Whale Abyss — Экспертное сопровождение аккаунтов",
+  description: "Безопасно и качественно поможем развить ваш аккаунт Genshin Impact",
 };
 
 export default function RootLayout({

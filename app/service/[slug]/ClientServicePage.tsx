@@ -17,15 +17,20 @@ interface ClientServicePageProps {
 
 function getInfoPoint(desc: string | undefined) {
   if (!desc) return { mainText: "", infoPoint: null };
-  const match = desc.match(/(?:Зачистка доступна|Услуга доступна|Выполняется)\s+(с\s+\d+\s+ранга[^.]*)/i);
+  const match = desc.match(/([^.]*доступн[оа]?\s+с\s+\d+\s+ранга[^.]*\.?)/i);
   if (match) {
-    const fullSentence = match[0];
-    const infoPoint = match[1];
-    const mainText = desc
-      .replace(new RegExp(`\\.?\\s*` + escapeRegex(fullSentence) + `\\.?`, 'i'), '.')
-      .replace(new RegExp(escapeRegex(fullSentence) + `\\.?`, 'i'), '')
-      .trim();
-    return { mainText: mainText.replace(/^\. /, ''), infoPoint: infoPoint.trim() };
+    const originalSentence = match[1];
+
+    let infoText = originalSentence.replace(/\.$/, "").trim();
+    if (!infoText.endsWith(".")) infoText += ".";
+    // Capitalize first letter
+    infoText = infoText.charAt(0).toUpperCase() + infoText.slice(1);
+
+    let mainText = desc.replace(originalSentence, "").trim();
+    // Cleanup any stray periods left after removing the sentence
+    mainText = mainText.replace(/^\.\s*/, "").replace(/\s*\.\s*$/, ".").replace(/\s+/g, " ");
+
+    return { mainText: mainText, infoPoint: infoText };
   }
   return { mainText: desc, infoPoint: null };
 }
@@ -251,7 +256,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
                 <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-3 text-blue-800 shadow-sm border border-blue-100">
                   <Shield className="w-6 h-6" />
                 </div>
-                <p className="font-bold text-slate-800 text-sm">Безопасность (VPN)</p>
+                <p className="font-bold text-slate-800 text-sm">Безопасность</p>
               </div>
               {/* Card 3 */}
               <div className="bg-white rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] p-6 flex flex-col items-center justify-center text-center">
@@ -280,11 +285,28 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
               </div>
 
               {infoPoint && (
-                <div className="mb-8 flex items-center gap-3 bg-blue-50 text-blue-900 px-5 py-4 rounded-2xl border border-blue-100">
-                  <div className="bg-blue-800 text-white w-6 h-6 rounded-full flex items-center justify-center shrink-0">
-                    <Info className="w-4 h-4" />
+                <div
+                  className="mb-8 flex items-center gap-4 px-6 py-4 rounded-xl shadow-sm"
+                  style={{
+                    backgroundColor: "var(--bg-highlight)",
+                    borderLeft: "6px solid var(--accent-primary)",
+                  }}
+                >
+                  <div
+                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-white"
+                    style={{ backgroundColor: "var(--accent-primary)" }}
+                  >
+                    <span className="font-bold text-sm italic" style={{ fontFamily: "serif" }}>i</span>
                   </div>
-                  <span className="font-semibold text-sm">Доступно {infoPoint}</span>
+                  <span
+                    className="font-bold sm:text-lg text-base"
+                    style={{
+                      fontFamily: "var(--font-montserrat), Montserrat, sans-serif",
+                      color: "var(--text-primary)",
+                    }}
+                  >
+                    {infoPoint}
+                  </span>
                 </div>
               )}
 

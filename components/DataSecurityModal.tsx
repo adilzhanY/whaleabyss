@@ -55,9 +55,6 @@ export default function DataSecurityModal({ isOpen, onClose }: DataSecurityModal
 
         <div className="mb-6 text-sm leading-relaxed text-slate-600 space-y-3">
           <p>
-            Мы собираем данные исключительно для входа в учетную запись Genshin Impact.
-          </p>
-          <p>
             Сразу после успешного выполнения услуги наш <b>специалист</b> полностью удалит активную сессию с вашего аккаунта и очистит все данные для входа.
           </p>
           <p className="font-semibold text-slate-800">

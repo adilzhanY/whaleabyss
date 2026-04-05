@@ -10,7 +10,6 @@ import DataSecurityModal from "@/components/DataSecurityModal";
 
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity, cartTotal } = useCart();
-  const [promo, setPromo] = useState("");
   const total = cartTotal();
 
   // Selected state for the form
@@ -90,50 +89,16 @@ export default function CartPage() {
 
             {/* Данные */}
             <div className="space-y-4">
-              <div className="flex items-center gap-1.5 mb-1 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setIsDataSecurityModalOpen(true)}>
-                <Info className="w-4 h-4 text-blue-800" />
-                <span className="text-sm font-semibold text-slate-700">Данные для входа:</span>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <input type="text" placeholder="Почта/логин" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Пароль"
-                    className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-400 focus:outline-none transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
               <div className="grid grid-cols-2 gap-4 pt-1">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Сервер:</label>
-                  <select className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium text-slate-700 appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010L12%2015L17%2010%22%20stroke%3D%22%2394A3B8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat pr-10" style={{ backgroundSize: "20px", backgroundPosition: "right 12px center" }} defaultValue="">
-                    <option value="eu">Европа</option>
-                    <option value="asia">Азия</option>
-                    <option value="na">Америка</option>
-                    <option value="twhkmo">Тайвань, Гонконг, Макао</option>
-                  </select>
-                </div>
-                <div>
+                <div className="col-span-2 sm:col-span-1">
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Ник в игре:</label>
                   <input type="text" placeholder="Ник в игре" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 pt-1 pb-4">
-                <div>
+                <div className="col-span-2 sm:col-span-1">
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">E-mail для чека:</label>
                   <input type="email" placeholder="name@example.com" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
                 </div>
-                <div>
+                <div className="col-span-2">
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Для связи:</label>
                   <input type="text" placeholder="@telegram" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
                 </div>
@@ -145,26 +110,9 @@ export default function CartPage() {
             </div>
 
             {/* Способ оплаты */}
-            <div className="space-y-4">
+            <div className="space-y-4 border-b border-slate-200 pb-5">
               <h3 className="font-bold text-blue-950">Способ оплаты</h3>
               <p className="text-2xl font-bold text-slate-800 tracking-tight">Оплата в разработке</p>
-            </div>
-
-            {/* Промокод */}
-            <div className="flex items-center justify-between py-2 border-b border-slate-200">
-              <span className="text-sm font-semibold text-slate-700">Введите промокод:</span>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Промокод"
-                  value={promo}
-                  onChange={(e) => setPromo(e.target.value)}
-                  className="w-28 px-3 py-1.5 rounded-lg border border-white bg-white text-sm outline-none focus:ring-1 focus:ring-blue-500"
-                />
-                <button className="text-sm font-bold text-blue-950 px-2 py-1 hover:text-blue-950 transition-colors">
-                  Применить
-                </button>
-              </div>
             </div>
 
             {/* Итого */}

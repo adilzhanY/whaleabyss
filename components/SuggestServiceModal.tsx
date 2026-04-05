@@ -58,7 +58,7 @@ export default function SuggestServiceModal({ isOpen, onClose }: SuggestServiceM
         </p>
 
         <a
-          href="https://t.me/whaleabyss"
+          href="https://t.me/whaleabyss_official"
           target="_blank"
           rel="noopener noreferrer"
           className="flex w-full items-center justify-center gap-3 rounded-xl bg-[#2AABEE] px-4 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#2AABEE]/30"

@@ -18,6 +18,7 @@ export default function CartPage() {
   const [paymentMethod, setPaymentMethod] = useState("sbp");
   const [isDataSecurityModalOpen, setIsDataSecurityModalOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
 
   return (
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
@@ -178,6 +179,27 @@ export default function CartPage() {
                 <span className="text-2xl font-black text-blue-950" style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
                   {total.toLocaleString("ru-RU")} ₽
                 </span>
+              </div>
+
+              {/* Согласие на обработку ПД */}
+              <div className="flex items-start gap-3 mt-4">
+                <div className="flex items-center h-5 mt-0.5">
+                  <input
+                    id="privacy-policy"
+                    type="checkbox"
+                    checked={agreedToPrivacy}
+                    onChange={(e) => setAgreedToPrivacy(e.target.checked)}
+                    className="w-4 h-4 rounded border-slate-300 text-blue-900 focus:ring-blue-900 cursor-pointer accent-blue-900"
+                  />
+                </div>
+                <div className="text-xs sm:text-sm text-slate-600">
+                  <label htmlFor="privacy-policy" className="cursor-pointer font-medium">
+                    Оформляя заказ, я соглашаюсь на{' '}
+                    <Link href="/privacy" className="text-blue-800 underline hover:text-blue-950 transition-colors">
+                      обработку персональных данных
+                    </Link>
+                  </label>
+                </div>
               </div>
             </div>
 

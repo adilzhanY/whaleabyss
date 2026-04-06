@@ -49,6 +49,19 @@ export default function Footer() {
           </a>
         </div>
       </div>
+
+      {/* FreeKassa Banner */}
+      <div className="mx-auto flex justify-center sm:justify-start max-w-300 mt-6 opacity-80 hover:opacity-100 transition-opacity">
+        <a href="https://freekassa.net" target="_blank" rel="noopener noreferrer">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="https://cdn.freekassa.net/banners/small-white-1.png"
+            title="Прием платежей на сайте для физических лиц и т.д."
+            alt="FreeKassa"
+            className="h-auto w-auto max-h-10 grayscale hover:grayscale-0 transition-all duration-300"
+          />
+        </a>
+      </div>
     </footer>
   );
 }

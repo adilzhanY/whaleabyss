@@ -111,18 +111,6 @@ export default function ProfilePage() {
                 </button>
               </div>
             </div>
-
-            {/* Stats Section */}
-            <div className="flex gap-3 z-10 mt-6 md:mt-0 md:ml-auto">
-              <div className="rounded-2xl p-4 flex flex-col items-center justify-center min-w-[90px] h-[90px]" style={{ backgroundColor: "var(--bg-input)" }}>
-                <span className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "var(--accent-primary)" }}>Заказы</span>
-                <span className="text-2xl font-black" style={{ color: "var(--text-primary)" }}>12</span>
-              </div>
-              <div className="rounded-2xl p-4 flex flex-col items-center justify-center min-w-[90px] h-[90px]" style={{ backgroundColor: "var(--bg-input)" }}>
-                <span className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "var(--accent-primary)" }}>Рейтинг</span>
-                <span className="text-2xl font-black" style={{ color: "var(--text-primary)" }}>4.9</span>
-              </div>
-            </div>
           </div>
 
           {/* Edit Form */}

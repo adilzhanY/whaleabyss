@@ -9,7 +9,10 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { items, total, email, telegram, inGameName } = body;
 
+    console.log("--- [Checkout] Incoming request data:", { items, total, email, telegram, inGameName });
+
     if (!items || items.length === 0 || !total) {
+      console.error("[Checkout Error] Validation failed: items or total empty");
       return new NextResponse("Invalid request data", { status: 400 });
     }
 
@@ -55,6 +58,9 @@ export async function POST(req: NextRequest) {
     // 3. Generate Freekassa Payment URL
     // We pass the newOrderId to freekassa so it can refer back to it during webhooks
     const paymentUrl = generateFreekassaPaymentUrl(newOrderId, Number(total), email);
+
+    console.log("--- [Checkout] Freekassa URL generated successfully!");
+    console.log("--- [Checkout] Sending user to:", paymentUrl);
 
     // 4. Return the URL so the frontend can redirect the user
     return NextResponse.json({ url: paymentUrl });

@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, timestamp, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, pgEnum, decimal, text, integer } from 'drizzle-orm/pg-core';
 
 export const userRoleEnum = pgEnum('user_role', ['user', 'admin', 'booster']);
 
@@ -39,4 +39,26 @@ export const services = pgTable('services', {
   imageUrl: varchar('image_url', { length: 255 }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+});
+
+export const orderStatusEnum = pgEnum('order_status', ['pending', 'paid', 'in_progress', 'completed', 'cancelled', 'refunded']);
+
+export const orders = pgTable('orders', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  status: orderStatusEnum('status').default('pending'),
+  totalPrice: decimal('total_price', { precision: 10, scale: 2 }).notNull(),
+  paymentId: varchar('payment_id', { length: 255 }),
+  userNotes: text('user_notes'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+});
+
+export const orderItems = pgTable('order_items', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  orderId: uuid('order_id').references(() => orders.id, { onDelete: 'cascade' }),
+  serviceId: uuid('service_id').references(() => services.id, { onDelete: 'cascade' }),
+  quantity: integer('quantity').default(1),
+  priceAtPurchase: decimal('price_at_purchase', { precision: 10, scale: 2 }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });

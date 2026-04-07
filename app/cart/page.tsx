@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useCart } from "@/store/useCart";
 import Header from "@/components/Header";
-import { Trash2, Info, Eye, EyeOff, CheckCircle2, ChevronRight, Plus, Minus } from "lucide-react";
+import { Trash2, Plus, Minus, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import DataSecurityModal from "@/components/DataSecurityModal";
@@ -12,12 +12,50 @@ export default function CartPage() {
   const { items, removeFromCart, updateQuantity, cartTotal } = useCart();
   const total = cartTotal();
 
-  // Selected state for the form
-  const [replenishMethod, setReplenishMethod] = useState("Заявка");
-  const [paymentMethod, setPaymentMethod] = useState("sbp");
   const [isDataSecurityModalOpen, setIsDataSecurityModalOpen] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
+
+  // Form Fields
+  const [inGameName, setInGameName] = useState("");
+  const [email, setEmail] = useState("");
+  const [telegram, setTelegram] = useState("");
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleCheckout = async () => {
+    if (!agreedToPrivacy) {
+      setError("Необходимо согласиться на обработку персональных данных");
+      return;
+    }
+    if (!inGameName || !email || !telegram) {
+      setError("Пожалуйста, заполните все поля (Ник, Email, Telegram)");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items, total, email, telegram, inGameName })
+      });
+
+      if (!res.ok) {
+        throw new Error("Ошибка при создании заказа");
+      }
+
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url; // Redirect to Freekassa!
+      }
+    } catch (e: any) {
+      setError(e.message || "Произошла ошибка");
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
@@ -92,15 +130,15 @@ export default function CartPage() {
               <div className="grid grid-cols-2 gap-4 pt-1">
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Ник в игре:</label>
-                  <input type="text" placeholder="Ник в игре" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
+                  <input type="text" value={inGameName} onChange={e => setInGameName(e.target.value)} placeholder="Ник в игре" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
                 </div>
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">E-mail для чека:</label>
-                  <input type="email" placeholder="name@example.com" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@example.com" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
                 </div>
                 <div className="col-span-2">
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Для связи:</label>
-                  <input type="text" placeholder="@telegram" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
+                  <input type="text" value={telegram} onChange={e => setTelegram(e.target.value)} placeholder="@telegram" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
                 </div>
               </div>
             </div>
@@ -112,7 +150,10 @@ export default function CartPage() {
             {/* Способ оплаты */}
             <div className="space-y-4 border-b border-slate-200 pb-5">
               <h3 className="font-bold text-blue-950">Способ оплаты</h3>
-              <p className="text-2xl font-bold text-slate-800 tracking-tight">Оплата в разработке</p>
+              <div className="flex items-center gap-3">
+                <input type="radio" checked readOnly className="w-5 h-5 accent-blue-900" />
+                <span className="text-xl font-bold text-slate-800 tracking-tight">Freekassa (Карты рф, СБП, Крипто)</span>
+              </div>
             </div>
 
             {/* Итого */}
@@ -149,6 +190,16 @@ export default function CartPage() {
                   </label>
                 </div>
               </div>
+              {error && (
+                <div className="text-red-500 text-sm font-semibold">{error}</div>
+              )}
+              <button
+                disabled={isLoading || items.length === 0}
+                onClick={handleCheckout}
+                className="w-full mt-4 bg-blue-900 hover:bg-blue-950 text-white font-bold py-4 rounded-xl shadow-md disabled:bg-slate-300 transition-colors flex items-center justify-center gap-2"
+              >
+                {isLoading ? "Обработка..." : "Перейти к оплате (Freekassa)"}
+              </button>
             </div>
 
           </div>

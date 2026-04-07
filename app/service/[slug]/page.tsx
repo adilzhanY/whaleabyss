@@ -1,19 +1,20 @@
-import { getServiceBySlug, SERVICES } from "@/lib/services";
+import { getServiceBySlug, getAllServices } from "@/lib/services";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import CartModal from "@/components/CartModal";
 import Link from "next/link";
 import ClientServicePage from "./ClientServicePage";
 
-export function generateStaticParams() {
-  return SERVICES.map((s) => ({
+export async function generateStaticParams() {
+  const services = await getAllServices();
+  return services.map((s) => ({
     slug: s.id,
   }));
 }
 
 export default async function ServicePage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
-  const service = getServiceBySlug(resolvedParams.slug);
+  const service = await getServiceBySlug(resolvedParams.slug);
 
   if (!service) {
     return notFound();

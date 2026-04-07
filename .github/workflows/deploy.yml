@@ -1,0 +1,22 @@
+name: Deploy WhaleAbyss
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Yandex Cloud VM
+        uses: appleboy/ssh-action@master
+        with:
+          host: 93.77.180.216
+          username: qantr
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/whaleabyss
+            git pull origin main
+            npm install
+            npm run build
+            pm2 restart whaleabyss

@@ -3,9 +3,15 @@ import { db } from "@/lib/db";
 import { orders, orderItems, services } from "@/lib/schema";
 import { generateFreekassaPaymentUrl } from "@/lib/freekassa";
 import { inArray } from "drizzle-orm";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    // @ts-ignore
+    const userId = session?.user?.id || null;
+
     const body = await req.json();
     const { items, total, email, telegram, inGameName } = body;
 
@@ -31,10 +37,10 @@ export async function POST(req: NextRequest) {
     // 1. Create a "pending" Order in the database
     // Drizzle's insert returns the created rows when using .returning()
     const newOrderRaw = await db.insert(orders).values({
+      ...(userId ? { userId } : {}),
       totalPrice: total.toString(),
       status: 'pending',
       userNotes,
-      // userId is set to null for guests, but here we could get it from the session if logged in
     }).returning({ id: orders.id });
 
     const newOrderId = newOrderRaw[0].id;

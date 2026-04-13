@@ -7,11 +7,15 @@ import { Trash2, Plus, Minus, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import DataSecurityModal from "@/components/DataSecurityModal";
+import AuthModal from "@/components/AuthModal";
+import { useSession } from "next-auth/react";
 
 export default function CartPage() {
+  const { data: session } = useSession();
   const { items, removeFromCart, updateQuantity, cartTotal } = useCart();
   const total = cartTotal();
 
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isDataSecurityModalOpen, setIsDataSecurityModalOpen] = useState(false);
   const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
 
@@ -24,6 +28,12 @@ export default function CartPage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleCheckout = async () => {
+    // Check if user is logged in
+    if (!session?.user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
     if (!agreedToPrivacy) {
       setError("Необходимо согласиться на обработку персональных данных");
       return;
@@ -59,7 +69,8 @@ export default function CartPage() {
 
   return (
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
-      <Header onAuthOpen={() => { }} />
+      <Header onAuthOpen={() => setIsAuthModalOpen(true)} />
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       <DataSecurityModal isOpen={isDataSecurityModalOpen} onClose={() => setIsDataSecurityModalOpen(false)} />
 
       <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8">

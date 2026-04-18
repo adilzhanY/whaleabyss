@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/store/useCart";
 import Header from "@/components/Header";
-import { Trash2, Plus, Minus, ChevronRight } from "lucide-react";
+import { Trash2, Plus, Minus, ChevronRight, Edit2 } from "lucide-react";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import DataSecurityModal from "@/components/DataSecurityModal";
@@ -23,6 +23,36 @@ export default function CartPage() {
   const [inGameName, setInGameName] = useState("");
   const [email, setEmail] = useState("");
   const [telegram, setTelegram] = useState("");
+
+  const [isEditingInGameName, setIsEditingInGameName] = useState(true);
+  const [isEditingEmail, setIsEditingEmail] = useState(true);
+  const [isEditingTelegram, setIsEditingTelegram] = useState(true);
+
+  useEffect(() => {
+    if (session?.user) {
+      fetch("/api/user/profile")
+        .then(res => res.json())
+        .then(data => {
+          if (data && !data.error) {
+            if (data.gameUsername) {
+              setInGameName(data.gameUsername);
+              setIsEditingInGameName(false);
+            }
+            if (data.receiptEmail || data.email) {
+              setEmail(data.receiptEmail || data.email);
+              if (data.receiptEmail) {
+                setIsEditingEmail(false);
+              }
+            }
+            if (data.telegramUsername) {
+              setTelegram(data.telegramUsername);
+              setIsEditingTelegram(false);
+            }
+          }
+        })
+        .catch(err => console.error("Failed to load profile", err));
+    }
+  }, [session]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -141,15 +171,42 @@ export default function CartPage() {
               <div className="grid grid-cols-2 gap-4 pt-1">
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Ник в игре:</label>
-                  <input type="text" value={inGameName} onChange={e => setInGameName(e.target.value)} placeholder="Ник в игре" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
+                  {isEditingInGameName ? (
+                    <input type="text" value={inGameName} onChange={e => setInGameName(e.target.value)} placeholder="Ник в игре" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
+                  ) : (
+                    <div className="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-transparent bg-slate-100/50 text-sm font-semibold text-slate-700">
+                      <span className="truncate">{inGameName}</span>
+                      <button onClick={() => setIsEditingInGameName(true)} className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer ml-2 shrink-0">
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">E-mail для чека:</label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@example.com" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
+                  {isEditingEmail ? (
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@example.com" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
+                  ) : (
+                    <div className="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-transparent bg-slate-100/50 text-sm font-semibold text-slate-700">
+                      <span className="truncate">{email}</span>
+                      <button onClick={() => setIsEditingEmail(true)} className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer ml-2 shrink-0">
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="col-span-2">
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Для связи:</label>
-                  <input type="text" value={telegram} onChange={e => setTelegram(e.target.value)} placeholder="@telegram" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
+                  {isEditingTelegram ? (
+                    <input type="text" value={telegram} onChange={e => setTelegram(e.target.value)} placeholder="@telegram" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
+                  ) : (
+                    <div className="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-transparent bg-slate-100/50 text-sm font-semibold text-slate-700">
+                      <span className="truncate">{telegram}</span>
+                      <button onClick={() => setIsEditingTelegram(true)} className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer ml-2 shrink-0">
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -9,6 +9,9 @@ export const users = pgTable('users', {
   passwordHash: varchar('password_hash', { length: 255 }).notNull(),
   role: userRoleEnum('role').default('user'),
   avatarUrl: varchar('avatar_url', { length: 255 }),
+  telegramUsername: varchar('telegram_username', { length: 255 }),
+  gameUsername: varchar('game_username', { length: 255 }),
+  receiptEmail: varchar('receipt_email', { length: 255 }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });

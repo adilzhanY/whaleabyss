@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { orders, orderItems, services } from "@/lib/schema";
+import { orders, orderItems, services, users } from "@/lib/schema";
 import { generateFreekassaPaymentUrl } from "@/lib/freekassa";
-import { inArray } from "drizzle-orm";
+import { inArray, eq } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -33,6 +33,17 @@ export async function POST(req: NextRequest) {
 
     const slugToIdMap = new Map();
     dbServices.forEach(s => slugToIdMap.set(s.slug, s.id));
+
+    // Update user details if logged in
+    if (userId) {
+      await db.update(users)
+        .set({
+          telegramUsername: telegram,
+          gameUsername: inGameName,
+          receiptEmail: email
+        })
+        .where(eq(users.id, userId));
+    }
 
     // 1. Create a "pending" Order in the database
     // Drizzle's insert returns the created rows when using .returning()

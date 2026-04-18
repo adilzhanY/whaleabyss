@@ -18,6 +18,9 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL, -- Здесь будут храниться хэши паролей (например, bcrypt/argon2)
     role user_role DEFAULT 'user',
     avatar_url VARCHAR(255),
+    telegram_username VARCHAR(255),
+    game_username VARCHAR(255),
+    receipt_email VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

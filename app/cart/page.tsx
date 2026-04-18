@@ -183,19 +183,6 @@ export default function CartPage() {
                   )}
                 </div>
                 <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">E-mail для чека:</label>
-                  {isEditingEmail ? (
-                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@example.com" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
-                  ) : (
-                    <div className="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-transparent bg-slate-100/50 text-sm font-semibold text-slate-700">
-                      <span className="truncate">{email}</span>
-                      <button onClick={() => setIsEditingEmail(true)} className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer ml-2 shrink-0">
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <div className="col-span-2">
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Для связи:</label>
                   {isEditingTelegram ? (
                     <input type="text" value={telegram} onChange={e => setTelegram(e.target.value)} placeholder="@telegram" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
@@ -203,6 +190,19 @@ export default function CartPage() {
                     <div className="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-transparent bg-slate-100/50 text-sm font-semibold text-slate-700">
                       <span className="truncate">{telegram}</span>
                       <button onClick={() => setIsEditingTelegram(true)} className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer ml-2 shrink-0">
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">E-mail для чека:</label>
+                  {isEditingEmail ? (
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@example.com" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
+                  ) : (
+                    <div className="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-transparent bg-slate-100/50 text-sm font-semibold text-slate-700">
+                      <span className="truncate">{email}</span>
+                      <button onClick={() => setIsEditingEmail(true)} className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer ml-2 shrink-0">
                         <Edit2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -220,7 +220,7 @@ export default function CartPage() {
               <h3 className="font-bold text-blue-950">Способ оплаты</h3>
               <div className="flex items-center gap-3">
                 <input type="radio" checked readOnly className="w-5 h-5 accent-blue-900" />
-                <span className="text-xl font-bold text-slate-800 tracking-tight">Freekassa (Карты рф, СБП, Крипто)</span>
+                <span className="text-xl font-bold text-slate-800 tracking-tight">Freekassa (Карты РФ, СБП, Крипто)</span>
               </div>
             </div>
 

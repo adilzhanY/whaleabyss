@@ -14,6 +14,10 @@ export default function ProfilePage() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [receiptEmail, setReceiptEmail] = useState("");
+  const [telegramUsername, setTelegramUsername] = useState("");
+  const [gameUsername, setGameUsername] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -25,6 +29,17 @@ export default function ProfilePage() {
     } else if (session?.user) {
       setName(session.user.name || "");
       setEmail(session.user.email || "");
+      // Fetch fresh profile data to get social links
+      fetch("/api/user/profile")
+        .then(res => res.json())
+        .then(data => {
+          if (data && !data.error) {
+            if (data.receiptEmail) setReceiptEmail(data.receiptEmail);
+            if (data.telegramUsername) setTelegramUsername(data.telegramUsername);
+            if (data.gameUsername) setGameUsername(data.gameUsername);
+          }
+        })
+        .catch(err => console.error("Failed to load profile details", err));
     }
   }, [session, status, router]);
 
@@ -45,13 +60,12 @@ export default function ProfilePage() {
       const res = await fetch("/api/user/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name, receiptEmail, telegramUsername, gameUsername }),
       });
 
       if (res.ok) {
         setMessage("Профиль успешно обновлен!");
         await update({ name });
-        // Optional timeout to allow user to see message before closing
         setTimeout(() => setIsEditing(false), 1500);
       } else {
         const errorData = await res.json();
@@ -136,6 +150,48 @@ export default function ProfilePage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
+                    className="w-full rounded-lg border px-4 py-3 outline-none transition-colors"
+                    style={{ backgroundColor: "var(--bg-input)", borderColor: "var(--accent-border)", color: "var(--text-primary)" }}
+                    onFocus={(e) => (e.target.style.borderColor = "var(--accent-primary)")}
+                    onBlur={(e) => (e.target.style.borderColor = "var(--accent-border)")}
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>Ник в игре</label>
+                  <input
+                    type="text"
+                    value={gameUsername}
+                    onChange={(e) => setGameUsername(e.target.value)}
+                    placeholder="Ваш игровой ник"
+                    className="w-full rounded-lg border px-4 py-3 outline-none transition-colors"
+                    style={{ backgroundColor: "var(--bg-input)", borderColor: "var(--accent-border)", color: "var(--text-primary)" }}
+                    onFocus={(e) => (e.target.style.borderColor = "var(--accent-primary)")}
+                    onBlur={(e) => (e.target.style.borderColor = "var(--accent-border)")}
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>Telegram</label>
+                  <input
+                    type="text"
+                    value={telegramUsername}
+                    onChange={(e) => setTelegramUsername(e.target.value)}
+                    placeholder="@username"
+                    className="w-full rounded-lg border px-4 py-3 outline-none transition-colors"
+                    style={{ backgroundColor: "var(--bg-input)", borderColor: "var(--accent-border)", color: "var(--text-primary)" }}
+                    onFocus={(e) => (e.target.style.borderColor = "var(--accent-primary)")}
+                    onBlur={(e) => (e.target.style.borderColor = "var(--accent-border)")}
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>E-mail для чека</label>
+                  <input
+                    type="email"
+                    value={receiptEmail}
+                    onChange={(e) => setReceiptEmail(e.target.value)}
+                    placeholder="name@example.com"
                     className="w-full rounded-lg border px-4 py-3 outline-none transition-colors"
                     style={{ backgroundColor: "var(--bg-input)", borderColor: "var(--accent-border)", color: "var(--text-primary)" }}
                     onFocus={(e) => (e.target.style.borderColor = "var(--accent-primary)")}

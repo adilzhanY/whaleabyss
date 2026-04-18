@@ -46,19 +46,30 @@ export async function PUT(req: Request) {
     }
 
     const body = await req.json();
-    const { name } = body;
+    const { name, receiptEmail, telegramUsername, gameUsername } = body;
 
     if (!name || typeof name !== "string") {
       return NextResponse.json({ error: "Invalid name" }, { status: 400 });
     }
 
-    // Update the username in the database
+    const updateData: Partial<{
+      username: string;
+      receiptEmail: string | null;
+      telegramUsername: string | null;
+      gameUsername: string | null;
+    }> = { username: name };
+
+    if (receiptEmail !== undefined) updateData.receiptEmail = receiptEmail;
+    if (telegramUsername !== undefined) updateData.telegramUsername = telegramUsername;
+    if (gameUsername !== undefined) updateData.gameUsername = gameUsername;
+
+    // Update the user details in the database
     await db
       .update(users)
-      .set({ username: name })
+      .set(updateData)
       .where(eq(users.email, session.user.email));
 
-    return NextResponse.json({ success: true, name });
+    return NextResponse.json({ success: true, name, receiptEmail, telegramUsername, gameUsername });
   } catch (error) {
     console.error("Profile update error:", error);
     return NextResponse.json(

@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { MousePointerClick, CreditCard, Trophy, Star, ChevronDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { MousePointerClick, CreditCard, Trophy, Star, Clock, PlusCircle } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CartModal from "@/components/CartModal";
 import AuthModal from "@/components/AuthModal";
 import ServiceCard from "@/components/ServiceCard";
 import SuggestServiceModal from "@/components/SuggestServiceModal";
+import OrderCard from "@/components/OrderCard";
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
-import { Clock, PlusCircle } from "lucide-react";
+import Link from "next/link";
 
 const STEPS = [
 	{
@@ -54,16 +54,32 @@ const TESTIMONIALS = [
 	},
 ];
 
+interface OrderItem {
+	serviceId?: string;
+	serviceTitle?: string;
+	serviceImage?: string;
+	[key: string]: unknown;
+}
+
+interface OrderData {
+	id: string;
+	status: string;
+	createdAt: string;
+	totalAmount?: number | string;
+	items?: OrderItem[];
+	[key: string]: unknown;
+}
+
 export default function HomeClient({ categories }: { categories: any[] }) {
 	const { data: session } = useSession();
 	const [authOpen, setAuthOpen] = useState(false);
 	const [suggestOpen, setSuggestOpen] = useState(false);
-	const [activeOrders, setActiveOrders] = useState<any[]>([]);
-	const [loadingOrders, setLoadingOrders] = useState(false);
+	const [activeOrders, setActiveOrders] = useState<OrderData[]>([]);
+	const [pastOrders, setPastOrders] = useState<OrderData[]>([]);
+	const [loadingOrders, setLoadingOrders] = useState(true);
 
 	useEffect(() => {
 		if (session?.user) {
-			setLoadingOrders(true);
 			fetch("/api/user/orders/active")
 				.then((res) => res.json())
 				.then((data) => {
@@ -73,21 +89,19 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 				})
 				.catch(console.error)
 				.finally(() => setLoadingOrders(false));
+
+			fetch("/api/user/orders/past")
+				.then((res) => res.json())
+				.then((data) => {
+					if (Array.isArray(data)) {
+						setPastOrders(data);
+					}
+				})
+				.catch(console.error);
+		} else {
+			setLoadingOrders(false);
 		}
 	}, [session]);
-
-	const mapStatusToText = (status: string) => {
-		switch (status) {
-			case "pending":
-				return "Ожидает оплаты";
-			case "paid":
-				return "В очереди";
-			case "in_progress":
-				return "В процессе";
-			default:
-				return status;
-		}
-	};
 
 	return (
 		<div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
@@ -136,47 +150,50 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 								) : (
 									<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 										{activeOrders.map((order) => (
-											<div key={order.id} className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow text-left">
-												<div>
-													<div className="flex items-center justify-between mb-4">
-														<span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-															№ {order.id.slice(0, 8)}
-														</span>
-														<span className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider ${order.status === "in_progress" ? "bg-blue-100 text-blue-800" :
-																order.status === "paid" ? "bg-green-100 text-green-800" :
-																	"bg-slate-100 text-slate-700"
-															}`}>
-															{mapStatusToText(order.status)}
-														</span>
-													</div>
-
-													<div className="space-y-3 mb-6">
-														{order.items.map((item: any, idx: number) => (
-															<div key={idx} className="flex gap-3">
-																<div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0" />
-																<div>
-																	<p className="font-semibold text-sm text-slate-800">{item.serviceName || "Неизвестная услуга"}</p>
-																	<p className="text-xs text-slate-500">{item.quantity} шт.</p>
-																</div>
-															</div>
-														))}
-													</div>
-												</div>
-
-												<div className="flex items-center justify-between pt-4 border-t border-slate-100">
-													<div className="flex flex-col">
-														<span className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Сумма</span>
-														<span className="font-black text-slate-800">{Number(order.totalPrice).toLocaleString("ru-RU")} ₽</span>
-													</div>
-													<span className="text-xs text-slate-400 font-medium">
-														{new Date(order.createdAt).toLocaleDateString("ru-RU", { day: 'numeric', month: 'short' })}
-													</span>
-												</div>
+											<div key={order.id}>
+												<OrderCard order={order} />
 											</div>
 										))}
 									</div>
 								)}
-							</div>
+							</div>							{pastOrders.length > 0 ? (
+								<div className="w-full mt-12 z-20 relative">
+									<div className="flex items-center justify-between mb-6">
+										<h2 className="text-2xl font-black text-slate-800" style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>Прошлые заказы</h2>
+									</div>
+									<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 opacity-75 hover:opacity-100 transition-opacity">
+										{pastOrders.slice(0, 3).map((order) => (
+											<div key={order.id}>
+												<OrderCard order={order} isGrayscale />
+											</div>
+										))}
+									</div>
+									{pastOrders.length > 3 && (
+										<div className="mt-6 flex justify-start pb-8 sm:pb-0">
+											<Link
+												href="/orders"
+												className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-8 py-3.5 font-bold text-slate-700 transition-all hover:bg-slate-50 hover:text-blue-900 shadow-sm hover:shadow-md cursor-pointer pointer-events-auto"
+											>
+												Посмотреть все заказы
+											</Link>
+										</div>
+									)}
+								</div>
+							) : (
+								<div className="w-full mt-12 z-20 relative">
+									<div className="flex items-center justify-between mb-6">
+										<h2 className="text-2xl font-black text-slate-800" style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>Прошлые заказы</h2>
+									</div>
+									<div className="mt-6 flex justify-start pb-8 sm:pb-0">
+										<Link
+											href="/orders"
+											className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-8 py-3.5 font-bold text-slate-700 transition-all hover:bg-slate-50 hover:text-blue-900 shadow-sm hover:shadow-md cursor-pointer pointer-events-auto"
+										>
+											Посмотреть все заказы
+										</Link>
+									</div>
+								</div>
+							)}
 						</div>
 					</div>
 				</section>

@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { db } from "@/lib/db";
 import { orders, orderItems, services, users } from "@/lib/schema";
-import { eq, inArray, desc, and } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 export async function GET() {
   try {
@@ -27,12 +27,7 @@ export async function GET() {
         createdAt: orders.createdAt,
       })
       .from(orders)
-      .where(
-        and(
-          eq(orders.userId, user.id),
-          inArray(orders.status, ["pending", "paid", "in_progress"])
-        )
-      )
+      .where(eq(orders.userId, user.id))
       .orderBy(desc(orders.createdAt));
 
     // For each order, fetch items and service names
@@ -55,7 +50,7 @@ export async function GET() {
 
     return NextResponse.json(enrichedOrders);
   } catch (error) {
-    console.error("Fetch active orders error:", error);
+    console.error("Fetch all orders error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

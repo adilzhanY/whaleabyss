@@ -30,7 +30,7 @@ export async function GET() {
       .where(
         and(
           eq(orders.userId, user.id),
-          inArray(orders.status, ["pending", "paid", "in_progress"])
+          inArray(orders.status, ["completed", "cancelled", "refunded"])
         )
       )
       .orderBy(desc(orders.createdAt));
@@ -55,7 +55,7 @@ export async function GET() {
 
     return NextResponse.json(enrichedOrders);
   } catch (error) {
-    console.error("Fetch active orders error:", error);
+    console.error("Fetch past orders error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

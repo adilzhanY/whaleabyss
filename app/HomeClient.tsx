@@ -264,8 +264,8 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 						<div className="w-full sm:w-auto relative hidden md:block" style={{ width: "450px", height: "450px", transform: "scale(1.3)", transformOrigin: "center right", marginRight: "-30px" }}>
 							<div className="absolute inset-0 rounded-full" style={{ background: "radial-gradient(circle, rgba(30,58,138,0.1) 0%, transparent 70%)", filter: "blur(20px)" }} />
 							<img
-								src="/images/services/genshin/mona.png"
-								alt="Персонаж Genshin Impact"
+								src="/icons/whale_logo_circle.png"
+								alt="Логотип Whale Abyss"
 								className="relative z-10 w-full h-full object-contain"
 								style={{ filter: "drop-shadow(0 20px 30px rgba(0,0,0,0.1))" }}
 							/>

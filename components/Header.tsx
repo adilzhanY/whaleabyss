@@ -72,6 +72,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
             { label: "Услуги", href: "/#services" },
             { label: "Отзывы", href: "/reviews" },
             { label: "FAQ", href: "/faq" },
+            ...(session ? [{ label: "Заказы", href: "/orders" }] : [])
           ].map((link) => (
             <Link
               key={link.href}
@@ -164,6 +165,9 @@ export default function Header({ onAuthOpen }: HeaderProps) {
             <Link href="/about" className="block py-3 px-4 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>О нас</Link>
             <Link href="/faq" className="block py-3 px-4 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>FAQ</Link>
             <Link href="/reviews" className="block py-3 px-4 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Отзывы</Link>
+            {session && (
+              <Link href="/orders" className="block py-3 px-4 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Заказы</Link>
+            )}
           </div>
 
           <div className="mt-auto border-t border-slate-100 pt-6">

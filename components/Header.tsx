@@ -4,6 +4,7 @@ import { ShoppingCart, Menu, X, User } from "lucide-react";
 import { useCart } from "@/store/useCart";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 
@@ -12,6 +13,7 @@ interface HeaderProps {
 }
 
 export default function Header({ onAuthOpen }: HeaderProps) {
+  const pathname = usePathname();
   const { cartCount, openCart } = useCart();
   const count = cartCount();
   const { data: session } = useSession();
@@ -73,15 +75,28 @@ export default function Header({ onAuthOpen }: HeaderProps) {
             { label: "Отзывы", href: "/reviews" },
             { label: "FAQ", href: "/faq" },
             ...(session ? [{ label: "Заказы", href: "/orders" }] : [])
-          ].map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="transition-colors hover:text-[#1e3a8a]"
-            >
-              {link.label}
-            </Link>
-          ))}
+          ].map((link) => {
+            const isActive = pathname === link.href || (link.href !== '/' && pathname?.startsWith(link.href) && !link.href.includes('#'));
+
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`relative py-1 transition-all duration-300 ${isActive
+                    ? "font-bold text-[#1e3a8a]"
+                    : "hover:text-[#1e3a8a] text-slate-500"
+                  }`}
+                style={isActive ? { color: "var(--accent-primary)" } : {}}
+              >
+                {link.label}
+                <span
+                  className={`absolute left-0 -bottom-1 block h-0.5 rounded-full transition-all duration-300 ease-in-out ${isActive ? "w-full" : "w-0"
+                    }`}
+                  style={{ backgroundColor: "var(--accent-primary)" }}
+                />
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Right side Actions */}

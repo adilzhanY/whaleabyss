@@ -55,7 +55,7 @@ function enrichItemUI(item: any, index: number): Omit<ServiceItem, 'id' | 'title
   const is_square = nameLower.includes('задание') || is_nod_krai;
   const is_tall = is_plot && !is_nod_krai;
   const is_extra_tall = is_tall && !nameLower.includes('мондштадт');
-  const is_per_day = nameLower.includes('уход за аккаунтом');
+  const is_per_day = nameLower.includes('уход за аккаунтом') || nameLower.includes('техническое обслуживание');
 
   return {
     isWide: is_wide,

@@ -11,6 +11,8 @@ interface OrderItem {
   serviceId?: string;
   serviceTitle?: string;
   serviceImage?: string;
+  serviceName?: string;
+  quantity?: number;
   [key: string]: unknown;
 }
 

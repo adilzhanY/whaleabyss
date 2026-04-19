@@ -71,7 +71,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
           }}>
           {[
             { label: "Главная", href: "/" },
-            { label: "Услуги", href: "/#services" },
+            { label: "Услуги", href: "/services" },
             { label: "Отзывы", href: "/reviews" },
             { label: "FAQ", href: "/faq" },
             ...(session ? [{ label: "Заказы", href: "/orders" }] : [])
@@ -83,8 +83,8 @@ export default function Header({ onAuthOpen }: HeaderProps) {
                 key={link.href}
                 href={link.href}
                 className={`relative py-1 transition-all duration-300 ${isActive
-                    ? "font-bold text-[#1e3a8a]"
-                    : "hover:text-[#1e3a8a] text-slate-500"
+                  ? "font-bold text-[#1e3a8a]"
+                  : "hover:text-[#1e3a8a] text-slate-500"
                   }`}
                 style={isActive ? { color: "var(--accent-primary)" } : {}}
               >
@@ -177,6 +177,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
         <nav className="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-6">
           <div className="flex flex-col gap-1">
             <Link href="/" className="block py-3 px-4 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Главная</Link>
+            <Link href="/services" className="block py-3 px-4 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Услуги</Link>
             <Link href="/about" className="block py-3 px-4 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>О нас</Link>
             <Link href="/faq" className="block py-3 px-4 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>FAQ</Link>
             <Link href="/reviews" className="block py-3 px-4 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Отзывы</Link>

@@ -357,32 +357,58 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 
 				<div className="mx-auto px-4 sm:px-6 relative z-10" style={{ maxWidth: "75rem" }}>
 					<div className="flex flex-col gap-12">
-						{categories.map((category) => (
-							<div key={category.id} className="flex flex-col gap-6">
-								<h3
-									className="text-2xl font-bold"
-									style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "black" }}
-								>
-									{category.title}
-								</h3>
-								<div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
-									{category.items.map((item: any) => (
-										<div
-											key={item.id}
-											className="w-full h-full"
-										>
-											<ServiceCard item={item} />
-										</div>
-									))}
+						{categories.map((category, index) => {
+							if (session?.user && index > 1) return null;
+							const itemsToShow = session?.user && index === 1 ? category.items.slice(0, 5) : category.items;
+
+							return (
+								<div key={category.id} className="flex flex-col gap-6">
+									<h3
+										className="text-2xl font-bold"
+										style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "black" }}
+									>
+										{category.title}
+									</h3>
+									<div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
+										{itemsToShow.map((item: any) => (
+											<div
+												key={item.id}
+												className="w-full h-full"
+											>
+												<ServiceCard item={item} />
+											</div>
+										))}
+									</div>
 								</div>
-							</div>
-						))}
+							);
+						})}
 					</div>
 
-					<div className="mt-16 flex justify-center">
+					<div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-4">
+						{session?.user && (
+							<Link
+								href="/services"
+								className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl px-12 py-5 text-xl font-bold transition-all hover:-translate-y-1 hover:shadow-xl focus:outline-none border-2"
+								style={{
+									borderColor: "var(--accent-primary)",
+									color: "var(--accent-primary)",
+									backgroundColor: "transparent"
+								}}
+								onMouseEnter={(e) => {
+									e.currentTarget.style.transform = "translateY(-4px)";
+									e.currentTarget.style.backgroundColor = "rgba(30, 58, 138, 0.05)";
+								}}
+								onMouseLeave={(e) => {
+									e.currentTarget.style.transform = "translateY(0)";
+									e.currentTarget.style.backgroundColor = "transparent";
+								}}
+							>
+								Все услуги
+							</Link>
+						)}
 						<button
 							onClick={() => setSuggestOpen(true)}
-							className="inline-flex items-center justify-center gap-2 rounded-2xl px-12 py-5 text-xl font-bold transition-all hover:-translate-y-1 hover:shadow-xl focus:outline-none"
+							className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl px-12 py-5 text-xl font-bold transition-all hover:-translate-y-1 hover:shadow-xl focus:outline-none"
 							style={{
 								backgroundColor: "var(--accent-primary)",
 								color: "#ffffff"
@@ -403,62 +429,64 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 			</section>
 
 			{/* TESTIMONIALS */}
-			<section id="testimonials" className="py-20">
-				<div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "75rem" }}>
-					<div className="mb-12 text-center">
-						<h2
-							className="text-3xl font-black"
-							style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "var(--text-primary)" }}
-						>
-							Отзывы клиентов
-						</h2>
-						<p className="mt-2 text-sm" style={{ color: "var(--text-secondary)" }}>
-							Более 500 довольных игроков по всей России
-						</p>
-					</div>
-					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" style={{ gridAutoFlow: "dense" }}>
-						{TESTIMONIALS.map((t) => {
-							const spanClass = t.text.length > 120 ? "sm:col-span-2 sm:row-span-2" : t.text.length > 80 ? "sm:row-span-2" : "";
+			{!session?.user && (
+				<section id="testimonials" className="py-20">
+					<div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "75rem" }}>
+						<div className="mb-12 text-center">
+							<h2
+								className="text-3xl font-black"
+								style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "var(--text-primary)" }}
+							>
+								Отзывы клиентов
+							</h2>
+							<p className="mt-2 text-sm" style={{ color: "var(--text-secondary)" }}>
+								Более 500 довольных игроков по всей России
+							</p>
+						</div>
+						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" style={{ gridAutoFlow: "dense" }}>
+							{TESTIMONIALS.map((t) => {
+								const spanClass = t.text.length > 120 ? "sm:col-span-2 sm:row-span-2" : t.text.length > 80 ? "sm:row-span-2" : "";
 
-							return (
-								<div
-									key={t.name}
-									className={`flex flex-col rounded-3xl p-6 ${spanClass}`}
-									style={{
-										backgroundColor: "var(--bg-card)",
-										border: "1px solid var(--accent-border)",
-										boxShadow: "var(--card-shadow)",
-										borderRadius: "2rem"
-									}}
-								>
-									<div className="mb-3 flex gap-0.5">
-										{Array.from({ length: t.rating }).map((_, i) => (
-											<Star key={i} className="h-4 w-4 fill-current shrink-0" style={{ color: "#f59e0b" }} />
-										))}
-									</div>
-									<p className={`flex-1 font-semibold leading-relaxed mb-4 ${t.text.length > 120 ? 'text-lg sm:text-2xl' : 'text-base sm:text-lg'}`} style={{ color: "var(--text-primary)" }}>
-										&ldquo;{t.text}&rdquo;
-									</p>
-									<div className="flex items-center gap-3 mt-auto">
-										<div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full">
-											<img
-												src={t.avatar}
-												alt={t.name}
-												className="h-full w-full object-cover"
-											/>
+								return (
+									<div
+										key={t.name}
+										className={`flex flex-col rounded-3xl p-6 ${spanClass}`}
+										style={{
+											backgroundColor: "var(--bg-card)",
+											border: "1px solid var(--accent-border)",
+											boxShadow: "var(--card-shadow)",
+											borderRadius: "2rem"
+										}}
+									>
+										<div className="mb-3 flex gap-0.5">
+											{Array.from({ length: t.rating }).map((_, i) => (
+												<Star key={i} className="h-4 w-4 fill-current shrink-0" style={{ color: "#f59e0b" }} />
+											))}
 										</div>
-										<div>
-											<p className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
-												{t.name}
-											</p>
+										<p className={`flex-1 font-semibold leading-relaxed mb-4 ${t.text.length > 120 ? 'text-lg sm:text-2xl' : 'text-base sm:text-lg'}`} style={{ color: "var(--text-primary)" }}>
+											&ldquo;{t.text}&rdquo;
+										</p>
+										<div className="flex items-center gap-3 mt-auto">
+											<div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full">
+												<img
+													src={t.avatar}
+													alt={t.name}
+													className="h-full w-full object-cover"
+												/>
+											</div>
+											<div>
+												<p className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
+													{t.name}
+												</p>
+											</div>
 										</div>
 									</div>
-								</div>
-							);
-						})}
+								);
+							})}
+						</div>
 					</div>
-				</div>
-			</section>
+				</section>
+			)}
 
 			<Footer />
 		</div>

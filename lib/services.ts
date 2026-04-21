@@ -71,9 +71,9 @@ function enrichItemUI(item: any, index: number): Omit<ServiceItem, 'id' | 'title
 export const getServiceCategories = cache(async (): Promise<ServiceCategory[]> => {
   const allCategories = await db.select().from(categories);
   const allServices = await db.select().from(services);
-  
+
   let globalIndex = 0;
-  
+
   const orderMap = new Map<string, number>();
   let oIdx = 0;
   for (const catList of Object.values(servicesData)) {
@@ -84,7 +84,7 @@ export const getServiceCategories = cache(async (): Promise<ServiceCategory[]> =
 
   return allCategories.map(cat => {
     let catServices = allServices.filter(s => s.categoryId === cat.id);
-    
+
     // Sort array by json implicit order
     catServices.sort((a, b) => {
       const aT = (a.subtitle || a.title).trim().toLowerCase();

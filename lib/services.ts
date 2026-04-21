@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { categories, services } from '@/lib/schema';
 import { cache } from 'react';
+import servicesData from '@/services/services_list.json';
 
 export interface ServiceItem {
   id: string;
@@ -70,11 +71,33 @@ function enrichItemUI(item: any, index: number): Omit<ServiceItem, 'id' | 'title
 export const getServiceCategories = cache(async (): Promise<ServiceCategory[]> => {
   const allCategories = await db.select().from(categories);
   const allServices = await db.select().from(services);
-
+  
   let globalIndex = 0;
+  
+  const orderMap = new Map<string, number>();
+  let oIdx = 0;
+  for (const catList of Object.values(servicesData)) {
+    for (const it of catList) {
+      orderMap.set(it.name.trim().toLowerCase(), oIdx++);
+    }
+  }
 
   return allCategories.map(cat => {
-    const catServices = allServices.filter(s => s.categoryId === cat.id);
+    let catServices = allServices.filter(s => s.categoryId === cat.id);
+    
+    // Sort array by json implicit order
+    catServices.sort((a, b) => {
+      const aT = (a.subtitle || a.title).trim().toLowerCase();
+      const bT = (b.subtitle || b.title).trim().toLowerCase();
+      const aP = orderMap.has(aT) ? orderMap.get(aT)! : 9999;
+      const bP = orderMap.has(bT) ? orderMap.get(bT)! : 9999;
+      if (aP !== bP) return aP - bP;
+
+      const aTime = a.createdAt ? a.createdAt.getTime() : 0;
+      const bTime = b.createdAt ? b.createdAt.getTime() : 0;
+      return aTime - bTime;
+    });
+
     return {
       id: cat.slug,
       title: cat.title,
@@ -93,7 +116,6 @@ export const getServiceCategories = cache(async (): Promise<ServiceCategory[]> =
     };
   });
 });
-
 export const getAllServices = cache(async (): Promise<ServiceItem[]> => {
   const cats = await getServiceCategories();
   return cats.flatMap(c => c.items);

@@ -21,7 +21,12 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [deleteWarningOpen, setDeleteWarningOpen] = useState(false);
+  const [deleteMessage, setDeleteMessage] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -82,6 +87,26 @@ export default function ProfilePage() {
     await update({ image: newUrl });
   };
 
+  const handleDeleteConfirm = async () => {
+    if (deleteConfirmationText !== "удалить") return;
+
+    setIsDeleting(true);
+    setDeleteMessage("");
+    try {
+      const res = await fetch("/api/user/delete", { method: "DELETE" });
+      if (res.ok) {
+        await signOut({ callbackUrl: "/?deleted=true" });
+      } else {
+        const data = await res.json();
+        setDeleteMessage(data.error || "Не удалось удалить аккаунт.");
+      }
+    } catch {
+      setDeleteMessage("Ошибка соединения с сервером.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
@@ -111,13 +136,14 @@ export default function ProfilePage() {
 
               <div className="flex gap-3 flex-wrap justify-center md:justify-start">
                 <button
-                  onClick={() => setIsEditing(!isEditing)}
+                  onClick={() => { setIsEditing(!isEditing); setIsSettingsOpen(false); }}
                   className="px-6 py-2.5 rounded-xl font-semibold flex items-center gap-2 transition-all"
                   style={{ backgroundColor: "var(--accent-primary)", color: "white" }}
                 >
                   Редактировать профиль
                 </button>
                 <button
+                  onClick={() => { setIsSettingsOpen(!isSettingsOpen); setIsEditing(false); }}
                   className="px-6 py-2.5 rounded-xl font-semibold flex items-center gap-2 transition-all"
                   style={{ backgroundColor: "#B9E8E8", color: "#0B5B5B" }}
                 >
@@ -227,19 +253,83 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* Sign out button */}
-          <div className="flex justify-center md:justify-start pt-4">
-            <button
-              type="button"
-              onClick={() => signOut({ callbackUrl: '/' })}
-              className="text-sm font-semibold transition-colors flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-red-50"
-              style={{ color: "var(--text-secondary)" }}
-              onMouseEnter={(e) => e.currentTarget.style.color = "red"}
-              onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-secondary)"}
-            >
-              Выйти из аккаунта
-            </button>
-          </div>
+          {/* Settings Section */}
+          {isSettingsOpen && (
+            <div className="rounded-3xl p-6 sm:p-10 shadow-lg" style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--accent-border)" }}>
+              <h2 className="mb-6 text-xl font-bold" style={{ color: "var(--accent-primary)" }}>Настройки аккаунта</h2>
+
+              <div className="space-y-6 max-w-xl">
+                <div className="flex flex-col gap-4">
+                  <button
+                    type="button"
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="flex-1 rounded-xl px-4 py-3 font-semibold transition-colors"
+                    style={{ backgroundColor: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--accent-border)" }}
+                  >
+                    Выйти из аккаунта (Log Out)
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDeleteWarningOpen(true)}
+                    className="flex-1 rounded-xl px-4 py-3 font-semibold text-white transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: "#dc2626" }}
+                  >
+                    Удалить аккаунт
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Delete Warning Modal */}
+          {deleteWarningOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+              <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl relative text-center">
+                <h2 className="text-2xl font-bold text-red-600 mb-4">Внимание!</h2>
+                <p className="text-gray-700 mb-6">
+                  Вы собираетесь удалить свой аккаунт. Вы не сможете восстановить этот аккаунт после удаления, и все данные о ваших заказах будут безвозвратно удалены.
+                </p>
+
+                <div className="mb-6 text-left">
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Для подтверждения напишите слово «удалить»:</label>
+                  <input
+                    type="text"
+                    value={deleteConfirmationText}
+                    onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                    placeholder="удалить"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors"
+                  />
+                </div>
+
+                {deleteMessage && (
+                  <p className="mb-6 font-semibold text-red-600 p-3 bg-red-50 rounded-xl border border-red-200">
+                    {deleteMessage}
+                  </p>
+                )}
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => {
+                      setDeleteWarningOpen(false);
+                      setDeleteConfirmationText("");
+                      setDeleteMessage("");
+                    }}
+                    className="flex-1 rounded-xl bg-gray-200 px-4 py-3 font-semibold text-gray-800 hover:bg-gray-300 transition-colors"
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    onClick={handleDeleteConfirm}
+                    disabled={isDeleting || deleteConfirmationText !== "удалить"}
+                    className="flex-1 rounded-xl bg-red-600 px-4 py-3 font-semibold text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isDeleting ? "Загрузка..." : "Удалить"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
         </div>
       </main>

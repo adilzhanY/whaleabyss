@@ -34,6 +34,8 @@ export async function POST(req: NextRequest) {
     const slugToIdMap = new Map();
     dbServices.forEach(s => slugToIdMap.set(s.slug, s.id));
 
+    let robokassaEmail = email;
+
     // Update user details if logged in
     if (userId) {
       await db.update(users)
@@ -43,6 +45,11 @@ export async function POST(req: NextRequest) {
           receiptEmail: email
         })
         .where(eq(users.id, userId));
+
+      const userRecord = await db.select({ receiptEmail: users.receiptEmail }).from(users).where(eq(users.id, userId)).limit(1);
+      if (userRecord.length > 0 && userRecord[0].receiptEmail) {
+        robokassaEmail = userRecord[0].receiptEmail;
+      }
     }
 
     // 1. Create a "pending" Order in the database
@@ -74,7 +81,7 @@ export async function POST(req: NextRequest) {
 
     // 3. Generate Robokassa Payment URL
     // We pass the newOrderId to robokassa so it can refer back to it during webhooks
-    const paymentUrl = generateRobokassaPaymentUrl(newOrderId, Number(total), "Оплата услуг WhaleAbyss");
+    const paymentUrl = generateRobokassaPaymentUrl(newOrderId, Number(total), "Оплата услуг WhaleAbyss", robokassaEmail);
 
     console.log("--- [Checkout] Robokassa URL generated successfully!");
     console.log("--- [Checkout] Sending user to:", paymentUrl);

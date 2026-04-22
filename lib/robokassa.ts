@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-export function generateRobokassaPaymentUrl(orderId: string, amount: number, desc: string): string {
+export function generateRobokassaPaymentUrl(orderId: string, amount: number, desc: string, email?: string): string {
   const merchantId = process.env.ROBOKASSA_MERCHANT_ID;
   const isTest = process.env.ROBOKASSA_IS_TEST === 'true';
   const password1 = isTest ? process.env.ROBOKASSA_TEST_PASSWORD_1 : process.env.ROBOKASSA_PASSWORD_1;
@@ -25,6 +25,10 @@ export function generateRobokassaPaymentUrl(orderId: string, amount: number, des
   url.searchParams.append('Description', desc);
   url.searchParams.append('SignatureValue', sign);
   url.searchParams.append('Shp_id', orderId);
+
+  if (email) {
+    url.searchParams.append('Email', email);
+  }
 
   if (isTest) {
     url.searchParams.append('IsTest', '1');

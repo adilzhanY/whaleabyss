@@ -16,6 +16,7 @@ import AuthModal from "@/components/AuthModal";
 import ServiceCard from "@/components/ServiceCard";
 import SuggestServiceModal from "@/components/SuggestServiceModal";
 import OrderCard from "@/components/OrderCard";
+import Toast from "@/components/Toast";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -90,10 +91,15 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 			setShowDeletedModal(true);
 			router.replace("/");
 		}
+		if (searchParams.get("status") === "success") {
+			setShowSuccessToast(true);
+			router.replace("/");
+		}
 	}, [searchParams, router]);
 
 	const [authOpen, setAuthOpen] = useState(false);
 	const [suggestOpen, setSuggestOpen] = useState(false);
+	const [showSuccessToast, setShowSuccessToast] = useState(false);
 	const [activeOrders, setActiveOrders] = useState<OrderData[]>([]);
 	const [pastOrders, setPastOrders] = useState<OrderData[]>([]);
 	const [loadingOrders, setLoadingOrders] = useState(true);
@@ -659,6 +665,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 			)}
 
 			<Footer />
+			<Toast show={showSuccessToast} onClose={() => setShowSuccessToast(false)} />
 		</div>
 	);
 }

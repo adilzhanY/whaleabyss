@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { orders, orderItems, services, users } from "@/lib/schema";
-import { generateFreekassaPaymentUrl } from "@/lib/freekassa";
+import { generateRobokassaPaymentUrl } from "@/lib/robokassa";
 import { inArray, eq } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
@@ -72,11 +72,11 @@ export async function POST(req: NextRequest) {
 
     await db.insert(orderItems).values(insertItems);
 
-    // 3. Generate Freekassa Payment URL
-    // We pass the newOrderId to freekassa so it can refer back to it during webhooks
-    const paymentUrl = generateFreekassaPaymentUrl(newOrderId, Number(total), email);
+    // 3. Generate Robokassa Payment URL
+    // We pass the newOrderId to robokassa so it can refer back to it during webhooks
+    const paymentUrl = generateRobokassaPaymentUrl(newOrderId, Number(total), "Оплата услуг WhaleAbyss");
 
-    console.log("--- [Checkout] Freekassa URL generated successfully!");
+    console.log("--- [Checkout] Robokassa URL generated successfully!");
     console.log("--- [Checkout] Sending user to:", paymentUrl);
 
     // 4. Return the URL so the frontend can redirect the user

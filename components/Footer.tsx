@@ -50,6 +50,9 @@ export default function Footer() {
           <a href="mailto:support@whaleabyss.ru" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
             support@whaleabyss.ru
           </a>
+          <a href="tel:+79384089608" className="hover:text-blue-600 transition-colors flex items-center gap-1.5 font-semibold">
+            +7 938 408 9608
+          </a>
         </div>
       </div>
 

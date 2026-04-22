@@ -65,6 +65,18 @@ export default function PrivacyPage() {
                 <p>5.2. Все платежные операции передаются по безопасному протоколу HTTPS/SSL, соответствующему международным стандартам безопасности (PCI DSS).</p>
               </div>
             </section>
+
+            <section className="mt-12 pt-8 border-t border-gray-200">
+              <h2 className="text-lg font-bold mb-3 text-black">КОНТАКТНЫЕ ДАННЫЕ ОПЕРАТОРА:</h2>
+              <div className="space-y-1 text-black font-medium">
+                <p>Самозанятая Гурова Майя Павловна</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>ИНН: 230412509070</li>
+                  <li>Телефон: <a href="tel:+79384089608" className="text-blue-600 hover:underline">+7 938 408 9608</a></li>
+                  <li>E-mail: <a href="mailto:support@whaleabyss.ru" className="text-blue-600 hover:underline">support@whaleabyss.ru</a></li>
+                </ul>
+              </div>
+            </section>
           </div>
         </div>
       </main>

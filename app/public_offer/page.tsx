@@ -84,6 +84,7 @@ export default function PublicOfferPage() {
                 <p>Самозанятая Гурова Майя Павловна</p>
                 <ul className="list-disc pl-5 space-y-1">
                   <li>ИНН: 230412509070</li>
+                  <li>Телефон: <a href="tel:+79384089608" className="text-blue-600 hover:underline">+7 938 408 9608</a></li>
                   <li>E-mail: <a href="mailto:support@whaleabyss.ru" className="text-blue-600 hover:underline">support@whaleabyss.ru</a></li>
                 </ul>
               </div>

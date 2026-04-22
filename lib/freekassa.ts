@@ -1,21 +1,36 @@
 import crypto from 'crypto';
 
 /**
- * Freekassa integration (API 2.0).
+ * Freekassa integration.
+ *
+ * Two integration modes are provided:
+ *
+ *   1) SCI form redirect (default, used by the checkout).
+ *      Redirects the user to https://pay.fk.money/ which shows a full
+ *      payment-method chooser (cards РФ, СБП, МИР, Yoomoney, crypto, …).
+ *      No server-to-server call, no API 2.0 wallet-login wall.
+ *
+ *   2) API 2.0 JSON (`createFreekassaOrder`).
+ *      Server creates an order via https://api.fk.life/v1/orders/create and
+ *      receives a payment URL. Useful for headless flows, but the URL FK
+ *      returns is the FKWallet invoice page, which forces the buyer into
+ *      the FKwallet login/registration flow — not what a regular web shop
+ *      wants. Kept here as a utility; NOT used by the checkout.
+ *
+ * Notifications (webhook) are identical for both modes:
+ *   SIGN = md5("{shop_id}:{amount}:{SECRET_2}:{merchant_order_id}")
+ *   Expected response body: plain text "YES".
  *
  * Required env:
  *   FREEKASSA_SHOP_ID      — integer merchant/shop id (ID магазина).
- *   FREEKASSA_API_KEY      — secret API key used to sign API 2.0 requests (HMAC-SHA256).
- *   FREEKASSA_SECRET_1     — "Секретное слово" (used if we ever need classic form signatures).
- *   FREEKASSA_SECRET_2     — "Секретное слово 2" — used to verify payment notifications (MD5).
+ *   FREEKASSA_SECRET_1     — "Секретное слово"   — signs the SCI redirect.
+ *   FREEKASSA_SECRET_2     — "Секретное слово 2" — verifies notifications.
+ *   FREEKASSA_API_KEY      — API 2.0 key (used only by `createFreekassaOrder`).
  *
- * Docs: https://docs.freekassa.com (Orders / Create order & Notification URL).
+ * Docs: https://docs.freekassa.com
  */
 
-// Freekassa's currently-reachable API edge is `api.fk.life` (Cloudflare).
-// The older `api.freekassa.com` / `api.freekassa.ru` hosts are documented but
-// may time out from some networks. Override via FREEKASSA_API_BASE if needed.
-const FK_API_BASE = process.env.FREEKASSA_API_BASE || 'https://api.fk.life/v1';
+// -------- Environment --------------------------------------------------------
 
 function getEnv(): {
   shopId: number;
@@ -42,12 +57,86 @@ function getEnv(): {
   return { shopId, apiKey, secret1, secret2 };
 }
 
+// -------- SCI form redirect (primary flow) -----------------------------------
+
+const FK_SCI_ENDPOINT = process.env.FREEKASSA_SCI_URL || 'https://pay.fk.money/';
+
+export interface BuildPaymentUrlOptions {
+  /** Our internal order id (UUID or similar, FK accepts any string up to ~50 chars). */
+  orderId: string;
+  /** Amount in the chosen currency, will be formatted to 2 decimals. */
+  amount: number;
+  /** Customer email (optional — pre-fills the form). */
+  email?: string;
+  /** Customer phone (optional — pre-fills the form). */
+  phone?: string;
+  /** ISO currency code. Default "RUB". */
+  currency?: 'RUB' | 'USD' | 'EUR' | 'UAH' | 'KZT';
+  /** Interface language. Default "ru". */
+  lang?: 'ru' | 'en';
+  /** Pre-select a payment method (see FK currencies table). Leave unset to show chooser. */
+  paymentMethodId?: number;
+  /** Custom params. Keys MUST start with "us_" and contain only [a-zA-Z0-9]. */
+  custom?: Record<string, string | number>;
+}
+
+/**
+ * Builds the SCI redirect URL. The customer should be redirected here; FK
+ * handles the whole payment UX and sends a notification to the URL
+ * configured in the shop's dashboard once paid.
+ *
+ * Signature: md5("{shop_id}:{amount}:{SECRET_1}:{currency}:{order_id}")
+ *   — this order of arguments is fixed by FK's SCI spec (§1.5).
+ */
+export function buildFreekassaPaymentUrl(opts: BuildPaymentUrlOptions): string {
+  const { shopId, secret1 } = getEnv();
+
+  const amount = Number(opts.amount.toFixed(2));
+  const currency = opts.currency ?? 'RUB';
+
+  const signature = crypto
+    .createHash('md5')
+    .update(`${shopId}:${amount}:${secret1}:${currency}:${opts.orderId}`)
+    .digest('hex');
+
+  const params = new URLSearchParams();
+  params.set('m', String(shopId));
+  params.set('oa', String(amount));
+  params.set('currency', currency);
+  params.set('o', opts.orderId);
+  params.set('s', signature);
+  params.set('lang', opts.lang ?? 'ru');
+
+  if (opts.paymentMethodId !== undefined) {
+    params.set('i', String(opts.paymentMethodId));
+  }
+  if (opts.email) params.set('em', opts.email);
+  if (opts.phone) params.set('phone', opts.phone);
+
+  if (opts.custom) {
+    for (const [key, value] of Object.entries(opts.custom)) {
+      if (!/^us_[a-zA-Z0-9]+$/.test(key)) {
+        throw new Error(
+          `Freekassa custom param "${key}" must match ^us_[a-zA-Z0-9]+$`
+        );
+      }
+      params.set(key, String(value));
+    }
+  }
+
+  return `${FK_SCI_ENDPOINT}?${params.toString()}`;
+}
+
+// -------- API 2.0 (kept for completeness; NOT used by checkout) --------------
+
+const FK_API_BASE = process.env.FREEKASSA_API_BASE || 'https://api.fk.life/v1';
+
 /**
  * API 2.0 signature:
- *   1. Collect all request body fields except `signature` itself.
+ *   1. Take all request body fields except `signature` itself.
  *   2. Sort keys alphabetically.
- *   3. Join the string values with "|" (empty values are kept as empty strings).
- *   4. HMAC-SHA256 the resulting string using the api key as the secret, lowercase hex.
+ *   3. Join the string values with "|".
+ *   4. HMAC-SHA256 with the API key as the secret, lowercase hex.
  */
 function signApiRequest(body: Record<string, unknown>, apiKey: string): string {
   const keys = Object.keys(body).sort();
@@ -56,36 +145,27 @@ function signApiRequest(body: Record<string, unknown>, apiKey: string): string {
 }
 
 export interface CreateOrderOptions {
-  /** Our internal order UUID — Freekassa calls it paymentId (arbitrary string up to 50 chars). */
   orderId: string;
-  /** Amount in rubles, two decimals. */
   amount: number;
-  /** User email, required by FK for receipts. */
   email: string;
-  /** Client IP as seen by the server (FK requires it). */
   ip: string;
-  /** ISO currency code, default "RUB". */
   currency?: 'RUB' | 'USD' | 'EUR' | 'UAH' | 'KZT';
-  /** Optional specific payment method id (see FK docs / dashboard). If omitted, FK shows the chooser. */
   paymentMethodId?: number;
-  /** URLs to override the ones set in the FK dashboard. */
-  successUrl?: string;
-  failureUrl?: string;
-  notificationUrl?: string;
 }
 
 export interface CreateOrderResult {
-  /** URL to which the customer should be redirected to complete the payment. */
   location: string;
-  /** Freekassa's internal order id. */
   fkOrderId: number;
-  /** Freekassa's order hash (used by their widgets; we don't need it). */
   orderHash?: string;
 }
 
 /**
- * Creates a payment order on Freekassa via API 2.0 and returns the hosted payment URL.
- * The customer should be redirected to `location` to pay.
+ * Creates a payment order via API 2.0 (server-to-server). Returns FK's
+ * hosted payment URL.
+ *
+ * NOTE: as of 2026, the URL returned by API 2.0 redirects the buyer into
+ * the FKWallet invoice page, which requires wallet registration/login.
+ * Prefer `buildFreekassaPaymentUrl` (SCI) for end-user checkouts.
  */
 export async function createFreekassaOrder(
   opts: CreateOrderOptions
@@ -94,27 +174,14 @@ export async function createFreekassaOrder(
 
   const body: Record<string, string | number> = {
     shopId,
-    nonce: Date.now(), // must be strictly increasing per shop
+    nonce: Date.now(),
     paymentId: opts.orderId,
     amount: Number(opts.amount.toFixed(2)),
     currency: opts.currency ?? 'RUB',
     email: opts.email,
     ip: opts.ip,
+    i: opts.paymentMethodId ?? (Number(process.env.FREEKASSA_DEFAULT_METHOD) || 36),
   };
-
-  // `i` (payment system id) is REQUIRED by FK API 2.0.
-  // Defaults to Card RUB API (36). Override per-call or via FREEKASSA_DEFAULT_METHOD.
-  // Common ids: 4=VISA RUB, 8=MasterCard RUB, 12=МИР, 36=Card RUB API, 42=СБП, 44=СБП API.
-  const defaultMethod = Number(process.env.FREEKASSA_DEFAULT_METHOD) || 36;
-  body.i = opts.paymentMethodId ?? defaultMethod;
-
-  // URL override fields require FK support to enable on the shop. To keep
-  // requests valid by default, only send them when FREEKASSA_OVERRIDE_URLS=true.
-  if (process.env.FREEKASSA_OVERRIDE_URLS === 'true') {
-    if (opts.successUrl) body.success_url = opts.successUrl;
-    if (opts.failureUrl) body.failure_url = opts.failureUrl;
-    if (opts.notificationUrl) body.notification_url = opts.notificationUrl;
-  }
 
   const signature = signApiRequest(body, apiKey);
   const requestBody = { ...body, signature };
@@ -126,7 +193,6 @@ export async function createFreekassaOrder(
       Accept: 'application/json',
     },
     body: JSON.stringify(requestBody),
-    // Never cache payment requests.
     cache: 'no-store',
   });
 
@@ -135,12 +201,16 @@ export async function createFreekassaOrder(
   try {
     json = JSON.parse(raw);
   } catch {
-    throw new Error(`[Freekassa] Non-JSON response (${res.status}): ${raw.slice(0, 500)}`);
+    throw new Error(
+      `[Freekassa] Non-JSON response (${res.status}): ${raw.slice(0, 500)}`
+    );
   }
 
   if (!res.ok || json.type !== 'success' || !json.location) {
     const message = json?.message || json?.error || raw.slice(0, 500);
-    throw new Error(`[Freekassa] Order creation failed (${res.status}): ${message}`);
+    throw new Error(
+      `[Freekassa] Order creation failed (${res.status}): ${message}`
+    );
   }
 
   return {
@@ -150,12 +220,11 @@ export async function createFreekassaOrder(
   };
 }
 
+// -------- Notification verification (same for both modes) --------------------
+
 /**
- * Verifies the signature of an incoming payment notification.
- *
- * Freekassa's notification body (classic SCI format, also used with API 2.0) contains:
- *   MERCHANT_ID, AMOUNT, MERCHANT_ORDER_ID, SIGN, P_EMAIL, intid, ...
- * Signature format: md5("{shop_id}:{amount}:{secret2}:{merchant_order_id}")
+ * Verifies Freekassa's notification signature.
+ * Signature format: md5("{shop_id}:{amount}:{SECRET_2}:{merchant_order_id}")
  */
 export function verifyFreekassaNotification(params: {
   merchantId: string;
@@ -169,17 +238,17 @@ export function verifyFreekassaNotification(params: {
 
   const expected = crypto
     .createHash('md5')
-    .update(`${params.merchantId}:${params.amount}:${secret2}:${params.merchantOrderId}`)
+    .update(
+      `${params.merchantId}:${params.amount}:${secret2}:${params.merchantOrderId}`
+    )
     .digest('hex');
 
-  // FK historically returns the hash lowercase; compare case-insensitively to be safe.
   return expected.toLowerCase() === params.sign.toLowerCase();
 }
 
 /**
- * Official Freekassa notification-source IP addresses. Enable by setting
- * FREEKASSA_CHECK_IP=true in the environment. List is maintained by FK —
- * keep it in sync with their docs if it ever changes.
+ * Official Freekassa notification-source IP addresses.
+ * Enable the IP filter with FREEKASSA_CHECK_IP=true.
  */
 export const FREEKASSA_NOTIFY_IPS = new Set<string>([
   '168.119.157.136',

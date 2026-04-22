@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { orders, orderItems, services, users } from '@/lib/schema';
-import { createFreekassaOrder } from '@/lib/freekassa';
+import { buildFreekassaPaymentUrl } from '@/lib/freekassa';
 import { inArray, eq } from 'drizzle-orm';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 /**
- * Creates a pending order and returns a Freekassa hosted-payment URL.
+ * Creates a pending order and returns a Freekassa SCI redirect URL.
  * The client should redirect the user to the returned `url`.
  */
 export async function POST(req: NextRequest) {
@@ -99,32 +99,21 @@ export async function POST(req: NextRequest) {
     });
     await db.insert(orderItems).values(insertItems);
 
-    // 3. Client IP for Freekassa's fraud check.
-    const forwarded = req.headers.get('x-forwarded-for') || '';
-    const clientIp =
-      forwarded.split(',')[0].trim() ||
-      req.headers.get('x-real-ip') ||
-      '127.0.0.1';
-
-    // 4. Create Freekassa order. URLs set here override dashboard defaults.
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin;
-    const fk = await createFreekassaOrder({
+    // 3. Build the Freekassa SCI redirect URL. The customer will pick a
+    //    payment method (cards РФ, СБП, МИР, etc.) on FK's hosted form.
+    //    Success / fail / notification URLs are configured in the FK
+    //    dashboard — no need to pass them here.
+    const paymentUrl = buildFreekassaPaymentUrl({
       orderId: newOrderId,
       amount: Number(total),
       email: receiptEmail,
-      ip: clientIp,
       currency: 'RUB',
-      successUrl: `${siteUrl}/api/payment/freekassa/success`,
-      failureUrl: `${siteUrl}/api/payment/freekassa/fail`,
-      notificationUrl: `${siteUrl}/api/payment/freekassa/notify`,
+      lang: 'ru',
     });
 
-    console.log(
-      '--- [Checkout] Freekassa order created. Redirecting user to:',
-      fk.location
-    );
+    console.log('--- [Checkout] Redirecting user to Freekassa:', paymentUrl);
 
-    return NextResponse.json({ url: fk.location });
+    return NextResponse.json({ url: paymentUrl });
   } catch (error) {
     console.error('[Checkout Error]', error);
     const message =

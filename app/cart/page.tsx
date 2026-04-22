@@ -89,7 +89,7 @@ export default function CartPage() {
 
       const data = await res.json();
       if (data.url) {
-        window.location.href = data.url; // Redirect to Robokassa!
+        window.location.href = data.url; // Redirect to Freekassa!
       }
     } catch (e: any) {
       setError(e.message || "Произошла ошибка");
@@ -220,7 +220,7 @@ export default function CartPage() {
               <h3 className="font-bold text-blue-950">Способ оплаты</h3>
               <div className="flex items-center gap-3">
                 <input type="radio" checked readOnly className="w-5 h-5 accent-blue-900" />
-                <span className="text-xl font-bold text-slate-800 tracking-tight">Robokassa (Карты РФ, СБП)</span>
+                <span className="text-xl font-bold text-slate-800 tracking-tight">Freekassa (Карты РФ, СБП)</span>
               </div>
             </div>
 

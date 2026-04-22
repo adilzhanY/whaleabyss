@@ -56,9 +56,15 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Payment Banner (Placeholder) */}
+      {/* Payment Banner */}
       <div className="mx-auto flex justify-center sm:justify-start max-w-300 mt-6 opacity-80 hover:opacity-100 transition-opacity">
-        {/* Placeholder for Robokassa or other gateway */}
+        <a href="https://freekassa.net" target="_blank" rel="noopener noreferrer">
+          <img
+            src="https://cdn.freekassa.net/banners/small-white-1.png"
+            alt="Freekassa"
+            title="Прием платежей на сайте для физических лиц и т.д."
+          />
+        </a>
       </div>
     </footer>
   );

@@ -70,6 +70,31 @@ async function handleRobokassaNotification(req: NextRequest, isPost: boolean) {
 
     console.log(`[Robokassa] Order ${shpId} successfully PAID!`);
 
+    try {
+      const { notifyAdminAboutOrder } = await import('@/lib/telegramClient');
+      const { orderItems, services } = await import('@/lib/schema');
+      const { eq } = await import('drizzle-orm');
+
+      const items = await db.select({
+        title: services.title,
+        quantity: orderItems.quantity,
+        price: orderItems.priceAtPurchase
+      }).from(orderItems)
+        .leftJoin(services, eq(orderItems.serviceId, services.id))
+        .where(eq(orderItems.orderId, shpId));
+
+      const itemsDescription = items.map(i => `- ${i.title} (x${i.quantity}) - ${i.price} руб.`).join('\n');
+
+      await notifyAdminAboutOrder({
+        id: shpId,
+        totalAmount: amount,
+        itemsDescription,
+        userNotes: order.userNotes
+      });
+    } catch (tgError) {
+      console.error("[Telegram] Failed to compile notification:", tgError);
+    }
+
     // Robokassa strictly expects "OK" + InvId
     return new NextResponse(`OK${invId}`, { status: 200 });
   } catch (err: any) {

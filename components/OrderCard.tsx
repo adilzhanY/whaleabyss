@@ -1,11 +1,4 @@
-import {
-  Clock,
-  ListOrdered,
-  PlayCircle,
-  CheckCircle2,
-  XCircle,
-  RotateCcw
-} from "lucide-react";
+import { getOrderStatusMeta } from "@/lib/orderStatus";
 
 interface OrderItem {
   serviceId?: string;
@@ -28,18 +21,9 @@ interface OrderCardProps {
   isGrayscale?: boolean;
 }
 
-const statusConfig: Record<string, { label: string; icon: React.ElementType; colorClass: string }> = {
-  pending: { label: "Ожидает оплаты", icon: Clock, colorClass: "bg-slate-100 text-slate-700" },
-  paid: { label: "В очереди", icon: ListOrdered, colorClass: "bg-green-100 text-green-800" },
-  in_progress: { label: "В процессе", icon: PlayCircle, colorClass: "bg-blue-100 text-blue-800" },
-  completed: { label: "Выполнен", icon: CheckCircle2, colorClass: "bg-green-100 text-green-700" },
-  cancelled: { label: "Отменен", icon: XCircle, colorClass: "bg-red-50 text-red-600" },
-  refunded: { label: "Возвращен", icon: RotateCcw, colorClass: "bg-yellow-50 text-yellow-700" }
-};
-
 export default function OrderCard({ order, isGrayscale = false }: OrderCardProps) {
-  const config = statusConfig[order.status] || { label: order.status, icon: Clock, colorClass: "bg-slate-100 text-slate-700" };
-  const StatusIcon = config.icon;
+  const meta = getOrderStatusMeta(order.status);
+  const StatusIcon = meta.icon;
 
   return (
     <div className={`bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow text-left h-full ${isGrayscale ? "grayscale-[0.3] opacity-80 hover:opacity-100" : ""}`}>
@@ -48,9 +32,9 @@ export default function OrderCard({ order, isGrayscale = false }: OrderCardProps
           <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
             № {order.id.slice(0, 8)}
           </span>
-          <span className={`inline-flex items-center justify-center gap-1.5 text-[11px] font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider ${config.colorClass}`}>
+          <span className={`inline-flex items-center justify-center gap-1.5 text-[11px] font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider ${meta.classes}`}>
             <StatusIcon className="w-4 h-4" strokeWidth={2.5} />
-            {config.label}
+            {meta.label}
           </span>
         </div>
 

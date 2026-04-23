@@ -8,6 +8,7 @@ import { Clock, Search, FilterX, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import AuthModal from "@/components/AuthModal";
 import OrderCard from "@/components/OrderCard";
+import { ORDER_STATUSES, orderStatusLabel } from "@/lib/orderStatus";
 
 interface OrderItem {
   serviceId?: string;
@@ -136,11 +137,11 @@ export default function OrdersPage() {
               className="px-4 py-3 bg-slate-50 border-none rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-100 transition-all"
             >
               <option value="all">Любой статус</option>
-              <option value="pending">Ожидает оплаты</option>
-              <option value="paid">В очереди</option>
-              <option value="in_progress">В процессе</option>
-              <option value="completed">Выполнены</option>
-              <option value="cancelled">Отменены</option>
+              {ORDER_STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {orderStatusLabel(s)}
+                </option>
+              ))}
             </select>
 
             <select

@@ -37,6 +37,7 @@ export const authOptions: AuthOptions = {
           name: user.username,
           email: user.email,
           image: user.avatarUrl,
+          role: user.role ?? 'user',
         };
       }
     })
@@ -54,7 +55,21 @@ export const authOptions: AuthOptions = {
         token.id = user.id;
         token.name = user.name;
         token.image = user.image;
+        // @ts-ignore - augmented in types/next-auth.d.ts
+        token.role = user.role ?? 'user';
       }
+
+      // Refresh role on every request so admin promotion/demotion takes
+      // effect without the user re-logging in.
+      if (token.id && !token.role) {
+        const dbUser = await db
+          .select({ role: users.role })
+          .from(users)
+          .where(eq(users.id, token.id as string))
+          .limit(1);
+        if (dbUser[0]) token.role = dbUser[0].role ?? 'user';
+      }
+
       return token;
     },
     async session({ session, token }) {
@@ -63,6 +78,8 @@ export const authOptions: AuthOptions = {
         session.user.id = token.id;
         session.user.name = token.name;
         session.user.image = token.image as string | null | undefined;
+        // @ts-ignore
+        session.user.role = (token.role as string) ?? 'user';
       }
       return session;
     }

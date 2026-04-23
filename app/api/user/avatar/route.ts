@@ -19,12 +19,10 @@ const s3Client = new S3Client({
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    // @ts-expect-error
     if (!session || !session.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // @ts-expect-error
     const userId = session.user.id;
 
     const formData = await req.formData();

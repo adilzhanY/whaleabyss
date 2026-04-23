@@ -266,7 +266,7 @@ export default function ProfilePage() {
                     className="flex-1 rounded-xl px-4 py-3 font-semibold transition-colors"
                     style={{ backgroundColor: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--accent-border)" }}
                   >
-                    Выйти из аккаунта (Log Out)
+                    Выйти из аккаунта
                   </button>
 
                   <button

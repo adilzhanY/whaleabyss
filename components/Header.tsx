@@ -74,6 +74,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
             { label: "Услуги", href: "/services" },
             { label: "Отзывы", href: "/reviews" },
             { label: "FAQ", href: "/faq" },
+            { label: "О сервисе", href: "/info" },
             ...(session ? [{ label: "Заказы", href: "/orders" }] : [])
           ].map((link) => {
             const isActive = pathname === link.href || (link.href !== '/' && pathname?.startsWith(link.href) && !link.href.includes('#'));
@@ -181,9 +182,17 @@ export default function Header({ onAuthOpen }: HeaderProps) {
             <Link href="/about" className="block py-3 px-4 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>О нас</Link>
             <Link href="/faq" className="block py-3 px-4 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>FAQ</Link>
             <Link href="/reviews" className="block py-3 px-4 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Отзывы</Link>
+            <Link href="/info" className="block py-3 px-4 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>О сервисе</Link>
             {session && (
               <Link href="/orders" className="block py-3 px-4 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Заказы</Link>
             )}
+          </div>
+
+          <div className="border-t border-slate-100 pt-4">
+            <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Правовая информация</p>
+            <Link href="/privacy" className="block py-2.5 px-4 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Политика конфиденциальности</Link>
+            <Link href="/public_offer" className="block py-2.5 px-4 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Пользовательское соглашение</Link>
+            <Link href="/contacts" className="block py-2.5 px-4 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Контакты поддержки</Link>
           </div>
 
           <div className="mt-auto border-t border-slate-100 pt-6">

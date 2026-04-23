@@ -34,9 +34,13 @@ export default function Footer() {
         {/* Right Side: Legal Links and Contact */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 text-xs sm:text-sm">
           <div className="flex flex-wrap items-center gap-4">
+            <Link href="/info" className="hover:text-blue-600 transition-colors">О сервисе</Link>
+            <span className="text-slate-300 hidden sm:inline">|</span>
             <Link href="/privacy" className="hover:text-blue-600 transition-colors">Конфиденциальность</Link>
             <span className="text-slate-300 hidden sm:inline">|</span>
             <Link href="/public_offer" className="hover:text-blue-600 transition-colors">Публичная оферта</Link>
+            <span className="text-slate-300 hidden sm:inline">|</span>
+            <Link href="/contacts" className="hover:text-blue-600 transition-colors">Контакты</Link>
           </div>
         </div>
       </div>

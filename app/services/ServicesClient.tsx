@@ -50,7 +50,7 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
 
         <div className="mx-auto px-4 sm:px-6 relative z-10" style={{ maxWidth: "75rem" }}>
           <div className="mb-12 text-center text-white">
-            <h1 className="text-4xl font-black mb-4 text-slate-800" style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>Все услуги</h1>
+            <h1 className="text-4xl font-black mb-4 text-slate-800" style={{ fontFamily: "var(--font-primary), sans-serif" }}>Все услуги</h1>
             <p className="text-slate-500 max-w-2xl mx-auto">Полный каталог наших услуг для развития аккаунта и сопровождения в Genshin Impact.</p>
           </div>
 
@@ -59,7 +59,7 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
               <div key={category.id} className="flex flex-col gap-6">
                 <h3
                   className="text-2xl font-bold"
-                  style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "black" }}
+                  style={{ fontFamily: "var(--font-primary), sans-serif", color: "black" }}
                 >
                   {category.title}
                 </h3>

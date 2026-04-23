@@ -26,8 +26,15 @@
 @theme inline {
   --color-background: var(--bg-main);
   --color-foreground: var(--text-primary);
-  --font-heading: var(--font-montserrat);
-  --font-body: var(--font-montserrat);
+  /*
+   * Exposes `font-primary` and `font-display` as Tailwind utility classes.
+   * The CSS vars themselves are injected by next/font (see app/layout.tsx).
+   * To swap the UI font site-wide, change the font loader in app/layout.tsx.
+   */
+  --font-primary: var(--font-primary);
+  --font-display: var(--font-display);
+  --font-heading: var(--font-primary);
+  --font-body: var(--font-primary);
 }
 
 html {
@@ -38,8 +45,7 @@ html {
 body {
   background: var(--bg-main);
   color: var(--text-primary);
-  font-family:
-    var(--font-montserrat), "Montserrat", sans-serif;
+  font-family: var(--font-primary), sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -49,6 +55,5 @@ h3,
 h4,
 h5,
 h6 {
-  font-family:
-    var(--font-montserrat), "Montserrat", sans-serif;
+  font-family: var(--font-primary), sans-serif;
 }

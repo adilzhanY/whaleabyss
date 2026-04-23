@@ -16,7 +16,7 @@ export default function AboutPage() {
           <div className="mb-12 text-center">
             <h1
               className="text-3xl font-black mb-6"
-              style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "var(--text-primary)" }}
+              style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
             >
               О нас
             </h1>

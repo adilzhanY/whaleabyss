@@ -153,7 +153,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 							<h1
 								className="mb-4 text-3xl font-black leading-tight sm:text-5xl tracking-tight text-slate-800"
 								style={{
-									fontFamily: "var(--font-montserrat), Montserrat, sans-serif",
+									fontFamily: "var(--font-primary), sans-serif",
 								}}
 							>
 								Привет,{" "}
@@ -172,7 +172,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 										className="text-2xl font-black text-slate-800"
 										style={{
 											fontFamily:
-												"var(--font-montserrat), Montserrat, sans-serif",
+												"var(--font-primary), sans-serif",
 										}}
 									>
 										Активные заказы
@@ -221,7 +221,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 											className="text-2xl font-black text-slate-800"
 											style={{
 												fontFamily:
-													"var(--font-montserrat), Montserrat, sans-serif",
+													"var(--font-primary), sans-serif",
 											}}
 										>
 											Прошлые заказы
@@ -252,7 +252,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 											className="text-2xl font-black text-slate-800"
 											style={{
 												fontFamily:
-													"var(--font-montserrat), Montserrat, sans-serif",
+													"var(--font-primary), sans-serif",
 											}}
 										>
 											Прошлые заказы
@@ -303,7 +303,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 							<h1
 								className="mb-6 max-w-3xl text-3xl font-black leading-tight sm:text-5xl lg:text-6xl tracking-tight text-slate-800 wrap-break-word w-full overflow-hidden"
 								style={{
-									fontFamily: "var(--font-montserrat), Montserrat, sans-serif",
+									fontFamily: "var(--font-primary), sans-serif",
 									color: "#1e293b",
 									wordBreak: "break-word",
 									hyphens: "auto",
@@ -332,7 +332,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 										backgroundColor: "var(--accent-primary)",
 										boxShadow: "0 10px 15px -3px rgba(30, 58, 138, 0.2)",
 										fontFamily:
-											"var(--font-montserrat), Montserrat, sans-serif",
+											"var(--font-primary), sans-serif",
 									}}
 								>
 									Выбрать услугу
@@ -370,7 +370,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 								}}
 							/>
 							<img
-								src="/icons/whale_logo_circle.png"
+								src="/icons/whaleabyss_new_logo.png"
 								alt="Логотип Whale Abyss"
 								className="relative z-10 w-full h-full object-contain"
 								style={{ filter: "drop-shadow(0 20px 30px rgba(0,0,0,0.1))" }}
@@ -388,7 +388,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 							<h2
 								className="text-3xl font-black"
 								style={{
-									fontFamily: "var(--font-montserrat), Montserrat, sans-serif",
+									fontFamily: "var(--font-primary), sans-serif",
 									color: "var(--text-primary)",
 								}}
 							>
@@ -417,7 +417,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 										style={{
 											color: "var(--accent-primary)",
 											fontFamily:
-												"var(--font-montserrat), Montserrat, sans-serif",
+												"var(--font-primary), sans-serif",
 										}}
 									>
 										{step.number}
@@ -435,7 +435,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 										className="mb-2 text-base font-bold"
 										style={{
 											fontFamily:
-												"var(--font-montserrat), Montserrat, sans-serif",
+												"var(--font-primary), sans-serif",
 											color: "var(--text-primary)",
 										}}
 									>
@@ -519,7 +519,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 										className="text-2xl font-bold"
 										style={{
 											fontFamily:
-												"var(--font-montserrat), Montserrat, sans-serif",
+												"var(--font-primary), sans-serif",
 											color: "black",
 										}}
 									>
@@ -591,7 +591,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 							<h2
 								className="text-3xl font-black"
 								style={{
-									fontFamily: "var(--font-montserrat), Montserrat, sans-serif",
+									fontFamily: "var(--font-primary), sans-serif",
 									color: "var(--text-primary)",
 								}}
 							>

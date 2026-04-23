@@ -12,7 +12,7 @@ export default function PublicOfferPage() {
       <Header onAuthOpen={() => setAuthOpen(true)} />
 
       <main className="flex-1 py-16 px-4 sm:px-6">
-        <div className="mx-auto max-w-4xl bg-white p-8 sm:p-12 text-black" style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
+        <div className="mx-auto max-w-4xl bg-white p-8 sm:p-12 text-black" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
           <h1 className="text-2xl sm:text-3xl font-bold mb-8 text-center text-black">
             ПУБЛИЧНАЯ ОФЕРТА
             <span className="block text-lg sm:text-xl mt-2 font-medium text-black">о заключении договора на оказание услуг по техническому сопровождению в цифровых средах</span>

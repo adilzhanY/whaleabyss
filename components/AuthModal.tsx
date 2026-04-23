@@ -206,7 +206,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         <div className="mb-6 flex items-center justify-between">
           <h2
             className="text-xl font-bold"
-            style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "var(--text-primary)" }}
+            style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
           >
             {step === "success" ? "Успешно" : tab === "login" ? "Вход в аккаунт" : step === "otp" ? "Подтверждение Email" : "Регистрация"}
           </h2>

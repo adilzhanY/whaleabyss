@@ -18,7 +18,7 @@ export default function InfoPage() {
           <div className="mb-10 text-center">
             <h1
               className="text-3xl sm:text-4xl font-black mb-3"
-              style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "var(--text-primary)" }}
+              style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
             >
               О сервисе
             </h1>

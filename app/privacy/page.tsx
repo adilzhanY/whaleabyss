@@ -12,7 +12,7 @@ export default function PrivacyPage() {
       <Header onAuthOpen={() => setAuthOpen(true)} />
 
       <main className="flex-1 py-16 px-4 sm:px-6">
-        <div className="mx-auto max-w-4xl bg-white p-8 sm:p-12 text-black" style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
+        <div className="mx-auto max-w-4xl bg-white p-8 sm:p-12 text-black" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
           <h1 className="text-2xl sm:text-3xl font-bold mb-8 text-center text-black">
             Политика конфиденциальности
           </h1>

@@ -113,7 +113,7 @@ export default function OrdersPage() {
           <span className="text-blue-300">История заказов</span>
         </div>
 
-        <h1 className="text-3xl font-black text-blue-950 mb-8" style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
+        <h1 className="text-3xl font-black text-blue-950 mb-8" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
           Мои заказы
         </h1>
 

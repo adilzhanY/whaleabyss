@@ -57,9 +57,9 @@ export default function Header({ onAuthOpen }: HeaderProps) {
           </button>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 font-bold text-xl" style={{ color: "var(--accent-primary)", fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
-            <img src="/icons/whale_abyss_logo.jpg" alt="Whale Abyss" className="h-10 w-10 sm:h-11 sm:w-11 rounded-full object-cover" />
-            <span className="hidden lg:inline-block">Whale Abyss</span>
+          <Link href="/" className="flex items-center gap-2.5 font-bold text-xl" style={{ color: "var(--accent-primary)" }}>
+            <img src="/icons/whaleabyss_new_logo.png" alt="Whale Abyss" className="h-10 w-10 sm:h-11 sm:w-11 object-contain" />
+            <span className="hidden lg:inline-block font-display tracking-tight">Whale Abyss</span>
           </Link>
         </div>
 
@@ -67,7 +67,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium"
           style={{
             color: "var(--text-secondary)",
-            fontFamily: "var(--font-montserrat), Montserrat, sans-serif"
+            fontFamily: "var(--font-primary), sans-serif"
           }}>
           {[
             { label: "Главная", href: "/" },
@@ -121,7 +121,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
               className="inline-flex items-center rounded-3xl px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-white transition-colors cursor-pointer shrink-0"
               style={{
                 backgroundColor: "var(--accent-primary)",
-                fontFamily: "var(--font-montserrat), Montserrat, sans-serif"
+                fontFamily: "var(--font-primary), sans-serif"
               }}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary-hover)")}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary)")}
@@ -160,11 +160,11 @@ export default function Header({ onAuthOpen }: HeaderProps) {
       {/* Mobile Menu Panel */}
       <div
         className={`fixed inset-y-0 left-0 z-50 w-[80%] max-w-sm bg-white shadow-2xl transition-transform duration-300 ease-in-out md:hidden flex flex-col ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
-        style={{ fontFamily: 'var(--font-montserrat), Montserrat, sans-serif' }}
+        style={{ fontFamily: 'var(--font-primary), sans-serif' }}
       >
         <div className="flex items-center justify-between p-4 border-b border-slate-100">
           <div className="flex items-center gap-2">
-            <img src="/icons/whale_abyss_logo.jpg" alt="Whale Abyss Logo" className="h-10 w-10 rounded-full object-cover" />
+            <img src="/icons/whaleabyss_new_logo.png" alt="Whale Abyss Logo" className="h-10 w-10 object-contain" />
             <span className="font-bold text-slate-800 text-lg">Меню</span>
           </div>
           <button

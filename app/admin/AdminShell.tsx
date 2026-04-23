@@ -70,7 +70,7 @@ export default function AdminShell({ userName, userEmail, children }: AdminShell
   return (
     <div
       className="min-h-screen flex bg-slate-50 text-slate-900"
-      style={{ fontFamily: "var(--font-inter), Inter, system-ui, -apple-system, sans-serif" }}
+      style={{ fontFamily: "var(--font-primary), sans-serif" }}
     >
       {/* Mobile overlay */}
       {mobileOpen && (

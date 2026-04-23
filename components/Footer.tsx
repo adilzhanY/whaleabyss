@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer className="w-full text-slate-800 py-6 px-4 sm:px-6" style={{ backgroundColor: "#ffffff", borderTop: "1px solid #e2e8f0", fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
+    <footer className="w-full text-slate-800 py-6 px-4 sm:px-6" style={{ backgroundColor: "#ffffff", borderTop: "1px solid #e2e8f0", fontFamily: "var(--font-primary), sans-serif" }}>
       <div className="mx-auto flex flex-col md:flex-row justify-between items-start md:items-center max-w-300 mb-6 gap-6">
 
         {/* Top Side: Links */}

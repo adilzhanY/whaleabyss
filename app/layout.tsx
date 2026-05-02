@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Onest, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
 /**
@@ -7,7 +7,7 @@ import "./globals.css";
  * utility and the `body` rule in globals.css. To swap the UI font site-wide,
  * change the import above and the loader call below; no other code changes needed.
  */
-const primaryFont = Inter({
+const primaryFont = Onest({
   variable: "--font-primary",
   subsets: ["latin", "cyrillic"],
   weight: ["400", "500", "600", "700"],

@@ -21,6 +21,52 @@
   --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 
   --btn-radius: 0.5rem;
+
+  /*
+   * Layered shadow system — "raised" elements use an inset top highlight
+   * (the lit edge) plus outer drop shadows (the cast shadow).
+   * Recessed elements (inputs) invert that with an inset top darken.
+   *
+   * Blue-tinted drop shadows on primary CTAs give a subtle glow that ties
+   * into the brand palette (#1e3a8a).
+   */
+  --shadow-input:
+    inset 0 1px 2px rgba(15, 23, 42, 0.06),
+    0 1px 0 rgba(255, 255, 255, 0.8);
+
+  --shadow-card:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 2px 4px rgba(15, 23, 42, 0.04),
+    0 4px 12px rgba(15, 23, 42, 0.06);
+  --shadow-card-hover:
+    0 4px 6px rgba(15, 23, 42, 0.06),
+    0 12px 24px rgba(15, 23, 42, 0.1),
+    0 0 0 1px rgba(30, 58, 138, 0.08);
+
+  --shadow-btn:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 1px 2px rgba(15, 23, 42, 0.08),
+    0 2px 6px rgba(15, 23, 42, 0.06);
+  --shadow-btn-hover:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 2px 4px rgba(15, 23, 42, 0.12),
+    0 8px 16px rgba(15, 23, 42, 0.1);
+
+  --shadow-btn-primary:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15),
+    0 1px 2px rgba(30, 58, 138, 0.4),
+    0 4px 12px rgba(30, 58, 138, 0.28);
+  --shadow-btn-primary-hover:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15),
+    0 2px 4px rgba(30, 58, 138, 0.5),
+    0 10px 24px rgba(30, 58, 138, 0.4);
+
+  --shadow-glass:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 4px 12px rgba(30, 58, 138, 0.06),
+    0 16px 40px rgba(15, 23, 42, 0.08);
 }
 
 @theme inline {
@@ -57,3 +103,206 @@ h5,
 h6 {
   font-family: var(--font-primary), sans-serif;
 }
+
+/* ---------------------------------------------------------------------------
+ * Reusable UI utilities — buttons, inputs, cards, glass panel.
+ * Defined as flat CSS classes (not @layer) so they can be referenced from
+ * Tailwind `className` strings without additional @apply plumbing.
+ * ------------------------------------------------------------------------- */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.875rem;
+  background-color: var(--accent-primary);
+  color: #fff;
+  font-weight: 600;
+  line-height: 1.2;
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 88%, #000);
+  box-shadow: var(--shadow-btn-primary);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background-color 0.18s ease;
+  cursor: pointer;
+  user-select: none;
+}
+.btn-primary:hover {
+  background-color: var(--accent-primary-hover);
+  box-shadow: var(--shadow-btn-primary-hover);
+  transform: translateY(-1px);
+}
+.btn-primary:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: var(--shadow-btn-primary);
+}
+.btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--shadow-btn-primary);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.875rem;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 500;
+  line-height: 1.2;
+  border: 1px solid var(--accent-border);
+  box-shadow: var(--shadow-btn);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
+  cursor: pointer;
+  user-select: none;
+}
+.btn-secondary:hover {
+  background-color: var(--bg-highlight);
+  color: var(--accent-primary);
+  box-shadow: var(--shadow-btn-hover);
+  transform: translateY(-1px);
+}
+.btn-secondary:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: var(--shadow-btn);
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.875rem;
+  background-color: var(--bg-card);
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-border);
+  box-shadow: var(--shadow-btn);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
+  cursor: pointer;
+  user-select: none;
+}
+.btn-icon:hover {
+  background-color: var(--bg-highlight);
+  box-shadow: var(--shadow-btn-hover);
+  transform: scale(1.06);
+}
+.btn-icon:active {
+  transform: translateY(1px) scale(0.94);
+  box-shadow: var(--shadow-btn);
+}
+
+.btn-icon-danger {
+  color: #dc2626;
+}
+.btn-icon-danger:hover {
+  color: #b91c1c;
+  background-color: #fef2f2;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border-radius: 0.75rem;
+  border: 1px solid var(--accent-border);
+  outline: none;
+  box-shadow: var(--shadow-input);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.input-field::placeholder {
+  color: var(--text-secondary);
+}
+.input-field:focus {
+  border-color: var(--accent-primary);
+  box-shadow:
+    var(--shadow-input),
+    0 0 0 3px rgba(30, 58, 138, 0.12);
+}
+
+.card-raised {
+  background-color: var(--bg-card);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-card);
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.card-raised:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+/* Floating glass panel — used by the navbar and other floating surfaces. */
+.glass-panel {
+  background-color: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: var(--shadow-glass);
+}
+
+/* ---------------------------------------------------------------------------
+ * Keyframes + animation classes (adapted from prior project design system).
+ * ------------------------------------------------------------------------- */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes slideDownFadeIn {
+  from { opacity: 0; transform: translateY(-10px) scaleY(0.95); }
+  to { opacity: 1; transform: translateY(0) scaleY(1); }
+}
+@keyframes slideUpFadeOut {
+  from { opacity: 1; transform: translateY(0) scaleY(1); }
+  to { opacity: 0; transform: translateY(-10px) scaleY(0.95); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes scaleOut {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  to { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.dropdown-enter { animation: slideDownFadeIn 0.2s ease-out forwards; transform-origin: top; }
+.dropdown-exit { animation: slideUpFadeOut 0.15s ease-in forwards; transform-origin: top; }
+.backdrop-enter { animation: fadeIn 0.2s ease-out forwards; }
+.backdrop-exit { animation: fadeOut 0.2s ease-in forwards; }
+.modal-enter { animation: scaleIn 0.25s ease-out forwards; }
+.modal-exit { animation: scaleOut 0.2s ease-in forwards; }
+.animate-slideIn { animation: slideIn 0.3s ease-out forwards; }
+.animate-slideInLeft { animation: slideInLeft 0.3s ease-out forwards; }

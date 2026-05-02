@@ -106,7 +106,7 @@ export default function OrdersPage() {
       <Header onAuthOpen={() => setAuthOpen(true)} />
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
-      <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8">
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 pt-24 pb-8">
         <div className="flex items-center gap-2 text-sm text-slate-400 mb-6">
           <Link href="/" className="hover:text-blue-900 transition-colors">Главная</Link>
           <ChevronRight className="w-4 h-4" />

@@ -1,72 +1,174 @@
 import Link from "next/link";
 import Image from "next/image";
+import { LEGAL, getPartyShortLabel } from "@/lib/legal";
 
 export default function Footer() {
   return (
-    <footer className="w-full text-slate-800 py-6 px-4 sm:px-6" style={{ backgroundColor: "#ffffff", borderTop: "1px solid #e2e8f0", fontFamily: "var(--font-primary), sans-serif" }}>
+    <footer
+      className="w-full text-slate-800 py-6 px-4 sm:px-6"
+      style={{
+        backgroundColor: "#ffffff",
+        borderTop: "1px solid #e2e8f0",
+        fontFamily: "var(--font-primary), sans-serif",
+      }}
+    >
       <div className="mx-auto flex flex-col md:flex-row justify-between items-start md:items-center max-w-300 mb-6 gap-6">
-
         {/* Top Side: Links */}
         <div className="flex gap-8 sm:gap-16 text-sm font-semibold w-full">
-          <Link href="/about" className="transition-colors hover:text-blue-600">О нас</Link>
-          <Link href="/faq" className="transition-colors hover:text-blue-600">FAQ</Link>
-          <Link href="/reviews" className="transition-colors hover:text-blue-600">Отзывы</Link>
+          <Link
+            href="/about"
+            className="transition-colors hover:text-blue-600"
+          >
+            О нас
+          </Link>
+          <Link
+            href="/faq"
+            className="transition-colors hover:text-blue-600"
+          >
+            FAQ
+          </Link>
+          <Link
+            href="/reviews"
+            className="transition-colors hover:text-blue-600"
+          >
+            Отзывы
+          </Link>
         </div>
       </div>
 
       <div className="mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center max-w-300 border-t border-slate-200 pt-4 text-sm text-slate-600 gap-4">
-        {/* Left Side: Social Media */}
+        {/* Social Media */}
         <div className="flex items-center gap-4 text-sm font-semibold text-slate-800">
           <span>Мы в социальных сетях:</span>
           <div className="flex items-center gap-2">
-            <a href="https://t.me/whaleabyss" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all overflow-hidden">
-              <Image src="/icons/tg_logo.png" alt="Telegram" width={40} height={40} className="w-full h-full object-cover" />
+            <a
+              href="https://t.me/whaleabyss"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all overflow-hidden"
+            >
+              <Image
+                src="/icons/tg_logo.png"
+                alt="Telegram"
+                width={40}
+                height={40}
+                className="w-full h-full object-cover"
+              />
             </a>
-            <a href="https://www.tiktok.com/@whaleyuureiq" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all overflow-hidden">
-              <Image src="/icons/tiktok_logo.jpg" alt="TikTok" width={40} height={40} className="w-full h-full object-cover" />
+            <a
+              href="https://www.tiktok.com/@whaleyuureiq"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all overflow-hidden"
+            >
+              <Image
+                src="/icons/tiktok_logo.jpg"
+                alt="TikTok"
+                width={40}
+                height={40}
+                className="w-full h-full object-cover"
+              />
             </a>
-            <a href="https://www.twitch.tv/whaleabyssboost" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all overflow-hidden p-0.5">
-              <Image src="/icons/twitch.png" alt="Twitch" width={40} height={40} className="w-full h-full object-cover rounded-[10px]" />
+            <a
+              href="https://www.twitch.tv/whaleabyssboost"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all overflow-hidden p-0.5"
+            >
+              <Image
+                src="/icons/twitch.png"
+                alt="Twitch"
+                width={40}
+                height={40}
+                className="w-full h-full object-cover rounded-[10px]"
+              />
             </a>
           </div>
         </div>
 
-        {/* Right Side: Legal Links and Contact */}
+        {/* Legal Links */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 text-xs sm:text-sm">
-          <div className="flex flex-wrap items-center gap-4">
-            <Link href="/info" className="hover:text-blue-600 transition-colors">О сервисе</Link>
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+            <Link
+              href="/info"
+              className="hover:text-blue-600 transition-colors"
+            >
+              О сервисе
+            </Link>
             <span className="text-slate-300 hidden sm:inline">|</span>
-            <Link href="/privacy" className="hover:text-blue-600 transition-colors">Конфиденциальность</Link>
+            <Link
+              href="/public_offer"
+              className="hover:text-blue-600 transition-colors"
+            >
+              Публичная оферта
+            </Link>
             <span className="text-slate-300 hidden sm:inline">|</span>
-            <Link href="/public_offer" className="hover:text-blue-600 transition-colors">Публичная оферта</Link>
+            <Link
+              href="/privacy"
+              className="hover:text-blue-600 transition-colors"
+            >
+              Конфиденциальность
+            </Link>
             <span className="text-slate-300 hidden sm:inline">|</span>
-            <Link href="/contacts" className="hover:text-blue-600 transition-colors">Контакты</Link>
+            <Link
+              href="/payment"
+              className="hover:text-blue-600 transition-colors"
+            >
+              Правила оплаты
+            </Link>
+            <span className="text-slate-300 hidden sm:inline">|</span>
+            <Link
+              href="/contacts"
+              className="hover:text-blue-600 transition-colors"
+            >
+              Контакты
+            </Link>
           </div>
         </div>
       </div>
 
       {/* Legal Entity Info & Contacts */}
-      <div className="mx-auto flex flex-col md:flex-row justify-between items-start md:items-center max-w-300 mt-6 text-xs text-slate-500 gap-4">
-        <div>
-          Самозанятая Гурова Майя Павловна, ИНН: 230412509070
+      <div className="mx-auto flex flex-col md:flex-row justify-between items-start md:items-start max-w-300 mt-6 text-xs text-slate-500 gap-4">
+        <div className="space-y-0.5">
+          <div>{getPartyShortLabel()}</div>
+          <div>ИНН: {LEGAL.INN}</div>
+          {LEGAL.CURRENT_LEGAL_FORM === "individual_entrepreneur" &&
+            !LEGAL.OGRNIP.startsWith("<") && (
+              <div>ОГРНИП: {LEGAL.OGRNIP}</div>
+            )}
+          {!LEGAL.ADDRESS.startsWith("<") && (
+            <div>{LEGAL.ADDRESS}</div>
+          )}
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-6">
-          <a href="mailto:support@whaleabyss.ru" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
-            support@whaleabyss.ru
+          <a
+            href={`mailto:${LEGAL.EMAIL}`}
+            className="hover:text-blue-600 transition-colors flex items-center gap-1.5"
+          >
+            {LEGAL.EMAIL}
           </a>
-          <a href="tel:+79384089608" className="hover:text-blue-600 transition-colors flex items-center gap-1.5 font-semibold">
-            +7 938 408 9608
-          </a>
+          {LEGAL.PHONE && (
+            <a
+              href={`tel:${LEGAL.PHONE_TEL}`}
+              className="hover:text-blue-600 transition-colors flex items-center gap-1.5 font-semibold"
+            >
+              {LEGAL.PHONE}
+            </a>
+          )}
         </div>
       </div>
 
       {/* Payment Banner */}
       <div className="mx-auto flex justify-center sm:justify-start max-w-300 mt-6 opacity-80 hover:opacity-100 transition-opacity">
-        <a href="https://freekassa.net" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://freekassa.net"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <img
             src="https://cdn.freekassa.net/banners/small-white-1.png"
             alt="Freekassa"
-            title="Прием платежей на сайте для физических лиц и т.д."
+            title="Приём платежей на сайте"
           />
         </a>
       </div>

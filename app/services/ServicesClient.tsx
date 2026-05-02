@@ -23,7 +23,7 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
 
       <section
         id="services"
-        className="py-20 relative overflow-hidden"
+        className="pt-24 pb-20 relative overflow-hidden"
         style={{
           background: "linear-gradient(to bottom, #090e17 0%, #111a2e 100%)",
           minHeight: "calc(100vh - 64px)"

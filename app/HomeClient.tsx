@@ -238,7 +238,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 										<div className="mt-6 flex justify-start pb-8 sm:pb-0">
 											<Link
 												href="/orders"
-												className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-8 py-3.5 font-bold text-slate-700 transition-all hover:bg-slate-50 hover:text-blue-900 shadow-sm hover:shadow-md cursor-pointer pointer-events-auto"
+												className="btn-secondary !rounded-xl !px-8 !py-3.5 !font-bold"
 											>
 												Посмотреть все заказы
 											</Link>
@@ -261,7 +261,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 									<div className="mt-6 flex justify-start pb-8 sm:pb-0">
 										<Link
 											href="/orders"
-											className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-8 py-3.5 font-bold text-slate-700 transition-all hover:bg-slate-50 hover:text-blue-900 shadow-sm hover:shadow-md cursor-pointer pointer-events-auto"
+											className="btn-secondary !rounded-xl !px-8 !py-3.5 !font-bold"
 										>
 											Посмотреть все заказы
 										</Link>
@@ -327,23 +327,13 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 							<div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-3 w-full max-w-[100vw]">
 								<a
 									href="#services"
-									className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-3xl px-4 sm:px-8 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5"
-									style={{
-										backgroundColor: "var(--accent-primary)",
-										boxShadow: "0 10px 15px -3px rgba(30, 58, 138, 0.2)",
-										fontFamily:
-											"var(--font-primary), sans-serif",
-									}}
+									className="btn-primary w-full sm:w-auto !rounded-3xl !px-6 sm:!px-8 !py-3.5 !text-sm !font-bold"
 								>
 									Выбрать услугу
 								</a>
 								<a
 									href="#how"
-									className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-3xl bg-white px-4 sm:px-8 py-3.5 text-sm font-bold transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/5"
-									style={{
-										color: "var(--text-secondary)",
-										border: "1px solid rgba(0,0,0,0.05)",
-									}}
+									className="btn-secondary w-full sm:w-auto !rounded-3xl !px-6 sm:!px-8 !py-3.5 !text-sm !font-bold"
 								>
 									Как это работает?
 								</a>
@@ -541,41 +531,14 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 						{session?.user && (
 							<Link
 								href="/services"
-								className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl px-12 py-5 text-xl font-bold transition-all hover:-translate-y-1 hover:shadow-xl focus:outline-none border-2"
-								style={{
-									borderColor: "var(--accent-primary)",
-									color: "var(--accent-primary)",
-									backgroundColor: "transparent",
-								}}
-								onMouseEnter={(e) => {
-									e.currentTarget.style.transform = "translateY(-4px)";
-									e.currentTarget.style.backgroundColor =
-										"rgba(30, 58, 138, 0.05)";
-								}}
-								onMouseLeave={(e) => {
-									e.currentTarget.style.transform = "translateY(0)";
-									e.currentTarget.style.backgroundColor = "transparent";
-								}}
+								className="btn-secondary w-full sm:w-auto !rounded-2xl !px-12 !py-5 !text-xl !font-bold"
 							>
 								Все услуги
 							</Link>
 						)}
 						<button
 							onClick={() => setSuggestOpen(true)}
-							className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl px-12 py-5 text-xl font-bold transition-all hover:-translate-y-1 hover:shadow-xl focus:outline-none"
-							style={{
-								backgroundColor: "var(--accent-primary)",
-								color: "#ffffff",
-							}}
-							onMouseEnter={(e) => {
-								e.currentTarget.style.transform = "translateY(-4px)";
-								e.currentTarget.style.boxShadow =
-									"0 20px 25px -5px rgba(255, 255, 255, 0.1), 0 10px 10px -5px rgba(255, 255, 255, 0.04)";
-							}}
-							onMouseLeave={(e) => {
-								e.currentTarget.style.transform = "translateY(0)";
-								e.currentTarget.style.boxShadow = "none";
-							}}
+							className="btn-primary w-full sm:w-auto !rounded-2xl !px-12 !py-5 !text-xl !font-bold"
 						>
 							Предложить услугу
 						</button>

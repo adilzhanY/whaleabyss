@@ -43,7 +43,7 @@ export default function CartPage() {
               if (data.receiptEmail) {
                 setIsEditingEmail(false);
               }
-            }
+:           }
             if (data.telegramUsername) {
               setTelegram(data.telegramUsername);
               setIsEditingTelegram(false);
@@ -103,7 +103,7 @@ export default function CartPage() {
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       <DataSecurityModal isOpen={isDataSecurityModalOpen} onClose={() => setIsDataSecurityModalOpen(false)} />
 
-      <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8">
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 pt-24 pb-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-slate-400 mb-6">
           <Link href="/" className="hover:text-blue-900 transition-colors">Главная</Link>

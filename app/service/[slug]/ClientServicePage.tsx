@@ -85,7 +85,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
       <CartModal />
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
-      <main className="mx-auto px-4 py-8 flex flex-col items-center w-full max-w-6xl" style={{ maxWidth: "1200px" }}>
+      <main className="mx-auto px-4 pt-24 pb-8 flex flex-col items-center w-full max-w-6xl" style={{ maxWidth: "1200px" }}>
         <div className="w-full grid grid-cols-1 lg:grid-cols-[1fr_450px] gap-6 xl:gap-8 items-start">
 
           {/* Main Visual & Details Column */}

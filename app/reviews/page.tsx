@@ -45,7 +45,7 @@ export default function ReviewsPage() {
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
 
-      <main className="flex-1 py-20">
+      <main className="flex-1 pt-24 pb-20">
         <div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "75rem" }}>
           <div className="mb-12 text-center">
             <h1

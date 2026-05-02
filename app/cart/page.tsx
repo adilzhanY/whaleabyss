@@ -43,7 +43,7 @@ export default function CartPage() {
               if (data.receiptEmail) {
                 setIsEditingEmail(false);
               }
-:           }
+            }
             if (data.telegramUsername) {
               setTelegram(data.telegramUsername);
               setIsEditingTelegram(false);

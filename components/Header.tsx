@@ -161,7 +161,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
                 style={{ color: "var(--accent-primary)" }}
               >
                 <img
-                  src="/icons/whaleabyss_new_logo.png"
+                  src="/icons/whale_logo_circle.png"
                   alt="Whale Abyss"
                   className="h-9 w-9 md:h-11 md:w-11 object-contain"
                 />
@@ -313,7 +313,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
         <div className="flex items-center justify-between p-4 border-b border-slate-100">
           <div className="flex items-center gap-2">
             <img
-              src="/icons/whaleabyss_new_logo.png"
+              src="/icons/whale_logo_circle.png"
               alt="Whale Abyss Logo"
               className="h-10 w-10 object-contain"
             />

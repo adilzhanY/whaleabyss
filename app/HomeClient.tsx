@@ -360,7 +360,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 								}}
 							/>
 							<img
-								src="/icons/whaleabyss_new_logo.png"
+								src="/icons/whale_logo_circle.png"
 								alt="Логотип Whale Abyss"
 								className="relative z-10 w-full h-full object-contain"
 								style={{ filter: "drop-shadow(0 20px 30px rgba(0,0,0,0.1))" }}

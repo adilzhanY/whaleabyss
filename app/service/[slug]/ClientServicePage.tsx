@@ -85,7 +85,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
       <CartModal />
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
-      <main className="mx-auto px-4 py-8 flex flex-col items-center w-full max-w-6xl" style={{ maxWidth: "1200px" }}>
+      <main className="mx-auto px-4 pt-24 pb-8 flex flex-col items-center w-full max-w-6xl" style={{ maxWidth: "1200px" }}>
         <div className="w-full grid grid-cols-1 lg:grid-cols-[1fr_450px] gap-6 xl:gap-8 items-start">
 
           {/* Main Visual & Details Column */}
@@ -101,7 +101,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
               <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/10 to-transparent flex flex-col justify-end p-8 sm:p-10">
                 <h1
                   className="text-white font-bold text-3xl sm:text-4xl md:text-5xl drop-shadow-md mb-2"
-                  style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}
+                  style={{ fontFamily: "var(--font-primary), sans-serif" }}
                 >
                   {service.subtitle || service.title}
                 </h1>
@@ -132,7 +132,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
           <div className="w-full lg:sticky lg:top-24 h-max">
             <div className="w-full bg-white rounded-4xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] p-8 sm:p-10 flex flex-col border border-slate-50">
 
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-6" style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-6" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
                 Детали Услуги
               </h2>
 
@@ -161,7 +161,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
                   <span
                     className="font-bold sm:text-lg text-base"
                     style={{
-                      fontFamily: "var(--font-montserrat), Montserrat, sans-serif",
+                      fontFamily: "var(--font-primary), sans-serif",
                       color: "var(--text-primary)",
                     }}
                   >
@@ -173,7 +173,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
               {/* Per Day Service Configurator */}
               {service.isPerDay && (
                 <div className="mb-6 border-t border-slate-100 pt-6">
-                  <label className="text-lg font-bold" style={{ color: "#1e3a8a", fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
+                  <label className="text-lg font-bold" style={{ color: "#1e3a8a", fontFamily: "var(--font-primary), sans-serif" }}>
                     Выберите срок обслуживания: {activeDays} дн.
                   </label>
                   <div className="flex flex-col gap-4 mt-4">
@@ -224,7 +224,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">
                     {service.isPerDay ? "ИТОГОВАЯ СТОИМОСТЬ" : "СТОИМОСТЬ"}
                   </p>
-                  <div className="flex items-baseline gap-1" style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
+                  <div className="flex items-baseline gap-1" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
                     <span className="text-4xl font-bold text-slate-800">{totalPrice.toLocaleString("ru-RU")}</span>
                     <span className="text-3xl font-bold text-slate-800">₽</span>
                   </div>

@@ -48,7 +48,7 @@ export default function DataSecurityModal({ isOpen, onClose }: DataSecurityModal
 
         <h3
           className="mb-4 text-2xl font-black"
-          style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "#1e3a8a" }}
+          style={{ fontFamily: "var(--font-primary), sans-serif", color: "#1e3a8a" }}
         >
           Безопасность данных
         </h3>

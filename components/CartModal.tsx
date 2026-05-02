@@ -64,7 +64,7 @@ export default function CartModal() {
         >
           <h2
             className="text-lg font-bold"
-            style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "var(--text-primary)" }}
+            style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
           >
             Корзина
           </h2>
@@ -135,7 +135,7 @@ export default function CartModal() {
               <span className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
                 Итого
               </span>
-              <span className="text-xl font-bold" style={{ color: "var(--text-price)", fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
+              <span className="text-xl font-bold" style={{ color: "var(--text-price)", fontFamily: "var(--font-primary), sans-serif" }}>
                 {total.toLocaleString("ru-RU")} ₽
               </span>
             </div>

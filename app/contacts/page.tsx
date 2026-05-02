@@ -4,6 +4,7 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Mail, Phone, Send, Clock, BadgeCheck } from "lucide-react";
+import { LEGAL, getPartyShortLabel } from "@/lib/legal";
 
 export default function ContactsPage() {
   const [, setAuthOpen] = useState(false);
@@ -12,12 +13,12 @@ export default function ContactsPage() {
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
 
-      <main className="flex-1 py-16 px-4 sm:px-6">
+      <main className="flex-1 pt-24 pb-16 px-4 sm:px-6">
         <div className="mx-auto max-w-3xl">
           <div className="mb-10 text-center">
             <h1
               className="text-3xl sm:text-4xl font-black mb-3"
-              style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "var(--text-primary)" }}
+              style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
             >
               Контакты поддержки
             </h1>
@@ -30,24 +31,26 @@ export default function ContactsPage() {
             <ContactCard
               icon={Mail}
               label="Электронная почта"
-              value="support@whaleabyss.ru"
-              href="mailto:support@whaleabyss.ru"
+              value={LEGAL.EMAIL}
+              href={`mailto:${LEGAL.EMAIL}`}
               hint="Основной канал для вопросов по заказам, возвратам и документам"
             />
             <ContactCard
               icon={Send}
               label="Telegram"
-              value="@whaleabyss"
-              href="https://t.me/whaleabyss"
+              value={LEGAL.TELEGRAM_HANDLE}
+              href={LEGAL.TELEGRAM_URL}
               hint="Оперативные ответы, уведомления по заказам"
             />
-            <ContactCard
-              icon={Phone}
-              label="Телефон"
-              value="+7 938 408 9608"
-              href="tel:+79384089608"
-              hint="Для срочных вопросов и голосовой связи"
-            />
+            {LEGAL.PHONE && (
+              <ContactCard
+                icon={Phone}
+                label="Телефон"
+                value={LEGAL.PHONE}
+                href={`tel:${LEGAL.PHONE_TEL}`}
+                hint="Для срочных вопросов и голосовой связи"
+              />
+            )}
             <ContactCard
               icon={Clock}
               label="Часы работы"
@@ -69,21 +72,40 @@ export default function ContactsPage() {
             <dl className="space-y-2 text-sm text-slate-700">
               <div className="flex flex-wrap gap-x-2">
                 <dt className="font-semibold text-slate-500 min-w-[140px]">Исполнитель:</dt>
-                <dd>Самозанятая Гурова Майя Павловна</dd>
+                <dd>{getPartyShortLabel()}</dd>
               </div>
               <div className="flex flex-wrap gap-x-2">
                 <dt className="font-semibold text-slate-500 min-w-[140px]">ИНН:</dt>
-                <dd className="font-mono">230412509070</dd>
+                <dd className="font-mono">{LEGAL.INN}</dd>
               </div>
+              {LEGAL.CURRENT_LEGAL_FORM === "individual_entrepreneur" &&
+                LEGAL.OGRNIP &&
+                !LEGAL.OGRNIP.startsWith("<") && (
+                  <div className="flex flex-wrap gap-x-2">
+                    <dt className="font-semibold text-slate-500 min-w-[140px]">ОГРНИП:</dt>
+                    <dd className="font-mono">
+                      {LEGAL.OGRNIP}
+                      {LEGAL.OGRNIP_DATE && !LEGAL.OGRNIP_DATE.startsWith("<")
+                        ? ` от ${LEGAL.OGRNIP_DATE}`
+                        : ""}
+                    </dd>
+                  </div>
+                )}
+              {LEGAL.ADDRESS && !LEGAL.ADDRESS.startsWith("<") && (
+                <div className="flex flex-wrap gap-x-2">
+                  <dt className="font-semibold text-slate-500 min-w-[140px]">Адрес:</dt>
+                  <dd>{LEGAL.ADDRESS}</dd>
+                </div>
+              )}
               <div className="flex flex-wrap gap-x-2">
-                <dt className="font-semibold text-slate-500 min-w-[140px]">Статус:</dt>
-                <dd>Плательщик налога на профессиональный доход (НПД)</dd>
+                <dt className="font-semibold text-slate-500 min-w-[140px]">Налоговый режим:</dt>
+                <dd>УСН «Доходы», 6%</dd>
               </div>
               <div className="flex flex-wrap gap-x-2">
                 <dt className="font-semibold text-slate-500 min-w-[140px]">E-mail:</dt>
                 <dd>
-                  <a href="mailto:support@whaleabyss.ru" className="text-blue-600 hover:underline">
-                    support@whaleabyss.ru
+                  <a href={`mailto:${LEGAL.EMAIL}`} className="text-blue-600 hover:underline">
+                    {LEGAL.EMAIL}
                   </a>
                 </dd>
               </div>
@@ -91,10 +113,11 @@ export default function ContactsPage() {
 
             <p className="text-xs text-slate-500 mt-6 leading-relaxed">
               Возврат средств и претензии — направляются на{" "}
-              <a href="mailto:support@whaleabyss.ru" className="text-blue-600 hover:underline">
-                support@whaleabyss.ru
+              <a href={`mailto:${LEGAL.EMAIL}`} className="text-blue-600 hover:underline">
+                {LEGAL.EMAIL}
               </a>{" "}
-              с указанием номера заказа. Срок рассмотрения — до 7 рабочих дней согласно{" "}
+              с указанием номера заказа. Срок рассмотрения и порядок возврата —
+              согласно{" "}
               <a href="/public_offer" className="text-blue-600 hover:underline">
                 публичной оферте
               </a>

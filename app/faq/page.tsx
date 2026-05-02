@@ -47,7 +47,7 @@ function FaqItem({ q, a }: { q: string; a: ReactNode }) {
   return (
     <div
       className="rounded-2xl border overflow-hidden cursor-pointer"
-      style={{ borderColor: "var(--accent-border)", backgroundColor: "var(--bg-card)", fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}
+      style={{ borderColor: "var(--accent-border)", backgroundColor: "var(--bg-card)", fontFamily: "var(--font-primary), sans-serif" }}
       onClick={() => setOpen(!open)}
     >
       <div
@@ -88,12 +88,12 @@ export default function FaqPage() {
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
 
-      <main className="flex-1 py-20">
+      <main className="flex-1 pt-24 pb-20">
         <div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "50rem" }}>
           <div className="mb-12 text-center">
             <h1
               className="text-3xl font-black"
-              style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "var(--text-primary)" }}
+              style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
             >
               Часто задаваемые вопросы
             </h1>

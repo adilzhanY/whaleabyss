@@ -5,6 +5,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ShieldCheck, FileText, MessageSquare, ArrowRight } from "lucide-react";
+import { LEGAL, getPartyShortLabel } from "@/lib/legal";
 
 export default function InfoPage() {
   const [, setAuthOpen] = useState(false);
@@ -13,12 +14,12 @@ export default function InfoPage() {
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
 
-      <main className="flex-1 py-16 px-4 sm:px-6">
+      <main className="flex-1 pt-24 pb-16 px-4 sm:px-6">
         <div className="mx-auto max-w-4xl">
           <div className="mb-10 text-center">
             <h1
               className="text-3xl sm:text-4xl font-black mb-3"
-              style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif", color: "var(--text-primary)" }}
+              style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
             >
               О сервисе
             </h1>
@@ -44,18 +45,30 @@ export default function InfoPage() {
               href="/contacts"
               icon={MessageSquare}
               title="Контакты поддержки"
-              description="Email, Telegram, телефон и реквизиты исполнителя для связи и документов."
+              description="Email, Telegram и реквизиты исполнителя для связи и документов."
             />
           </div>
 
           <div className="mt-10 bg-white rounded-2xl border border-slate-200 p-6 text-center">
             <p className="text-sm text-slate-600">
               Услуги оказывает{" "}
-              <strong className="text-slate-900">Самозанятая Гурова Майя Павловна</strong>,{" "}
-              ИНН <span className="font-mono">230412509070</span>. Платёжная инфраструктура
-              предоставлена Freekassa. Оплата проходит по защищённому протоколу{" "}
-              <strong className="text-slate-900">HTTPS/SSL</strong>; данные карт сервис не
-              хранит.
+              <strong className="text-slate-900">{getPartyShortLabel()}</strong>,{" "}
+              ИНН <span className="font-mono">{LEGAL.INN}</span>
+              {LEGAL.CURRENT_LEGAL_FORM === "individual_entrepreneur" &&
+                LEGAL.OGRNIP &&
+                !LEGAL.OGRNIP.startsWith("<") && (
+                  <>
+                    , ОГРНИП <span className="font-mono">{LEGAL.OGRNIP}</span>
+                  </>
+                )}
+              . Приём платежей осуществляется через защищённые платёжные шлюзы
+              банков-партнёров; оплата проходит по защищённому протоколу{" "}
+              <strong className="text-slate-900">HTTPS/SSL</strong>, данные банковских
+              карт сервис не собирает и не хранит. Подробности — в{" "}
+              <Link href="/payment" className="text-blue-600 hover:underline">
+                правилах оплаты
+              </Link>
+              .
             </p>
           </div>
         </div>

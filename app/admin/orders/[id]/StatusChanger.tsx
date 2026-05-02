@@ -52,7 +52,7 @@ export default function StatusChanger({
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <span className="text-xs text-slate-500">Текущий:</span>
-        <OrderStatusBadge status={initialStatus} />
+        <OrderStatusBadge status={initialStatus} fc-list | grep -i "JetBrains Mono"/>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
@@ -71,7 +71,7 @@ export default function StatusChanger({
             >
               {orderStatusLabel(s)}
             </button>
-          );
+          );fc-list | grep -i "JetBrains Mono"
         })}
       </div>
 

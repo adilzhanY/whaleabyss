@@ -103,7 +103,7 @@ export default function CartPage() {
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       <DataSecurityModal isOpen={isDataSecurityModalOpen} onClose={() => setIsDataSecurityModalOpen(false)} />
 
-      <main className="mx-auto max-w-6xl px-4 sm:px-6 py-8">
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 pt-24 pb-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-slate-400 mb-6">
           <Link href="/" className="hover:text-blue-900 transition-colors">Главная</Link>
@@ -111,7 +111,7 @@ export default function CartPage() {
           <span className="text-blue-300">Корзина</span>
         </div>
 
-        <h1 className="text-3xl font-black text-blue-950 mb-8" style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
+        <h1 className="text-3xl font-black text-blue-950 mb-8" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
           Корзина
         </h1>
 
@@ -154,7 +154,7 @@ export default function CartPage() {
                         <Plus className="w-3 h-3" />
                       </button>
                     </div>
-                    <p className="text-xl font-bold text-blue-950" style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
+                    <p className="text-xl font-bold text-blue-950" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
                       {(item.price * item.quantity).toLocaleString("ru-RU")} ₽
                     </p>
                   </div>
@@ -233,7 +233,7 @@ export default function CartPage() {
 
               <div className="flex items-end justify-between mt-2">
                 <span className="text-base font-bold text-blue-950">Общая стоимость:</span>
-                <span className="text-2xl font-black text-blue-950" style={{ fontFamily: "var(--font-montserrat), Montserrat, sans-serif" }}>
+                <span className="text-2xl font-black text-blue-950" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
                   {total.toLocaleString("ru-RU")} ₽
                 </span>
               </div>

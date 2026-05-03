@@ -52,9 +52,11 @@ export const LEGAL = {
   PHONE: "",
   PHONE_TEL: "",
 
-  // Telegram (для футера и контактов).
-  TELEGRAM_HANDLE: "@whaleabyss",
-  TELEGRAM_URL: "https://t.me/whaleabyss",
+  // Telegram для личной связи с поддержкой (используется на страницах
+  // «Контакты» и «Правила оплаты»). Публичный Telegram-канал (@whaleabyss)
+  // зашит отдельно в Footer/Header и в FAQ — это разные сущности.
+  TELEGRAM_HANDLE: "@whaleabyss_official",
+  TELEGRAM_URL: "https://t.me/whaleabyss_official",
 
   // ---------------- Агентский договор ----------------
   /** Процент агентского вознаграждения (от стоимости заказа). */

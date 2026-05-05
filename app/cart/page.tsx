@@ -3,12 +3,38 @@
 import { useState, useEffect } from "react";
 import { useCart } from "@/store/useCart";
 import Header from "@/components/Header";
-import { Trash2, Plus, Minus, ChevronRight, Edit2 } from "lucide-react";
+import { Trash2, Plus, Minus, ChevronRight, Edit2, CreditCard, Zap, Wallet } from "lucide-react";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import DataSecurityModal from "@/components/DataSecurityModal";
 import AuthModal from "@/components/AuthModal";
 import { useSession } from "next-auth/react";
+
+/**
+ * Available payment methods. The numeric `id` is the Freekassa method id
+ * passed to the SCI redirect as `i=` (see lib/freekassa.ts → FREEKASSA_METHODS).
+ * The UI intentionally does NOT mention the aggregator brand or use its logo.
+ */
+const PAYMENT_METHODS = [
+  {
+    id: 36,
+    label: "Банковская карта",
+    sublabel: "Visa, MasterCard, МИР",
+    icon: CreditCard,
+  },
+  {
+    id: 44,
+    label: "СБП",
+    sublabel: "Система быстрых платежей",
+    icon: Zap,
+  },
+  {
+    id: 35,
+    label: "QIWI Кошелёк",
+    sublabel: "Оплата с баланса QIWI",
+    icon: Wallet,
+  },
+] as const;
 
 export default function CartPage() {
   const { data: session } = useSession();
@@ -54,6 +80,7 @@ export default function CartPage() {
     }
   }, [session]);
 
+  const [paymentMethod, setPaymentMethod] = useState<number>(PAYMENT_METHODS[0].id);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,7 +107,7 @@ export default function CartPage() {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items, total, email, telegram, inGameName })
+        body: JSON.stringify({ items, total, email, telegram, inGameName, method: paymentMethod })
       });
 
       if (!res.ok) {
@@ -89,7 +116,8 @@ export default function CartPage() {
 
       const data = await res.json();
       if (data.url) {
-        window.location.href = data.url; // Redirect to Freekassa!
+        // Redirect into the chosen acquiring channel.
+        window.location.href = data.url;
       }
     } catch (e: any) {
       setError(e.message || "Произошла ошибка");
@@ -216,11 +244,50 @@ export default function CartPage() {
             </div>
 
             {/* Способ оплаты */}
-            <div className="space-y-4 border-b border-slate-200 pb-5">
+            <div className="space-y-3 border-b border-slate-200 pb-5">
               <h3 className="font-bold text-blue-950">Способ оплаты</h3>
-              <div className="flex items-center gap-3">
-                <input type="radio" checked readOnly className="w-5 h-5 accent-blue-900" />
-                <span className="text-xl font-bold text-slate-800 tracking-tight">Freekassa (Карты РФ, СБП)</span>
+              <div className="space-y-2">
+                {PAYMENT_METHODS.map((m) => {
+                  const Icon = m.icon;
+                  const selected = paymentMethod === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setPaymentMethod(m.id)}
+                      className={`w-full flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all cursor-pointer ${
+                        selected
+                          ? "border-blue-900 bg-white shadow-sm"
+                          : "border-transparent bg-white/60 hover:bg-white"
+                      }`}
+                    >
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                          selected ? "border-blue-900" : "border-slate-300"
+                        }`}
+                      >
+                        {selected && (
+                          <div className="w-2.5 h-2.5 rounded-full bg-blue-900" />
+                        )}
+                      </div>
+                      <Icon
+                        className={`w-5 h-5 shrink-0 transition-colors ${
+                          selected ? "text-blue-900" : "text-slate-400"
+                        }`}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div
+                          className={`text-sm font-bold transition-colors ${
+                            selected ? "text-blue-950" : "text-slate-700"
+                          }`}
+                        >
+                          {m.label}
+                        </div>
+                        <div className="text-xs text-slate-500">{m.sublabel}</div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

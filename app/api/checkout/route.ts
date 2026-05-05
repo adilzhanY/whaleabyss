@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { orders, orderItems, services, users } from '@/lib/schema';
-import { buildFreekassaPaymentUrl } from '@/lib/freekassa';
+import {
+  buildFreekassaPaymentUrl,
+  createFreekassaOrder,
+  ALLOWED_METHOD_IDS,
+  FREEKASSA_METHODS,
+} from '@/lib/freekassa';
 import { inArray, eq } from 'drizzle-orm';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
@@ -17,7 +22,7 @@ export async function POST(req: NextRequest) {
     const userId: string | null = session?.user?.id || null;
 
     const body = await req.json();
-    const { items, total, email, telegram, inGameName } = body ?? {};
+    const { items, total, email, telegram, inGameName, method } = body ?? {};
 
     console.log('--- [Checkout] Incoming request:', {
       items,
@@ -25,6 +30,7 @@ export async function POST(req: NextRequest) {
       email,
       telegram,
       inGameName,
+      method,
     });
 
     if (!items || items.length === 0 || !total) {
@@ -34,6 +40,16 @@ export async function POST(req: NextRequest) {
 
     if (!email) {
       return new NextResponse('Email is required for receipts', { status: 400 });
+    }
+
+    // Validate `method` (payment method id). Defaults to bank card if absent.
+    let paymentMethodId: number = FREEKASSA_METHODS.CARD;
+    if (method !== undefined && method !== null && method !== '') {
+      const m = Number(method);
+      if (!Number.isFinite(m) || !ALLOWED_METHOD_IDS.has(m)) {
+        return new NextResponse('Invalid payment method', { status: 400 });
+      }
+      paymentMethodId = m;
     }
 
     const userNotes = `Email: ${email}\nTelegram: ${telegram}\nIn-Game Name: ${inGameName}`;
@@ -99,19 +115,43 @@ export async function POST(req: NextRequest) {
     });
     await db.insert(orderItems).values(insertItems);
 
-    // 3. Build the Freekassa SCI redirect URL. The customer will pick a
-    //    payment method (cards РФ, СБП, МИР, etc.) on FK's hosted form.
-    //    Success / fail / notification URLs are configured in the FK
-    //    dashboard — no need to pass them here.
-    const paymentUrl = buildFreekassaPaymentUrl({
-      orderId: newOrderId,
-      amount: Number(total),
-      email: receiptEmail,
-      currency: 'RUB',
-      lang: 'ru',
-    });
+    // 3. Build the payment URL.
+    //
+    //    Freekassa restricts card processing (method 36) to API 2.0 only —
+    //    the SCI form refuses card payments with a toast "данный метод
+    //    работает только по API". СБП and QIWI continue to work via
+    //    SCI just fine. So we route methods accordingly.
+    let paymentUrl: string;
 
-    console.log('--- [Checkout] Redirecting user to Freekassa:', paymentUrl);
+    if (paymentMethodId === FREEKASSA_METHODS.CARD) {
+      // Resolve the customer IP for FK API 2.0 (required field).
+      const xff = req.headers.get('x-forwarded-for') || '';
+      const clientIp =
+        xff.split(',')[0].trim() ||
+        req.headers.get('x-real-ip') ||
+        '127.0.0.1';
+
+      const fkOrder = await createFreekassaOrder({
+        orderId: newOrderId,
+        amount: Number(total),
+        email: receiptEmail,
+        ip: clientIp,
+        currency: 'RUB',
+        paymentMethodId,
+      });
+      paymentUrl = fkOrder.location;
+    } else {
+      paymentUrl = buildFreekassaPaymentUrl({
+        orderId: newOrderId,
+        amount: Number(total),
+        email: receiptEmail,
+        currency: 'RUB',
+        lang: 'ru',
+        paymentMethodId,
+      });
+    }
+
+    console.log('--- [Checkout] Redirecting user to payment provider:', paymentUrl);
 
     return NextResponse.json({ url: paymentUrl });
   } catch (error) {

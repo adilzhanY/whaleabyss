@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Lock } from "lucide-react";
 import { LEGAL, getPartyShortLabel } from "@/lib/legal";
 
 export default function Footer() {
@@ -158,19 +159,12 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Payment Banner */}
-      <div className="mx-auto flex justify-center sm:justify-start max-w-300 mt-6 opacity-80 hover:opacity-100 transition-opacity">
-        <a
-          href="https://freekassa.net"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            src="https://cdn.freekassa.net/banners/small-white-1.png"
-            alt="Freekassa"
-            title="Приём платежей на сайте"
-          />
-        </a>
+      {/* Payment methods (neutral, no aggregator branding) */}
+      <div className="mx-auto flex justify-center sm:justify-start max-w-300 mt-6">
+        <div className="flex items-center gap-2 text-xs text-slate-500">
+          <Lock className="w-3.5 h-3.5" />
+          <span>Безопасная оплата · Visa · MasterCard · МИР · СБП</span>
+        </div>
       </div>
     </footer>
   );

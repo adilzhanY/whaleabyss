@@ -57,6 +57,35 @@ function getEnv(): {
   return { shopId, apiKey, secret1, secret2 };
 }
 
+// -------- Payment method IDs (recommended by FK for this shop) ---------------
+
+/**
+ * Payment method IDs explicitly recommended by Freekassa for this shop
+ * (see merchant dashboard banner: ID 36 / 35 / 44).
+ *
+ * Passing one of these as `i=` on the SCI URL skips the method chooser and
+ * sends the buyer straight into the selected acquiring channel. Per FK's
+ * brand requirements, when a specific method is selected we MUST present
+ * it under its own name (Карта / СБП / QIWI) — never under the Freekassa
+ * brand or logo.
+ */
+export const FREEKASSA_METHODS = {
+  /** Visa / MasterCard / МИР */
+  CARD: 36,
+  /** QIWI кошелёк */
+  QIWI: 35,
+  /** СБП — Система быстрых платежей */
+  SBP: 44,
+} as const;
+
+export type FreekassaMethodId =
+  (typeof FREEKASSA_METHODS)[keyof typeof FREEKASSA_METHODS];
+
+/** Set of method IDs we accept from clients on the checkout endpoint. */
+export const ALLOWED_METHOD_IDS: ReadonlySet<number> = new Set(
+  Object.values(FREEKASSA_METHODS)
+);
+
 // -------- SCI form redirect (primary flow) -----------------------------------
 
 const FK_SCI_ENDPOINT = process.env.FREEKASSA_SCI_URL || 'https://pay.fk.money/';

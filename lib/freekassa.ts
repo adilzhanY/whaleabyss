@@ -70,10 +70,6 @@ function getEnv(): {
  * brand or logo.
  */
 export const FREEKASSA_METHODS = {
-  /** Visa / MasterCard / МИР */
-  CARD: 36,
-  /** QIWI кошелёк */
-  QIWI: 35,
   /** СБП — Система быстрых платежей */
   SBP: 44,
 } as const;
@@ -209,7 +205,7 @@ export async function createFreekassaOrder(
     currency: opts.currency ?? 'RUB',
     email: opts.email,
     ip: opts.ip,
-    i: opts.paymentMethodId ?? (Number(process.env.FREEKASSA_DEFAULT_METHOD) || 36),
+    i: opts.paymentMethodId ?? 44,
   };
 
   const signature = signApiRequest(body, apiKey);

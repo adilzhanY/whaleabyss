@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate `method` (payment method id). Defaults to bank card if absent.
-    let paymentMethodId: number = FREEKASSA_METHODS.CARD;
+    let paymentMethodId: number = FREEKASSA_METHODS.SBP;
     if (method !== undefined && method !== null && method !== '') {
       const m = Number(method);
       if (!Number.isFinite(m) || !ALLOWED_METHOD_IDS.has(m)) {
@@ -117,39 +117,22 @@ export async function POST(req: NextRequest) {
 
     // 3. Build the payment URL.
     //
-    //    Freekassa restricts card processing (method 36) to API 2.0 only —
-    //    the SCI form refuses card payments with a toast "данный метод
-    //    работает только по API". СБП and QIWI continue to work via
-    //    SCI just fine. So we route methods accordingly.
+    //    Freekassa support states that only SBP (44) is available
+    //    and requires using API 2.0. So we route all payments via API 2.0.
     let paymentUrl: string;
 
-    if (paymentMethodId === FREEKASSA_METHODS.CARD) {
-      // Resolve the customer IP for FK API 2.0 (required field).
-      const xff = req.headers.get('x-forwarded-for') || '';
-      const clientIp =
-        xff.split(',')[0].trim() ||
-        req.headers.get('x-real-ip') ||
-        '127.0.0.1';
+    const xff = req.headers.get('x-forwarded-for') || '';
+    const clientIp = xff.split(',')[0].trim() || req.headers.get('x-real-ip') || '127.0.0.1';
 
-      const fkOrder = await createFreekassaOrder({
-        orderId: newOrderId,
-        amount: Number(total),
-        email: receiptEmail,
-        ip: clientIp,
-        currency: 'RUB',
-        paymentMethodId,
-      });
-      paymentUrl = fkOrder.location;
-    } else {
-      paymentUrl = buildFreekassaPaymentUrl({
-        orderId: newOrderId,
-        amount: Number(total),
-        email: receiptEmail,
-        currency: 'RUB',
-        lang: 'ru',
-        paymentMethodId,
-      });
-    }
+    const fkOrder = await createFreekassaOrder({
+      orderId: newOrderId,
+      amount: Number(total),
+      email: receiptEmail,
+      ip: clientIp,
+      currency: 'RUB',
+      paymentMethodId: FREEKASSA_METHODS.SBP, // Always use SBP 44
+    });
+    paymentUrl = fkOrder.location;
 
     console.log('--- [Checkout] Redirecting user to payment provider:', paymentUrl);
 

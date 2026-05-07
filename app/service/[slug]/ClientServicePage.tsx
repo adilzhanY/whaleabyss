@@ -70,7 +70,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
       title: service.title,
       subtitle: service.subtitle,
       price: pricePerItem,
-      image: service.background || service.image || "/images/genshin_background.jpg",
+      image: service.background || "/images/genshin_background.jpg",
     }, activeDays);
     openCart();
   };

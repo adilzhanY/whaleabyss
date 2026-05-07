@@ -141,8 +141,7 @@ export default function AvatarEditor({ currentAvatarUrl, userName, onUploadSucce
                 <button
                   onClick={uploadPhoto}
                   disabled={isUploading}
-                  className="flex-1 py-2 px-4 rounded-lg flex items-center justify-center gap-2 text-white"
-                  style={{ backgroundColor: "var(--accent-primary)" }}
+                  className="btn-primary flex-1 !py-2 !px-4 !rounded-lg flex items-center justify-center gap-2"
                 >
                   {isUploading ? "Загрузка..." : <><Upload size={16} /> Сохранить</>}
                 </button>

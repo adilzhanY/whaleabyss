@@ -20,6 +20,7 @@ export default function ServiceCard({ item }: ServiceCardProps) {
       title: item.title,
       subtitle: item.subtitle,
       price: item.price,
+      image: item.background || "/images/genshin_background.jpg",
     });
     openCart();
   };

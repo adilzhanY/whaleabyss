@@ -80,19 +80,7 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
           <div className="mt-16 flex justify-center">
             <button
               onClick={() => setSuggestOpen(true)}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl px-12 py-5 text-xl font-bold transition-all hover:-translate-y-1 hover:shadow-xl focus:outline-none"
-              style={{
-                backgroundColor: "var(--accent-primary)",
-                color: "#ffffff"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-4px)";
-                e.currentTarget.style.boxShadow = "0 20px 25px -5px rgba(255, 255, 255, 0.1), 0 10px 10px -5px rgba(255, 255, 255, 0.04)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "none";
-              }}
+              className="btn-primary inline-flex items-center justify-center gap-2 !rounded-2xl !px-12 !py-5 !text-xl !font-bold"
             >
               Предложить услугу
             </button>

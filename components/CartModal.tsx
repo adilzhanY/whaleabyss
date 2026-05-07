@@ -144,13 +144,7 @@ export default function CartModal() {
                 closeCart();
                 router.push("/cart");
               }}
-              className="w-full rounded-lg py-3 text-sm font-bold text-white transition-colors"
-              style={{
-                backgroundColor: "var(--accent-primary)",
-                borderRadius: "var(--btn-radius)",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary-hover)")}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-primary)")}
+              className="btn-primary w-full !py-3 !text-sm"
             >
               Перейти к оплате
             </button>

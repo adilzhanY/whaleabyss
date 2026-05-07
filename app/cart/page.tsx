@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useCart } from "@/store/useCart";
 import Header from "@/components/Header";
-import { Trash2, Plus, Minus, ChevronRight, Edit2, CreditCard, Zap, Wallet } from "lucide-react";
+import { Trash2, Plus, Minus, ChevronRight, Edit2 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import DataSecurityModal from "@/components/DataSecurityModal";
@@ -17,22 +18,10 @@ import { useSession } from "next-auth/react";
  */
 const PAYMENT_METHODS = [
   {
-    id: 36,
-    label: "Банковская карта",
-    sublabel: "Visa, MasterCard, МИР",
-    icon: CreditCard,
-  },
-  {
     id: 44,
     label: "СБП",
     sublabel: "Система быстрых платежей",
-    icon: Zap,
-  },
-  {
-    id: 35,
-    label: "QIWI Кошелёк",
-    sublabel: "Оплата с баланса QIWI",
-    icon: Wallet,
+    logo: "/icons/sbp.png",
   },
 ] as const;
 
@@ -149,7 +138,7 @@ export default function CartPage() {
             {items.length === 0 ? (
               <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-slate-100">
                 <p className="text-slate-500 mb-4">Ваша корзина пуста</p>
-                <Link href="/" className="inline-flex py-2 px-6 rounded-lg font-bold text-white bg-blue-900 hover:bg-blue-950 transition">
+                <Link href="/" className="btn-primary inline-flex !py-2 !px-6 !rounded-lg !font-bold">
                   Вернуться к услугам
                 </Link>
               </div>
@@ -157,15 +146,25 @@ export default function CartPage() {
               items.map((item) => (
                 <div key={item.id} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4 flex-1">
-                    {/* Minimal Thumbnail representation */}
-                    <div className="w-20 h-20 rounded-xl shrink-0 flex items-center justify-center font-black text-[10px] text-white text-center leading-tight shadow-inner" style={{ background: "linear-gradient(135deg, #60a5fa 0%, #1e3a8a 50%, #1e3a8a 100%)" }}>
-                      {item.title}
-                    </div>
+                    {/* Service Image */}
+                    {item.image ? (
+                      <Image
+                        src={item.image}
+                        alt={item.title}
+                        width={80}
+                        height={80}
+                        className="w-20 h-20 rounded-xl shrink-0 object-cover"
+                      />
+                    ) : (
+                      <div className="w-20 h-20 rounded-xl shrink-0 flex items-center justify-center font-black text-[10px] text-white text-center leading-tight shadow-inner" style={{ background: "linear-gradient(135deg, #60a5fa 0%, #1e3a8a 50%, #1e3a8a 100%)" }}>
+                        {item.title}
+                      </div>
+                    )}
                     <div>
                       <p className="font-semibold text-slate-800">{item.subtitle}</p>
 
                       <div className="flex items-center gap-3 mt-3">
-                        <button onClick={() => removeFromCart(item.id)} className="w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors" aria-label="Удалить">
+                        <button onClick={() => removeFromCart(item.id)} className="w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors cursor-pointer" aria-label="Удалить">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -174,11 +173,11 @@ export default function CartPage() {
 
                   <div className="flex flex-col items-end gap-3">
                     <div className="flex items-center gap-3">
-                      <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-6 h-6 flex items-center justify-center rounded-full border border-slate-200 text-slate-400 hover:text-blue-900 hover:border-blue-900 transition-colors">
+                      <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="btn-primary w-8 h-8 flex items-center justify-center !rounded-full !py-0 !px-0 cursor-pointer">
                         <Minus className="w-3 h-3" />
                       </button>
                       <span className="text-sm font-medium w-6 text-center">{item.quantity} шт.</span>
-                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-6 h-6 flex items-center justify-center rounded-full border border-slate-200 text-slate-400 hover:text-blue-900 hover:border-blue-900 transition-colors">
+                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="btn-primary w-8 h-8 flex items-center justify-center !rounded-full !py-0 !px-0 cursor-pointer">
                         <Plus className="w-3 h-3" />
                       </button>
                     </div>
@@ -248,7 +247,6 @@ export default function CartPage() {
               <h3 className="font-bold text-blue-950">Способ оплаты</h3>
               <div className="space-y-2">
                 {PAYMENT_METHODS.map((m) => {
-                  const Icon = m.icon;
                   const selected = paymentMethod === m.id;
                   return (
                     <button
@@ -270,10 +268,12 @@ export default function CartPage() {
                           <div className="w-2.5 h-2.5 rounded-full bg-blue-900" />
                         )}
                       </div>
-                      <Icon
-                        className={`w-5 h-5 shrink-0 transition-colors ${
-                          selected ? "text-blue-900" : "text-slate-400"
-                        }`}
+                      <Image
+                        src={m.logo}
+                        alt={m.label}
+                        width={56}
+                        height={56}
+                        className="shrink-0"
                       />
                       <div className="flex-1 min-w-0">
                         <div
@@ -306,32 +306,84 @@ export default function CartPage() {
               </div>
 
               {/* Согласие на обработку ПД */}
-              <div className="flex items-start gap-3 mt-4">
-                <div className="flex items-center h-5 mt-0.5">
+              <div className="checkbox-wrapper-65 mt-4">
+                <label htmlFor="privacy-policy" className="flex items-start gap-2">
                   <input
                     id="privacy-policy"
                     type="checkbox"
                     checked={agreedToPrivacy}
                     onChange={(e) => setAgreedToPrivacy(e.target.checked)}
-                    className="w-4 h-4 rounded border-slate-300 text-blue-900 focus:ring-blue-900 cursor-pointer accent-blue-900"
                   />
-                </div>
-                <div className="text-xs sm:text-sm text-slate-600">
-                  <label htmlFor="privacy-policy" className="cursor-pointer font-medium">
+                  <span className="cbx">
+                    <svg width="12px" height="11px" viewBox="0 0 12 11">
+                      <polyline points="1 6.29411765 4.5 10 11 1"></polyline>
+                    </svg>
+                  </span>
+                  <span className="text-xs sm:text-sm text-slate-600 font-medium">
                     Оформляя заказ, я соглашаюсь на{' '}
                     <Link href="/privacy" className="text-blue-800 underline hover:text-blue-950 transition-colors">
                       обработку персональных данных
                     </Link>
-                  </label>
-                </div>
+                  </span>
+                </label>
               </div>
+              <style jsx>{`
+                .checkbox-wrapper-65 *,
+                .checkbox-wrapper-65 ::after,
+                .checkbox-wrapper-65 ::before {
+                  box-sizing: border-box;
+                }
+                .checkbox-wrapper-65 .cbx {
+                  position: relative;
+                  display: block;
+                  width: 18px;
+                  height: 18px;
+                  flex-shrink: 0;
+                  border-radius: 4px;
+                  background-color: #606062;
+                  background-image: linear-gradient(#474749, #606062);
+                  box-shadow: inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -1px 1px rgba(0,0,0,0.15);
+                  transition: all 0.15s ease;
+                }
+                .checkbox-wrapper-65 .cbx svg {
+                  position: absolute;
+                  top: 3px;
+                  left: 3px;
+                  fill: none;
+                  stroke-linecap: round;
+                  stroke-linejoin: round;
+                  stroke: #fff;
+                  stroke-width: 2;
+                  stroke-dasharray: 17;
+                  stroke-dashoffset: 17;
+                  transform: translate3d(0, 0, 0);
+                }
+                .checkbox-wrapper-65 {
+                  user-select: none;
+                }
+                .checkbox-wrapper-65 label {
+                  cursor: pointer;
+                }
+                .checkbox-wrapper-65 input[type="checkbox"] {
+                  display: none;
+                  visibility: hidden;
+                }
+                .checkbox-wrapper-65 input[type="checkbox"]:checked + .cbx {
+                  background-color: #606062;
+                  background-image: linear-gradient(#255cd2, #1d52c1);
+                }
+                .checkbox-wrapper-65 input[type="checkbox"]:checked + .cbx svg {
+                  stroke-dashoffset: 0;
+                  transition: all 0.15s ease;
+                }
+              `}</style>
               {error && (
                 <div className="text-red-500 text-sm font-semibold">{error}</div>
               )}
               <button
                 disabled={isLoading || items.length === 0}
                 onClick={handleCheckout}
-                className="w-full mt-4 bg-blue-900 hover:bg-blue-950 text-white font-bold py-4 rounded-xl shadow-md disabled:bg-slate-300 transition-colors flex items-center justify-center gap-2"
+                className="btn-primary w-full mt-4 !py-4 !rounded-xl"
               >
                 {isLoading ? "Обработка..." : "Перейти к оплате"}
               </button>

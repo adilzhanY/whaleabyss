@@ -70,6 +70,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
       title: service.title,
       subtitle: service.subtitle,
       price: pricePerItem,
+      image: service.background || service.image || "/images/genshin_background.jpg",
     }, activeDays);
     openCart();
   };
@@ -233,11 +234,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
 
               <button
                 onClick={handleAdd}
-                className="w-full px-6 py-4 rounded-xl text-white font-bold text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2 hover:opacity-90 mt-2"
-                style={{
-                  backgroundColor: "#1e3a8a",
-                  boxShadow: "0 8px 24px rgba(30,58,138,0.25)"
-                }}
+                className="btn-primary w-full !px-6 !py-4 !rounded-xl !text-base flex items-center justify-center gap-2 mt-2"
               >
                 <ShoppingCart className="w-5 h-5" />
                 <span>Добавить в корзину</span>

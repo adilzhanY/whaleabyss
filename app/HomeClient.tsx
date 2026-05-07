@@ -145,7 +145,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 			{/* HERO / DASHBOARD */}
 			{session?.user ? (
 				<section
-					className="relative overflow-hidden py-16 sm:py-24"
+					className="relative overflow-hidden pt-24 pb-16 sm:pb-24"
 					style={{ backgroundColor: "#ffffff" }}
 				>
 					<div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-between gap-8 px-4 sm:px-12 text-center sm:text-left">
@@ -198,7 +198,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 										</p>
 										<a
 											href="#services"
-											className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-900 px-6 py-3 font-bold text-white transition-all hover:-translate-y-0.5 shadow-[0_10px_15px_-3px_rgba(30,58,138,0.2)]"
+											className="btn-primary inline-flex items-center justify-center gap-2 !rounded-xl !px-6 !py-3 !font-bold"
 										>
 											<PlusCircle className="w-5 h-5" />
 											Создать заказ
@@ -274,7 +274,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 			) : (
 				<section
 					id="hero"
-					className="relative overflow-hidden py-24 sm:py-32"
+					className="relative overflow-hidden pt-24 pb-24 sm:pb-32"
 					style={{
 						backgroundColor: "#ffffff",
 						backgroundImage: `

@@ -36,6 +36,10 @@ export async function GET(req: NextRequest) {
 
 async function handle(req: NextRequest) {
   try {
+    console.log('[Freekassa] Notification received at:', new Date().toISOString());
+    console.log('[Freekassa] Request method:', req.method);
+    console.log('[Freekassa] Request headers:', Object.fromEntries(req.headers.entries()));
+
     // 1. IP allow-list (optional hardening, enabled via FREEKASSA_CHECK_IP=true).
     if (shouldCheckNotifyIp()) {
       const xff = req.headers.get('x-forwarded-for') || '';
@@ -67,6 +71,8 @@ async function handle(req: NextRequest) {
       if (!(k in data)) data[k] = v;
     });
 
+    console.log('[Freekassa] Parsed notification data:', data);
+
     const merchantId = data.MERCHANT_ID;
     const amount = data.AMOUNT;
     const merchantOrderId = data.MERCHANT_ORDER_ID;
@@ -79,6 +85,7 @@ async function handle(req: NextRequest) {
     }
 
     // 3. Verify signature.
+    console.log('[Freekassa] Verifying signature for order:', merchantOrderId);
     const ok = verifyFreekassaNotification({
       merchantId,
       amount,
@@ -87,10 +94,13 @@ async function handle(req: NextRequest) {
     });
     if (!ok) {
       console.warn(`[Freekassa] Invalid signature for order ${merchantOrderId}`);
+      console.warn(`[Freekassa] Received: merchantId=${merchantId}, amount=${amount}, sign=${sign}`);
       return new NextResponse('bad sign', { status: 400 });
     }
+    console.log('[Freekassa] Signature verified successfully');
 
     // 4. Load the order and sanity-check the amount.
+    console.log('[Freekassa] Loading order from database:', merchantOrderId);
     const orderRows = await db
       .select()
       .from(orders)
@@ -103,6 +113,7 @@ async function handle(req: NextRequest) {
     }
 
     const order = orderRows[0];
+    console.log('[Freekassa] Order found:', { id: order.id, status: order.status, totalPrice: order.totalPrice });
 
     if (parseFloat(amount) !== parseFloat(order.totalPrice.toString())) {
       console.warn(
@@ -110,13 +121,16 @@ async function handle(req: NextRequest) {
       );
       return new NextResponse('amount mismatch', { status: 400 });
     }
+    console.log('[Freekassa] Amount verified successfully');
 
     // 5. If already processed, still answer YES so FK stops retrying.
     if (order.status !== 'pending') {
+      console.log(`[Freekassa] Order ${merchantOrderId} already processed with status: ${order.status}`);
       return new NextResponse('YES', { status: 200 });
     }
 
     // 6. Mark paid; store FK's internal order id as paymentId.
+    console.log('[Freekassa] Updating order status to paid...');
     await db
       .update(orders)
       .set({

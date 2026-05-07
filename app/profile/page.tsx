@@ -137,8 +137,7 @@ export default function ProfilePage() {
               <div className="flex gap-3 flex-wrap justify-center md:justify-start">
                 <button
                   onClick={() => { setIsEditing(!isEditing); setIsSettingsOpen(false); }}
-                  className="px-6 py-2.5 rounded-xl font-semibold flex items-center gap-2 transition-all"
-                  style={{ backgroundColor: "var(--accent-primary)", color: "white" }}
+                  className="btn-primary !px-6 !py-2.5 !rounded-xl !font-semibold flex items-center gap-2"
                 >
                   Редактировать профиль
                 </button>
@@ -235,8 +234,7 @@ export default function ProfilePage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 rounded-xl px-4 py-3 font-semibold text-white transition-opacity disabled:opacity-50"
-                    style={{ backgroundColor: "var(--accent-primary)" }}
+                    className="btn-primary flex-1 !rounded-xl !px-4 !py-3 !font-semibold"
                   >
                     {loading ? "Сохранение..." : "Сохранить изменения"}
                   </button>
@@ -272,8 +270,10 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={() => setDeleteWarningOpen(true)}
-                    className="flex-1 rounded-xl px-4 py-3 font-semibold text-white transition-opacity hover:opacity-90"
+                    className="btn-primary flex-1 !rounded-xl !px-4 !py-3 !font-semibold !bg-[#dc2626] hover:!bg-[#b91c1c]"
                     style={{ backgroundColor: "#dc2626" }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#b91c1c"}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#dc2626"}
                   >
                     Удалить аккаунт
                   </button>
@@ -322,7 +322,10 @@ export default function ProfilePage() {
                   <button
                     onClick={handleDeleteConfirm}
                     disabled={isDeleting || deleteConfirmationText !== "удалить"}
-                    className="flex-1 rounded-xl bg-red-600 px-4 py-3 font-semibold text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="btn-primary flex-1 !rounded-xl !px-4 !py-3 !font-semibold !bg-[#dc2626] hover:!bg-[#b91c1c]"
+                    style={{ backgroundColor: "#dc2626" }}
+                    onMouseEnter={(e) => { if (!isDeleting && deleteConfirmationText === "удалить") e.currentTarget.style.backgroundColor = "#b91c1c" }}
+                    onMouseLeave={(e) => { if (!isDeleting) e.currentTarget.style.backgroundColor = "#dc2626" }}
                   >
                     {isDeleting ? "Загрузка..." : "Удалить"}
                   </button>

@@ -259,10 +259,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 onClose();
                 window.location.reload();
               }}
-              className="mt-6 w-full rounded-lg py-3 text-sm font-bold text-white transition-colors"
-              style={{ backgroundColor: "var(--accent-primary)", borderRadius: "var(--btn-radius)" }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--accent-primary-hover)"}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "var(--accent-primary)"}
+              className="btn-primary mt-6 w-full !py-3 !text-sm"
             >
               Продолжить покупки
             </button>
@@ -292,10 +289,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <button
               onClick={handleSubmit}
               disabled={isLoading || otpValues.join("").length < 6}
-              className={`mt-6 w-full rounded-lg py-3 text-sm font-bold text-white transition-colors ${isLoading || otpValues.join("").length < 6 ? "opacity-50 cursor-not-allowed" : ""}`}
-              style={{ backgroundColor: "var(--accent-primary)", borderRadius: "var(--btn-radius)" }}
-              onMouseEnter={(e) => { if (!isLoading && otpValues.join("").length === 6) e.currentTarget.style.backgroundColor = "var(--accent-primary-hover)" }}
-              onMouseLeave={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = "var(--accent-primary)" }}
+              className="btn-primary mt-6 w-full !py-3 !text-sm"
             >
               {isLoading ? "Проверка..." : "Подтвердить"}
             </button>
@@ -403,10 +397,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <button
               type="submit"
               disabled={isLoading}
-              className={`mt-2 w-full rounded-lg py-3 text-sm font-bold text-white transition-colors ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-              style={{ backgroundColor: "var(--accent-primary)", borderRadius: "var(--btn-radius)" }}
-              onMouseEnter={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = "var(--accent-primary-hover)" }}
-              onMouseLeave={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = "var(--accent-primary)" }}
+              className="btn-primary mt-2 w-full !py-3 !text-sm"
             >
               {isLoading ? "Обработка..." : tab === "login" ? "Войти" : "Зарегистрироваться"}
             </button>

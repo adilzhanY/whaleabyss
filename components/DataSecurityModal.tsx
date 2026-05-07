@@ -64,7 +64,7 @@ export default function DataSecurityModal({ isOpen, onClose }: DataSecurityModal
 
         <button
           onClick={onClose}
-          className="flex w-full items-center justify-center gap-3 rounded-xl bg-[#1e3a8a] px-4 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#1e3a8a]/30"
+          className="btn-primary flex w-full items-center justify-center gap-3 !rounded-xl !px-4 !py-3.5 !text-sm !font-bold"
         >
           Понятно, спасибо
         </button>

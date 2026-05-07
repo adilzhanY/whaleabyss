@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand, ObjectCannedACL } from '@aws-sdk/client-s3';
 import { db } from '@/lib/db';
 import { users } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
@@ -60,6 +60,7 @@ export async function POST(req: Request) {
       Key: fileName,
       Body: buffer,
       ContentType: file.type,
+      ACL: ObjectCannedACL.public_read,
     };
 
     const command = new PutObjectCommand(uploadParams);

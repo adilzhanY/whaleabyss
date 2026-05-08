@@ -1,18 +1,81 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CartModal from "@/components/CartModal";
 import AuthModal from "@/components/AuthModal";
 import ServiceCard from "@/components/ServiceCard";
 import SuggestServiceModal from "@/components/SuggestServiceModal";
+import SearchBar from "@/components/SearchBar";
 import { useSession } from "next-auth/react";
+import Fuse from "fuse.js";
 
 export default function ServicesClient({ categories }: { categories: any[] }) {
   const { data: session } = useSession();
   const [authOpen, setAuthOpen] = useState(false);
   const [suggestOpen, setSuggestOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Flatten all services for search
+  const allServices = useMemo(() => {
+    return categories.flatMap((category) =>
+      category.items.map((item: any) => ({
+        ...item,
+        categoryTitle: category.title,
+        categoryId: category.id,
+      }))
+    );
+  }, [categories]);
+
+  // Configure Fuse.js for fuzzy search
+  const fuse = useMemo(() => {
+    return new Fuse(allServices, {
+      keys: [
+        { name: "title", weight: 2 },
+        { name: "subtitle", weight: 2 },
+        { name: "description", weight: 1 },
+        { name: "categoryTitle", weight: 1 },
+      ],
+      threshold: 0.4, // 0 = exact match, 1 = match anything
+      distance: 100,
+      minMatchCharLength: 2,
+      ignoreLocation: true,
+    });
+  }, [allServices]);
+
+  // Filter categories based on search
+  const filteredCategories = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return categories;
+    }
+
+    const results = fuse.search(searchQuery);
+    const matchedServices = results.map((result) => result.item);
+
+    // Group matched services back into categories
+    const categoryMap = new Map<string, any>();
+
+    matchedServices.forEach((service) => {
+      if (!categoryMap.has(service.categoryId)) {
+        const originalCategory = categories.find((cat) => cat.id === service.categoryId);
+        if (originalCategory) {
+          categoryMap.set(service.categoryId, {
+            ...originalCategory,
+            items: [],
+          });
+        }
+      }
+      categoryMap.get(service.categoryId)?.items.push(service);
+    });
+
+    return Array.from(categoryMap.values());
+  }, [searchQuery, categories, fuse]);
+
+  const totalResults = filteredCategories.reduce(
+    (sum, cat) => sum + cat.items.length,
+    0
+  );
 
   return (
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
@@ -54,8 +117,20 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
             <p className="text-slate-500 max-w-2xl mx-auto">Полный каталог наших услуг для развития аккаунта и сопровождения в Genshin Impact.</p>
           </div>
 
+          <SearchBar onSearch={setSearchQuery} placeholder="Поиск услуг..." />
+
+          {searchQuery && (
+            <div className="mb-8 text-center">
+              <p className="text-slate-600 text-sm">
+                {totalResults > 0
+                  ? `Найдено услуг: ${totalResults}`
+                  : "Ничего не найдено. Попробуйте изменить запрос."}
+              </p>
+            </div>
+          )}
+
           <div className="flex flex-col gap-12">
-            {categories.map((category) => (
+            {filteredCategories.map((category) => (
               <div key={category.id} className="flex flex-col gap-6">
                 <h3
                   className="text-2xl font-bold"

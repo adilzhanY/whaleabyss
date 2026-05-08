@@ -131,15 +131,18 @@ async function handle(req: NextRequest) {
 
     // 6. Mark paid; store FK's internal order id as paymentId.
     console.log('[Freekassa] Updating order status to paid...');
-    await db
+    const updateResult = await db
       .update(orders)
       .set({
         status: 'paid',
         paymentId: fkOrderId ?? null,
+        updatedAt: new Date(),
       })
-      .where(eq(orders.id, order.id));
+      .where(eq(orders.id, order.id))
+      .returning();
 
     console.log(`[Freekassa] Order ${merchantOrderId} successfully PAID (fk intid=${fkOrderId}).`);
+    console.log('[Freekassa] Update result:', updateResult);
 
     // 7. Notify admin via Telegram (best effort — never fail the webhook for this).
     try {

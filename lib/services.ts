@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { categories, services } from '@/lib/schema';
 import { cache } from 'react';
+import { eq } from 'drizzle-orm';
 import servicesData from '@/services/services_list.json';
 
 export interface ServiceItem {
@@ -70,7 +71,7 @@ function enrichItemUI(item: any, index: number): Omit<ServiceItem, 'id' | 'title
 
 export const getServiceCategories = cache(async (): Promise<ServiceCategory[]> => {
   const allCategories = await db.select().from(categories);
-  const allServices = await db.select().from(services);
+  const allServices = await db.select().from(services).where(eq(services.isTestService, false));
 
   let globalIndex = 0;
 

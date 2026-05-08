@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, timestamp, pgEnum, decimal, text, integer } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, pgEnum, decimal, text, integer, boolean } from 'drizzle-orm/pg-core';
 
 export const userRoleEnum = pgEnum('user_role', ['user', 'admin', 'booster']);
 
@@ -40,6 +40,7 @@ export const services = pgTable('services', {
   description: varchar('description'),
   price: varchar('price', { length: 20 }).notNull(), // Decimal stored as string
   imageUrl: varchar('image_url', { length: 255 }),
+  isTestService: boolean('is_test_service').default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });

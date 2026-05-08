@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
     price,
     imageUrl,
     categoryId,
+    isTestService,
   } = body as Record<string, unknown>;
 
   if (!slug || typeof slug !== "string") {
@@ -68,6 +69,7 @@ export async function POST(req: NextRequest) {
       price: String(price),
       imageUrl: (imageUrl as string) || null,
       categoryId: (categoryId as string) || null,
+      isTestService: Boolean(isTestService),
     })
     .returning();
 

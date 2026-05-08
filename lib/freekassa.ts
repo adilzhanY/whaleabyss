@@ -261,12 +261,19 @@ export function verifyFreekassaNotification(params: {
 
   if (String(shopId) !== String(params.merchantId)) return false;
 
+  const signatureString = `${params.merchantId}:${params.amount}:${secret2}:${params.merchantOrderId}`;
+  console.log('[Freekassa] Signature string:', signatureString);
+  console.log('[Freekassa] SECRET_2 length:', secret2.length);
+  console.log('[Freekassa] SECRET_2 first 4 chars:', secret2.substring(0, 4));
+
   const expected = crypto
     .createHash('md5')
-    .update(
-      `${params.merchantId}:${params.amount}:${secret2}:${params.merchantOrderId}`
-    )
+    .update(signatureString)
     .digest('hex');
+
+  console.log('[Freekassa] Expected signature:', expected);
+  console.log('[Freekassa] Received signature:', params.sign);
+  console.log('[Freekassa] Match:', expected.toLowerCase() === params.sign.toLowerCase());
 
   return expected.toLowerCase() === params.sign.toLowerCase();
 }

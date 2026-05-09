@@ -124,11 +124,12 @@ export default function CartPage() {
     const discount = appliedPromocode ? (subtotal * appliedPromocode.discountPercent) / 100 : 0;
     const afterDiscount = subtotal - discount;
     const commission = (afterDiscount * COMMISSION_PERCENT) / 100;
+    const finalTotal = afterDiscount + commission;
 
-    return { subtotal, discount, afterDiscount, commission };
+    return { subtotal, discount, afterDiscount, commission, finalTotal };
   };
 
-  const { subtotal, discount, afterDiscount, commission } = calculateTotals();
+  const { subtotal, discount, afterDiscount, commission, finalTotal } = calculateTotals();
 
   const handleCheckout = async () => {
     // Check if user is logged in
@@ -427,17 +428,18 @@ export default function CartPage() {
                 </div>
               )}
 
-              <div className="border-t border-slate-200 pt-3 flex items-end justify-between">
-                <span className="text-base font-bold text-blue-950">К оплате:</span>
-                <span className="text-2xl font-black text-blue-950" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
-                  {afterDiscount.toFixed(0)} ₽
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-600">Комиссия (5%):</span>
+                <span className="text-sm font-semibold text-slate-700">
+                  +{commission.toFixed(0)} ₽
                 </span>
               </div>
 
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 -mt-1">
-                <p className="text-xs text-blue-700 font-medium">
-                  Платёжная система добавит комиссию 5% (~{commission.toFixed(0)} ₽) при оплате
-                </p>
+              <div className="border-t border-slate-200 pt-3 flex items-end justify-between">
+                <span className="text-base font-bold text-blue-950">К оплате:</span>
+                <span className="text-2xl font-black text-blue-950" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
+                  {finalTotal.toFixed(0)} ₽
+                </span>
               </div>
 
               {/* Согласие на обработку ПД */}

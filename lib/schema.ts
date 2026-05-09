@@ -54,6 +54,7 @@ export const orders = pgTable('orders', {
   totalPrice: decimal('total_price', { precision: 10, scale: 2 }).notNull(),
   paymentId: varchar('payment_id', { length: 255 }),
   userNotes: text('user_notes'),
+  promocode: varchar('promocode', { length: 10 }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });

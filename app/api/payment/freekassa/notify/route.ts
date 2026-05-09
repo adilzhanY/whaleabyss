@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { orders } from '@/lib/schema';
+import { orders, promocodes, promocodeUsage } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 import {
   verifyFreekassaNotification,
@@ -143,6 +143,29 @@ async function handle(req: NextRequest) {
 
     console.log(`[Freekassa] Order ${merchantOrderId} successfully PAID (fk intid=${fkOrderId}).`);
     console.log('[Freekassa] Update result:', updateResult);
+
+    // 6.5. Record promocode usage now that payment is confirmed.
+    if (order.promocode && order.userId) {
+      console.log('[Freekassa] Recording promocode usage:', order.promocode);
+      try {
+        const [promoRecord] = await db
+          .select()
+          .from(promocodes)
+          .where(eq(promocodes.code, order.promocode))
+          .limit(1);
+
+        if (promoRecord) {
+          await db.insert(promocodeUsage).values({
+            promocodeId: promoRecord.id,
+            userId: order.userId,
+            orderId: order.id,
+          });
+          console.log('[Freekassa] Promocode usage recorded successfully');
+        }
+      } catch (promoError) {
+        console.error('[Freekassa] Failed to record promocode usage:', promoError);
+      }
+    }
 
     // 7. Notify admin via Telegram (best effort — never fail the webhook for this).
     try {

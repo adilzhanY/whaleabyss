@@ -96,6 +96,7 @@ export async function POST(req: NextRequest) {
         totalPrice: total.toString(),
         status: 'pending',
         userNotes,
+        promocode: promocode ? promocode.toUpperCase() : null,
       })
       .returning({ id: orders.id });
 
@@ -116,24 +117,7 @@ export async function POST(req: NextRequest) {
     });
     await db.insert(orderItems).values(insertItems);
 
-    // 3. If promocode was used, record usage.
-    if (promocode && userId) {
-      const [promoRecord] = await db
-        .select()
-        .from(promocodes)
-        .where(eq(promocodes.code, promocode.toUpperCase()))
-        .limit(1);
-
-      if (promoRecord) {
-        await db.insert(promocodeUsage).values({
-          promocodeId: promoRecord.id,
-          userId,
-          orderId: newOrderId,
-        });
-      }
-    }
-
-    // 4. Build the payment URL.
+    // 3. Build the payment URL.
     //
     //    Freekassa support states that only SBP (44) is available
     //    and requires using API 2.0. So we route all payments via API 2.0.

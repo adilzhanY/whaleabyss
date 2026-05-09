@@ -166,7 +166,7 @@ export default function PromocodesPage() {
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => handleDelete(promo.id)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors shadow-sm hover:shadow"
                         >
                           <Trash2 className="w-4 h-4" />
                           Удалить

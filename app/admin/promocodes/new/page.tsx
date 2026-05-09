@@ -144,13 +144,13 @@ export default function NewPromocodePage() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary flex-1 !py-3 !rounded-xl"
+              className="btn-primary flex-1 !py-3 !rounded-xl !shadow-lg hover:!shadow-xl transition-shadow"
             >
               {loading ? "Создание..." : "Создать промокод"}
             </button>
             <Link
               href="/admin/promocodes"
-              className="flex-1 px-6 py-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold hover:bg-slate-50 transition-colors text-center"
+              className="flex-1 px-6 py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all text-center shadow-sm hover:shadow"
             >
               Отмена
             </Link>

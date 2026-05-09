@@ -163,7 +163,7 @@ export default function Footer() {
       <div className="mx-auto flex justify-center sm:justify-start max-w-300 mt-6">
         <div className="flex items-center gap-2 text-xs text-slate-500">
           <Lock className="w-3.5 h-3.5" />
-          <span>Безопасная оплата · Visa · MasterCard · МИР · СБП</span>
+          <span>Безопасная оплата · СБП</span>
         </div>
       </div>
     </footer>

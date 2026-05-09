@@ -63,8 +63,8 @@ export default function InfoPage() {
                 )}
               . Приём платежей осуществляется через защищённые платёжные шлюзы
               банков-партнёров; оплата проходит по защищённому протоколу{" "}
-              <strong className="text-slate-900">HTTPS/SSL</strong>, данные банковских
-              карт сервис не собирает и не хранит. Подробности — в{" "}
+              <strong className="text-slate-900">HTTPS/SSL</strong>, платёжные
+              данные сервис не собирает и не хранит. Подробности — в{" "}
               <Link href="/payment" className="text-blue-600 hover:underline">
                 правилах оплаты
               </Link>

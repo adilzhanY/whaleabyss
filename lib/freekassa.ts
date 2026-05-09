@@ -7,7 +7,7 @@ import crypto from 'crypto';
  *
  *   1) SCI form redirect (default, used by the checkout).
  *      Redirects the user to https://pay.fk.money/ which shows a full
- *      payment-method chooser (cards РФ, СБП, МИР, Yoomoney, crypto, …).
+ *      payment-method chooser (СБП).
  *      No server-to-server call, no API 2.0 wallet-login wall.
  *
  *   2) API 2.0 JSON (`createFreekassaOrder`).
@@ -66,7 +66,7 @@ function getEnv(): {
  * Passing one of these as `i=` on the SCI URL skips the method chooser and
  * sends the buyer straight into the selected acquiring channel. Per FK's
  * brand requirements, when a specific method is selected we MUST present
- * it under its own name (Карта / СБП / QIWI) — never under the Freekassa
+ * it under its own name (СБП) — never under the Freekassa
  * brand or logo.
  */
 export const FREEKASSA_METHODS = {

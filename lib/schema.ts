@@ -66,3 +66,19 @@ export const orderItems = pgTable('order_items', {
   priceAtPurchase: decimal('price_at_purchase', { precision: 10, scale: 2 }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
+
+export const promocodes = pgTable('promocodes', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  code: varchar('code', { length: 10 }).notNull().unique(),
+  discountPercent: integer('discount_percent').notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});
+
+export const promocodeUsage = pgTable('promocode_usage', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  promocodeId: uuid('promocode_id').references(() => promocodes.id, { onDelete: 'cascade' }).notNull(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  orderId: uuid('order_id').references(() => orders.id, { onDelete: 'cascade' }),
+  usedAt: timestamp('used_at', { withTimezone: true }).defaultNow(),
+});

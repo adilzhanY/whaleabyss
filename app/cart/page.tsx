@@ -73,6 +73,64 @@ export default function CartPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Promocode state
+  const [promocode, setPromocode] = useState("");
+  const [appliedPromocode, setAppliedPromocode] = useState<{ code: string; discountPercent: number } | null>(null);
+  const [promocodeError, setPromocodeError] = useState<string | null>(null);
+  const [isValidatingPromocode, setIsValidatingPromocode] = useState(false);
+
+  // Payment commission (5%)
+  const COMMISSION_PERCENT = 5;
+
+  const handleValidatePromocode = async () => {
+    if (!session?.user) {
+      setPromocodeError("Войдите в систему, чтобы использовать промокод");
+      return;
+    }
+
+    if (!promocode.trim()) {
+      setPromocodeError("Введите промокод");
+      return;
+    }
+
+    try {
+      setIsValidatingPromocode(true);
+      setPromocodeError(null);
+
+      const res = await fetch("/api/promocode/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: promocode.trim() }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setPromocodeError(data.error || "Ошибка проверки промокода");
+        return;
+      }
+
+      setAppliedPromocode({ code: data.code, discountPercent: data.discountPercent });
+      setPromocodeError(null);
+    } catch (err: any) {
+      setPromocodeError("Ошибка проверки промокода");
+    } finally {
+      setIsValidatingPromocode(false);
+    }
+  };
+
+  const calculateTotals = () => {
+    const subtotal = total;
+    const discount = appliedPromocode ? (subtotal * appliedPromocode.discountPercent) / 100 : 0;
+    const afterDiscount = subtotal - discount;
+    const commission = (afterDiscount * COMMISSION_PERCENT) / 100;
+    const finalTotal = afterDiscount + commission;
+
+    return { subtotal, discount, commission, finalTotal };
+  };
+
+  const { subtotal, discount, commission, finalTotal } = calculateTotals();
+
   const handleCheckout = async () => {
     // Check if user is logged in
     if (!session?.user) {
@@ -96,7 +154,15 @@ export default function CartPage() {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items, total, email, telegram, inGameName, method: paymentMethod })
+        body: JSON.stringify({
+          items,
+          total: finalTotal,
+          email,
+          telegram,
+          inGameName,
+          method: paymentMethod,
+          promocode: appliedPromocode?.code || null,
+        })
       });
 
       if (!res.ok) {
@@ -242,6 +308,54 @@ export default function CartPage() {
               Чтобы твои покупки сохранились в истории заказов войди в профиль.
             </div>
 
+            {/* Промокод */}
+            <div className="space-y-3 border-b border-slate-200 pb-5">
+              <h3 className="font-bold text-blue-950">Промокод</h3>
+              {appliedPromocode ? (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-green-800">
+                      {appliedPromocode.code} применён
+                    </p>
+                    <p className="text-xs text-green-600">
+                      Скидка {appliedPromocode.discountPercent}%
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setAppliedPromocode(null);
+                      setPromocode("");
+                    }}
+                    className="text-xs font-semibold text-green-700 hover:text-green-900 underline"
+                  >
+                    Удалить
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={promocode}
+                      onChange={(e) => setPromocode(e.target.value.toUpperCase())}
+                      placeholder="Введите промокод"
+                      className="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-mono font-bold uppercase outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    />
+                    <button
+                      onClick={handleValidatePromocode}
+                      disabled={isValidatingPromocode || !promocode.trim()}
+                      className="px-4 py-3 rounded-xl bg-blue-900 text-white font-semibold text-sm hover:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isValidatingPromocode ? "..." : "Применить"}
+                    </button>
+                  </div>
+                  {promocodeError && (
+                    <p className="text-xs text-red-600 font-semibold">{promocodeError}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* Способ оплаты */}
             <div className="space-y-3 border-b border-slate-200 pb-5">
               <h3 className="font-bold text-blue-950">Способ оплаты</h3>
@@ -292,16 +406,39 @@ export default function CartPage() {
             </div>
 
             {/* Итого */}
-            <div className="pt-2 flex flex-col gap-4">
+            <div className="pt-2 flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-slate-700">Итого:</span>
+                <span className="text-sm font-semibold text-slate-700">Товары:</span>
                 <span className="text-sm font-semibold text-slate-700">{items.reduce((acc, i) => acc + i.quantity, 0)} шт.</span>
               </div>
 
-              <div className="flex items-end justify-between mt-2">
-                <span className="text-base font-bold text-blue-950">Общая стоимость:</span>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-600">Сумма заказа:</span>
+                <span className="text-sm font-semibold text-slate-700">
+                  {subtotal.toLocaleString("ru-RU")} ₽
+                </span>
+              </div>
+
+              {appliedPromocode && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-green-600">Скидка ({appliedPromocode.discountPercent}%):</span>
+                  <span className="text-sm font-semibold text-green-600">
+                    -{discount.toLocaleString("ru-RU")} ₽
+                  </span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-600">Комиссия платёжной системы (5%):</span>
+                <span className="text-sm font-semibold text-slate-700">
+                  +{commission.toFixed(0)} ₽
+                </span>
+              </div>
+
+              <div className="border-t border-slate-200 pt-3 flex items-end justify-between">
+                <span className="text-base font-bold text-blue-950">К оплате:</span>
                 <span className="text-2xl font-black text-blue-950" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
-                  {total.toLocaleString("ru-RU")} ₽
+                  {finalTotal.toFixed(0)} ₽
                 </span>
               </div>
 

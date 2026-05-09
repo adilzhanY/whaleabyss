@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { orders, orderItems, services, users } from '@/lib/schema';
+import { orders, orderItems, services, users, promocodes, promocodeUsage } from '@/lib/schema';
 import {
   buildFreekassaPaymentUrl,
   createFreekassaOrder,
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     const userId: string | null = session?.user?.id || null;
 
     const body = await req.json();
-    const { items, total, email, telegram, inGameName, method } = body ?? {};
+    const { items, total, email, telegram, inGameName, method, promocode } = body ?? {};
 
     console.log('--- [Checkout] Incoming request:', {
       items,
@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
       telegram,
       inGameName,
       method,
+      promocode,
     });
 
     if (!items || items.length === 0 || !total) {
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
       paymentMethodId = m;
     }
 
-    const userNotes = `Email: ${email}\nTelegram: ${telegram}\nIn-Game Name: ${inGameName}`;
+    const userNotes = `Email: ${email}\nTelegram: ${telegram}\nIn-Game Name: ${inGameName}${promocode ? `\nPromocode: ${promocode}` : ''}`;
 
     // Map frontend slugs → DB UUIDs.
     const slugs = items.map((item: any) => item.id);
@@ -115,7 +116,24 @@ export async function POST(req: NextRequest) {
     });
     await db.insert(orderItems).values(insertItems);
 
-    // 3. Build the payment URL.
+    // 3. If promocode was used, record usage.
+    if (promocode && userId) {
+      const [promoRecord] = await db
+        .select()
+        .from(promocodes)
+        .where(eq(promocodes.code, promocode.toUpperCase()))
+        .limit(1);
+
+      if (promoRecord) {
+        await db.insert(promocodeUsage).values({
+          promocodeId: promoRecord.id,
+          userId,
+          orderId: newOrderId,
+        });
+      }
+    }
+
+    // 4. Build the payment URL.
     //
     //    Freekassa support states that only SBP (44) is available
     //    and requires using API 2.0. So we route all payments via API 2.0.

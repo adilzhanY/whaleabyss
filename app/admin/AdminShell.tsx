@@ -13,6 +13,7 @@ import {
   Menu as MenuIcon,
   Waves,
   TestTube,
+  Ticket,
 } from "lucide-react";
 
 interface NavItem {
@@ -27,6 +28,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "Дашборд", icon: LayoutDashboard, matches: ["/admin"] },
   { href: "/admin/orders", label: "Заказы", icon: ShoppingBag, matches: ["/admin/orders"] },
   { href: "/admin/services", label: "Услуги", icon: Package, matches: ["/admin/services"] },
+  { href: "/admin/promocodes", label: "Промокоды", icon: Ticket, matches: ["/admin/promocodes"] },
   { href: "/admin/testing", label: "Тестирование", icon: TestTube, matches: ["/admin/testing"] },
 ];
 
@@ -245,6 +247,8 @@ function breadcrumbLabel(pathname: string): string {
   if (pathname === "/admin/services/new") return "Услуги · Новая услуга";
   if (pathname.startsWith("/admin/services/")) return "Услуги · Редактирование";
   if (pathname.startsWith("/admin/services")) return "Услуги";
+  if (pathname === "/admin/promocodes/new") return "Промокоды · Новый промокод";
+  if (pathname.startsWith("/admin/promocodes")) return "Промокоды";
   if (pathname.startsWith("/admin/testing")) return "Тестирование";
   return pathname.replace(/^\/admin\/?/, "") || "Admin";
 }

@@ -15,6 +15,7 @@ import {
   TestTube,
   Ticket,
   Calendar,
+  Star,
 } from "lucide-react";
 
 interface NavItem {
@@ -31,6 +32,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/services", label: "Услуги", icon: Package, matches: ["/admin/services"] },
   { href: "/admin/promocodes", label: "Промокоды", icon: Ticket, matches: ["/admin/promocodes"] },
   { href: "/admin/events", label: "События", icon: Calendar, matches: ["/admin/events"] },
+  { href: "/admin/reviews", label: "Отзывы", icon: Star, matches: ["/admin/reviews"] },
   { href: "/admin/testing", label: "Тестирование", icon: TestTube, matches: ["/admin/testing"] },
 ];
 
@@ -76,7 +78,7 @@ export default function AdminShell({ userName, userEmail, children }: AdminShell
   return (
     <div
       className="min-h-screen flex bg-slate-50 text-slate-900"
-      style={{ fontFamily: "var(--font-primary), sans-serif" }}
+      style={{ fontFamily: "Onest, sans-serif" }}
     >
       {/* Mobile overlay */}
       {mobileOpen && (
@@ -254,6 +256,7 @@ function breadcrumbLabel(pathname: string): string {
   if (pathname === "/admin/events/new") return "События · Новое событие";
   if (pathname.startsWith("/admin/events/")) return "События · Редактирование";
   if (pathname.startsWith("/admin/events")) return "События";
+  if (pathname.startsWith("/admin/reviews")) return "Отзывы";
   if (pathname.startsWith("/admin/testing")) return "Тестирование";
   return pathname.replace(/^\/admin\/?/, "") || "Admin";
 }

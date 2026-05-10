@@ -104,3 +104,14 @@ export const eventServices = pgTable('event_services', {
   serviceId: uuid('service_id').references(() => services.id, { onDelete: 'cascade' }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
+
+export const reviewStatusEnum = pgEnum('review_status', ['pending', 'approved', 'rejected']);
+
+export const reviews = pgTable('reviews', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  rating: decimal('rating', { precision: 2, scale: 1 }).notNull(), // 0.5, 1.0, 1.5, ..., 5.0
+  description: text('description').notNull(),
+  status: reviewStatusEnum('status').default('pending'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});

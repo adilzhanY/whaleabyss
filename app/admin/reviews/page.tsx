@@ -22,7 +22,7 @@ interface Stats {
   5: number;
 }
 
-const REVIEWS_PER_PAGE = 20;
+const REVIEWS_PER_PAGE = 10;
 
 export default function AdminReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);

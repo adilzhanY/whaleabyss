@@ -197,6 +197,63 @@ async function handle(req: NextRequest) {
       console.error('[Telegram] Failed to send admin notification:', tgError);
     }
 
+    // 8. Send order confirmation email to customer (best effort).
+    try {
+      const { sendOrderConfirmationEmail } = await import('@/lib/email');
+      const { orderItems, services, users } = await import('@/lib/schema');
+      const { eq: eqInner } = await import('drizzle-orm');
+
+      // Get customer email
+      let customerEmail = data.P_EMAIL || null;
+      if (!customerEmail && order.userId) {
+        const userRows = await db
+          .select({ email: users.email, receiptEmail: users.receiptEmail })
+          .from(users)
+          .where(eqInner(users.id, order.userId))
+          .limit(1);
+        if (userRows.length > 0) {
+          customerEmail = userRows[0].receiptEmail || userRows[0].email;
+        }
+      }
+
+      // Extract email from userNotes if not found
+      if (!customerEmail && order.userNotes) {
+        const emailMatch = order.userNotes.match(/Email:\s*([^\n]+)/);
+        if (emailMatch) {
+          customerEmail = emailMatch[1].trim();
+        }
+      }
+
+      if (customerEmail) {
+        const items = await db
+          .select({
+            title: services.title,
+            quantity: orderItems.quantity,
+            price: orderItems.priceAtPurchase,
+          })
+          .from(orderItems)
+          .leftJoin(services, eqInner(orderItems.serviceId, services.id))
+          .where(eqInner(orderItems.orderId, merchantOrderId));
+
+        await sendOrderConfirmationEmail({
+          orderId: merchantOrderId,
+          customerEmail,
+          items: items.map((i) => ({
+            title: i.title || 'Услуга',
+            quantity: i.quantity || 1,
+            price: parseFloat(i.price || '0'),
+          })),
+          totalAmount: parseFloat(amount),
+          orderDate: order.createdAt || new Date(),
+        });
+        console.log(`[Email] Order confirmation sent to ${customerEmail}`);
+      } else {
+        console.warn('[Email] No customer email found, skipping confirmation email');
+      }
+    } catch (emailError) {
+      console.error('[Email] Failed to send order confirmation:', emailError);
+    }
+
     return new NextResponse('YES', { status: 200 });
   } catch (err) {
     console.error('[Freekassa Webhook Error]', err);

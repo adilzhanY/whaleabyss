@@ -83,3 +83,24 @@ export const promocodeUsage = pgTable('promocode_usage', {
   orderId: uuid('order_id').references(() => orders.id, { onDelete: 'cascade' }),
   usedAt: timestamp('used_at', { withTimezone: true }).defaultNow(),
 });
+
+export const events = pgTable('events', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  slug: varchar('slug', { length: 255 }).notNull().unique(),
+  description: text('description'),
+  discountPercent: integer('discount_percent').notNull(),
+  backgroundUrl: varchar('background_url', { length: 255 }),
+  startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+  endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+});
+
+export const eventServices = pgTable('event_services', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  eventId: uuid('event_id').references(() => events.id, { onDelete: 'cascade' }).notNull(),
+  serviceId: uuid('service_id').references(() => services.id, { onDelete: 'cascade' }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});

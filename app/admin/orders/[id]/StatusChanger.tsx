@@ -3,10 +3,16 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Check } from "lucide-react";
-import OrderStatusBadge, {
-  ORDER_STATUSES,
-  orderStatusLabel,
-} from "../../_components/OrderStatusBadge";
+import { orderStatusLabel } from "../../_components/OrderStatusBadge";
+
+// Admin can only change these statuses manually
+// 'paid' and 'refunded' are set automatically by payment/refund webhooks
+const ADMIN_ALLOWED_STATUSES = [
+  "pending",
+  "in_progress",
+  "completed",
+  "cancelled",
+] as const;
 
 export default function StatusChanger({
   orderId,
@@ -48,15 +54,24 @@ export default function StatusChanger({
 
   const isBusy = saving || pending;
 
+  // Show warning if current status is 'paid' or 'refunded'
+  const isReadOnlyStatus = initialStatus === "paid" || initialStatus === "refunded";
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <span className="text-xs text-slate-500">Текущий:</span>
-        <OrderStatusBadge status={initialStatus} />
+        <span className="text-sm font-medium">{orderStatusLabel(initialStatus)}</span>
       </div>
 
+      {isReadOnlyStatus && (
+        <div className="text-xs text-amber-700 bg-amber-50 rounded-xl p-3 border border-amber-200">
+          <strong>Внимание:</strong> Статус "{orderStatusLabel(initialStatus)}" устанавливается автоматически системой оплаты и не может быть изменён вручную.
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-2">
-        {ORDER_STATUSES.map((s) => {
+        {ADMIN_ALLOWED_STATUSES.map((s) => {
           const active = s === status;
           return (
             <button

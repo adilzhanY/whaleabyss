@@ -5,6 +5,7 @@ import { orders, orderItems, services, users } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import OrderStatusBadge from "../../_components/OrderStatusBadge";
 import StatusChanger from "./StatusChanger";
+import RefundButton from "./RefundButton";
 import { ArrowLeft, Mail, MessageSquare, Hash, User } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -140,6 +141,14 @@ export default async function OrderDetailPage({ params }: PageProps) {
             <StatusChanger
               orderId={order.id}
               initialStatus={order.status ?? "pending"}
+            />
+          </section>
+
+          <section className="bg-white rounded-3xl border border-slate-200 p-6">
+            <h2 className="text-lg font-semibold mb-4">Возврат средств</h2>
+            <RefundButton
+              orderId={order.id}
+              orderStatus={order.status ?? "pending"}
             />
           </section>
 

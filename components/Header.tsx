@@ -21,6 +21,7 @@ interface HeaderProps {
 const NAV_LINKS = [
   { label: "Главная", href: "/" },
   { label: "Услуги", href: "/services" },
+  { label: "События", href: "/events" },
   { label: "Отзывы", href: "/reviews" },
   { label: "FAQ", href: "/faq" },
   { label: "О сервисе", href: "/info" },

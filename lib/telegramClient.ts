@@ -99,7 +99,7 @@ if (bot) {
       const { status, orderId } = parsed;
 
       // 1. Update DB.
-      await db.update(orders).set({ status }).where(eq(orders.id, orderId));
+      await db.update(orders).set({ status, updatedAt: new Date() }).where(eq(orders.id, orderId));
 
       // 2. Answer the callback (stops spinner on button, shows toast).
       await ctx.answerCbQuery(STATUS_META[status].ack);

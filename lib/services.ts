@@ -21,6 +21,7 @@ export interface ServiceItem {
 
 export interface ServiceCategory {
   id: string;
+  slug: string;
   title: string;
   items: ServiceItem[];
 }
@@ -101,6 +102,7 @@ export const getServiceCategories = cache(async (): Promise<ServiceCategory[]> =
 
     return {
       id: cat.slug,
+      slug: cat.slug,
       title: cat.title,
       items: catServices.map(s => {
         const idx = globalIndex++;

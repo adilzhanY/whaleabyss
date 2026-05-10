@@ -245,6 +245,95 @@ export async function createFreekassaOrder(
   };
 }
 
+// -------- Refund (API 2.0) ---------------------------------------------------
+
+export interface RefundOrderOptions {
+  /** Our internal order id (UUID) OR Freekassa's internal order id */
+  orderId?: string;
+  /** Freekassa's internal order id (stored as paymentId in our DB) OR our order id */
+  paymentId?: string;
+}
+
+export interface RefundOrderResult {
+  refundId: number;
+}
+
+/**
+ * Refunds a paid order via Freekassa API 2.0.
+ * You must provide either `orderId` (FK's internal ID) OR `paymentId` (your order ID).
+ *
+ * According to Freekassa docs, the refund endpoint uses query parameters,
+ * but we'll try both GET with query params and POST with JSON body.
+ */
+export async function refundFreekassaOrder(
+  opts: RefundOrderOptions
+): Promise<RefundOrderResult> {
+  const { shopId, apiKey } = getEnv();
+
+  if (!opts.orderId && !opts.paymentId) {
+    throw new Error('[Freekassa] Refund requires either orderId or paymentId');
+  }
+
+  // Build params object
+  const body: Record<string, string | number> = {
+    shopId: Number(shopId),
+    nonce: Date.now(),
+  };
+
+  // orderId should be Freekassa's internal numeric ID
+  if (opts.orderId) {
+    const orderIdNum = Number(opts.orderId);
+    if (!Number.isFinite(orderIdNum)) {
+      throw new Error(`[Freekassa] orderId must be a valid number, got: ${opts.orderId}`);
+    }
+    body.orderId = orderIdNum;
+  }
+
+  // paymentId is our UUID string
+  if (opts.paymentId) {
+    body.paymentId = String(opts.paymentId);
+  }
+
+  // Generate signature using the same method as createOrder
+  const signature = signApiRequest(body, apiKey);
+  const requestBody = { ...body, signature };
+
+  console.log('[Freekassa] Refund request body:', requestBody);
+
+  const res = await fetch(`${FK_API_BASE}/orders/refund`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(requestBody),
+    cache: 'no-store',
+  });
+
+  const raw = await res.text();
+  let json: any;
+  try {
+    json = JSON.parse(raw);
+  } catch {
+    throw new Error(
+      `[Freekassa] Refund non-JSON response (${res.status}): ${raw.slice(0, 500)}`
+    );
+  }
+
+  console.log('[Freekassa] Refund response:', json);
+
+  if (!res.ok || json.type !== 'success' || !json.id) {
+    const message = json?.message || json?.error || JSON.stringify(json);
+    throw new Error(
+      `[Freekassa] Refund failed (${res.status}): ${message}`
+    );
+  }
+
+  return {
+    refundId: json.id,
+  };
+}
+
 // -------- Notification verification (same for both modes) --------------------
 
 /**

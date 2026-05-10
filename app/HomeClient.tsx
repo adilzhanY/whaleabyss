@@ -17,10 +17,12 @@ import ServiceCard from "@/components/ServiceCard";
 import SuggestServiceModal from "@/components/SuggestServiceModal";
 import OrderCard from "@/components/OrderCard";
 import Toast from "@/components/Toast";
+import EventBanner from "@/components/EventBanner";
 import { useCart } from "@/store/useCart";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
+import { getActiveEvent } from "@/lib/events";
 
 const STEPS = [
 	{
@@ -106,6 +108,9 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 	const [activeOrders, setActiveOrders] = useState<OrderData[]>([]);
 	const [pastOrders, setPastOrders] = useState<OrderData[]>([]);
 	const [loadingOrders, setLoadingOrders] = useState(true);
+
+	// Check for active event
+	const activeEvent = getActiveEvent();
 
 	useEffect(() => {
 		if (session?.user) {
@@ -205,13 +210,25 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 										</a>
 									</div>
 								) : (
-									<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-										{activeOrders.map((order) => (
-											<div key={order.id}>
-												<OrderCard order={order} />
+									<>
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+											{activeOrders.slice(0, 4).map((order) => (
+												<div key={order.id}>
+													<OrderCard order={order} />
+												</div>
+											))}
+										</div>
+										{activeOrders.length > 4 && (
+											<div className="mt-6 flex justify-center">
+												<Link
+													href="/orders"
+													className="btn-primary inline-flex items-center justify-center gap-2 !rounded-xl !px-6 sm:!px-8 !py-3 !font-bold w-full sm:w-auto"
+												>
+													Показать все заказы ({activeOrders.length})
+												</Link>
 											</div>
-										))}
-									</div>
+										)}
+									</>
 								)}
 							</div>{" "}
 							{pastOrders.length > 0 ? (
@@ -370,6 +387,11 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 				</section>
 			)}
 
+			{/* EVENT BANNER */}
+			{activeEvent && (
+				<EventBanner eventType={activeEvent.type!} endsAt={activeEvent.endsAt} />
+			)}
+
 			{/* HOW IT WORKS */}
 			{!session?.user && (
 				<section id="how" className="py-20">
@@ -518,7 +540,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 									<div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
 										{itemsToShow.map((item: any) => (
 											<div key={item.id} className="w-full h-full">
-												<ServiceCard item={item} />
+												<ServiceCard item={item} categorySlug={category.slug} />
 											</div>
 										))}
 									</div>

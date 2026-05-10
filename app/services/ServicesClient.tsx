@@ -131,7 +131,7 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
 
           <div className="flex flex-col gap-12">
             {filteredCategories.map((category) => (
-              <div key={category.id} className="flex flex-col gap-6">
+              <div key={category.id} className="flex flex-col gap-6" id={category.slug}>
                 <h3
                   className="text-2xl font-bold"
                   style={{ fontFamily: "var(--font-primary), sans-serif", color: "black" }}
@@ -144,7 +144,7 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
                       key={item.id}
                       className="w-full h-full"
                     >
-                      <ServiceCard item={item} />
+                      <ServiceCard item={item} categorySlug={category.slug} />
                     </div>
                   ))}
                 </div>

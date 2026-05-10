@@ -6,11 +6,9 @@ import { requireAdminApi } from "@/lib/auth/requireAdmin";
 
 const ALLOWED_STATUSES = [
   "pending",
-  "paid",
   "in_progress",
   "completed",
   "cancelled",
-  "refunded",
 ] as const;
 
 type AllowedStatus = (typeof ALLOWED_STATUSES)[number];

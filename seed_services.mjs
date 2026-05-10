@@ -29,7 +29,8 @@ const categoryTitles = {
   locations: "Исследование регионов",
   boost: "Сопровождение",
   missions: "Задания",
-  abyss_theater: "Бездна и Театр",
+  theatre: "Театр Воображариум",
+  abyss: "Витая Бездна",
   other: "Прочее",
 };
 

@@ -60,6 +60,11 @@ export default function Header({ onAuthOpen }: HeaderProps) {
   const { data: session } = useSession();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = isMobileMenuOpen ? "hidden" : "auto";
@@ -277,7 +282,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
                 aria-label="Корзина"
               >
                 <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
-                {count > 0 && (
+                {isMounted && count > 0 && (
                   <span
                     className="absolute -right-1 -top-1 flex h-4 w-4 md:h-5 md:w-5 items-center justify-center rounded-full text-[9px] md:text-[10px] font-bold text-white"
                     style={{

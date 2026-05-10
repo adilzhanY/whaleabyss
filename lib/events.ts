@@ -13,7 +13,7 @@ export interface ActiveEvent {
 }
 
 // 🔧 TOGGLE THIS FOR TESTING
-const FORCE_SHOW_EVENT: EventType = "theatre"; // Set to "theatre", "abyss", or null to disable
+const FORCE_SHOW_EVENT: EventType = null; // Set to "theatre", "abyss", or null to disable
 // 🔧 END TOGGLE
 
 /**
@@ -21,7 +21,7 @@ const FORCE_SHOW_EVENT: EventType = "theatre"; // Set to "theatre", "abyss", or 
  */
 export function getActiveEvent(): ActiveEvent | null {
   // 🔧 TESTING MODE: Force show event
-  if (FORCE_SHOW_EVENT) {
+  if (FORCE_SHOW_EVENT !== null) {
     const now = new Date();
     const endsAt = new Date(now.getTime() + 2 * 60 * 60 * 1000); // Ends in 2 hours for testing
 

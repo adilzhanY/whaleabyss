@@ -78,19 +78,6 @@ export default function ContactsPage() {
                 <dt className="font-semibold text-slate-500 min-w-[140px]">ИНН:</dt>
                 <dd className="font-mono">{LEGAL.INN}</dd>
               </div>
-              {LEGAL.CURRENT_LEGAL_FORM === "individual_entrepreneur" &&
-                LEGAL.OGRNIP &&
-                !LEGAL.OGRNIP.startsWith("<") && (
-                  <div className="flex flex-wrap gap-x-2">
-                    <dt className="font-semibold text-slate-500 min-w-[140px]">ОГРНИП:</dt>
-                    <dd className="font-mono">
-                      {LEGAL.OGRNIP}
-                      {LEGAL.OGRNIP_DATE && !LEGAL.OGRNIP_DATE.startsWith("<")
-                        ? ` от ${LEGAL.OGRNIP_DATE}`
-                        : ""}
-                    </dd>
-                  </div>
-                )}
               {LEGAL.ADDRESS && !LEGAL.ADDRESS.startsWith("<") && (
                 <div className="flex flex-wrap gap-x-2">
                   <dt className="font-semibold text-slate-500 min-w-[140px]">Адрес:</dt>
@@ -99,7 +86,7 @@ export default function ContactsPage() {
               )}
               <div className="flex flex-wrap gap-x-2">
                 <dt className="font-semibold text-slate-500 min-w-[140px]">Налоговый режим:</dt>
-                <dd>УСН «Доходы», 6%</dd>
+                <dd>НПД (Налог на профессиональный доход)</dd>
               </div>
               <div className="flex flex-wrap gap-x-2">
                 <dt className="font-semibold text-slate-500 min-w-[140px]">E-mail:</dt>

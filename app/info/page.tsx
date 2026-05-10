@@ -54,13 +54,6 @@ export default function InfoPage() {
               Услуги оказывает{" "}
               <strong className="text-slate-900">{getPartyShortLabel()}</strong>,{" "}
               ИНН <span className="font-mono">{LEGAL.INN}</span>
-              {LEGAL.CURRENT_LEGAL_FORM === "individual_entrepreneur" &&
-                LEGAL.OGRNIP &&
-                !LEGAL.OGRNIP.startsWith("<") && (
-                  <>
-                    , ОГРНИП <span className="font-mono">{LEGAL.OGRNIP}</span>
-                  </>
-                )}
               . Приём платежей осуществляется через защищённые платёжные шлюзы
               банков-партнёров; оплата проходит по защищённому протоколу{" "}
               <strong className="text-slate-900">HTTPS/SSL</strong>, платёжные

@@ -8,20 +8,14 @@ import { LEGAL, getPartyLabel, getFullRequisites, pluralizeHours } from "@/lib/l
 /**
  * Публичная оферта (агентский договор).
  *
- * Текст оферты написан под агентскую модель ИП на УСН — формат, который
- * ожидают увидеть ВТБ / YooKassa / Тинькофф при подключении эквайринга.
+ * Текст оферты написан под агентскую модель самозанятого на НПД.
  *
  * Все реквизиты, даты редакций и параметры (срок исполнения, срок оплаты,
  * процент агентского вознаграждения) подтягиваются из @/lib/legal.ts —
  * правки реквизитов делаются только там.
- *
- * Если CURRENT_LEGAL_FORM === "self_employed" (например, при временном
- * откате на НПД), сверху отрисовывается жёлтый баннер о переходном
- * периоде; в действующем режиме (individual_entrepreneur) — не показывается.
  */
 export default function PublicOfferPage() {
   const [authOpen, setAuthOpen] = useState(false);
-  const isSelfEmployed = LEGAL.CURRENT_LEGAL_FORM === "self_employed";
 
   return (
     <div
@@ -39,29 +33,6 @@ export default function PublicOfferPage() {
           className="mx-auto max-w-4xl bg-white p-8 sm:p-12 text-black"
           style={{ fontFamily: "var(--font-primary), sans-serif" }}
         >
-          {isSelfEmployed && (
-            <div className="mb-10 rounded-2xl border border-amber-300 bg-amber-50 p-5 text-sm text-amber-900">
-              <p className="font-bold mb-1">
-                Уведомление о переходном периоде
-              </p>
-              <p>
-                Данная редакция публичной оферты подготовлена для применения
-                в режиме индивидуального предпринимателя. Сейчас{" "}
-                {LEGAL.COMPANY_NAME} временно работает как самозанятая{" "}
-                {LEGAL.FULL_NAME_NOMINATIVE} по договору оказания
-                информационно-консультационных услуг. По вопросам обращайтесь
-                в службу поддержки:{" "}
-                <a
-                  href={`mailto:${LEGAL.EMAIL}`}
-                  className="text-blue-600 hover:underline"
-                >
-                  {LEGAL.EMAIL}
-                </a>
-                .
-              </p>
-            </div>
-          )}
-
           <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-center text-black">
             АГЕНТСКИЙ ДОГОВОР
           </h1>
@@ -76,16 +47,7 @@ export default function PublicOfferPage() {
               <div className="space-y-2">
                 <p>
                   1.1. Настоящая оферта является официальным предложением
-                  (публичной офертой) {getPartyLabel()}
-                  {LEGAL.CURRENT_LEGAL_FORM === "individual_entrepreneur" &&
-                  !LEGAL.OGRNIP.startsWith("<")
-                    ? `, ОГРНИП ${LEGAL.OGRNIP}${
-                        !LEGAL.OGRNIP_DATE.startsWith("<")
-                          ? ` от ${LEGAL.OGRNIP_DATE}`
-                          : ""
-                      }`
-                    : ""}
-                  , именуемой в дальнейшем «Агент», заключить Договор об
+                  (публичной офертой) {getPartyLabel()}, именуемой в дальнейшем «Агент», заключить Договор об
                   оказании агентских услуг по обеспечению игрового
                   сопровождения на условиях настоящей оферты с любым
                   дееспособным физическим лицом, именуемым в дальнейшем «Принципал».

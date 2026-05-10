@@ -133,10 +133,6 @@ export default function Footer() {
         <div className="space-y-0.5">
           <div>{getPartyShortLabel()}</div>
           <div>ИНН: {LEGAL.INN}</div>
-          {LEGAL.CURRENT_LEGAL_FORM === "individual_entrepreneur" &&
-            !LEGAL.OGRNIP.startsWith("<") && (
-              <div>ОГРНИП: {LEGAL.OGRNIP}</div>
-            )}
           {!LEGAL.ADDRESS.startsWith("<") && (
             <div>{LEGAL.ADDRESS}</div>
           )}

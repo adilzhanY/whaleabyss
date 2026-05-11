@@ -187,12 +187,18 @@ async function handle(req: NextRequest) {
 
       const itemsDescription = items
         .map((i) => {
-          let desc = `- ${i.title} (x${i.quantity}) - ${i.price} руб.`;
+          let desc = `- ${i.title}`;
+
+          // Show period for account management service
           if (i.startDate && i.endDate) {
             const start = new Date(i.startDate).toLocaleDateString('ru-RU');
             const end = new Date(i.endDate).toLocaleDateString('ru-RU');
-            desc += `\n  Период: ${start} - ${end}`;
+            desc += ` (${start} - ${end})`;
+          } else {
+            desc += ` (x${i.quantity})`;
           }
+
+          desc += ` - ${i.price} руб.`;
           return desc;
         })
         .join('\n');

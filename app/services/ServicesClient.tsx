@@ -1,76 +1,44 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CartModal from "@/components/CartModal";
 import AuthModal from "@/components/AuthModal";
 import ServiceCard from "@/components/ServiceCard";
 import SuggestServiceModal from "@/components/SuggestServiceModal";
-import SearchBar from "@/components/SearchBar";
-import { useSession } from "next-auth/react";
-import Fuse from "fuse.js";
+import { Search } from "lucide-react";
 
 export default function ServicesClient({ categories }: { categories: any[] }) {
-  const { data: session } = useSession();
   const [authOpen, setAuthOpen] = useState(false);
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // Flatten all services for search
-  const allServices = useMemo(() => {
-    return categories.flatMap((category) =>
-      category.items.map((item: any) => ({
-        ...item,
-        categoryTitle: category.title,
-        categoryId: category.id,
-      }))
-    );
-  }, [categories]);
-
-  // Configure Fuse.js for fuzzy search
-  const fuse = useMemo(() => {
-    return new Fuse(allServices, {
-      keys: [
-        { name: "title", weight: 2 },
-        { name: "subtitle", weight: 2 },
-        { name: "description", weight: 1 },
-        { name: "categoryTitle", weight: 1 },
-      ],
-      threshold: 0.4, // 0 = exact match, 1 = match anything
-      distance: 100,
-      minMatchCharLength: 2,
-      ignoreLocation: true,
-    });
-  }, [allServices]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Filter categories based on search
   const filteredCategories = useMemo(() => {
-    if (!searchQuery.trim()) {
+    if (!debouncedSearch.trim()) {
       return categories;
     }
 
-    const results = fuse.search(searchQuery);
-    const matchedServices = results.map((result) => result.item);
+    const query = debouncedSearch.toLowerCase();
 
-    // Group matched services back into categories
-    const categoryMap = new Map<string, any>();
-
-    matchedServices.forEach((service) => {
-      if (!categoryMap.has(service.categoryId)) {
-        const originalCategory = categories.find((cat) => cat.id === service.categoryId);
-        if (originalCategory) {
-          categoryMap.set(service.categoryId, {
-            ...originalCategory,
-            items: [],
-          });
-        }
-      }
-      categoryMap.get(service.categoryId)?.items.push(service);
-    });
-
-    return Array.from(categoryMap.values());
-  }, [searchQuery, categories, fuse]);
+    return categories
+      .map((category) => ({
+        ...category,
+        items: category.items.filter((item: any) =>
+          item.title?.toLowerCase().includes(query)
+        ),
+      }))
+      .filter((category) => category.items.length > 0);
+  }, [debouncedSearch, categories]);
 
   const totalResults = filteredCategories.reduce(
     (sum, cat) => sum + cat.items.length,
@@ -117,9 +85,20 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
             <p className="text-slate-500 max-w-2xl mx-auto">Полный каталог наших услуг для развития аккаунта и сопровождения в Genshin Impact.</p>
           </div>
 
-          <SearchBar onSearch={setSearchQuery} placeholder="Поиск услуг..." />
+          <div className="mb-8">
+            <div className="relative max-w-2xl mx-auto">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Поиск по названию услуги..."
+                className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
 
-          {searchQuery && (
+          {debouncedSearch && (
             <div className="mb-8 text-center">
               <p className="text-slate-600 text-sm">
                 {totalResults > 0

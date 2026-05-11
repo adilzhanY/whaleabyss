@@ -23,6 +23,13 @@ export const otps = pgTable('otps', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  email: varchar('email', { length: 255 }).primaryKey(),
+  token: varchar('token', { length: 64 }).notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});
+
 export const categories = pgTable('categories', {
   id: uuid('id').defaultRandom().primaryKey(),
   slug: varchar('slug', { length: 255 }).notNull().unique(),

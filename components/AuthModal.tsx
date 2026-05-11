@@ -26,6 +26,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Forgot password states
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false);
+
   // OTP states
   const [step, setStep] = useState<"form" | "otp" | "success">("form");
   const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(""));
@@ -50,6 +55,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setConfirmPassword("");
     setStep("form");
     setOtpValues(Array(6).fill(""));
+    setShowForgotPassword(false);
+    setForgotPasswordEmail("");
+    setForgotPasswordSuccess(false);
   }, [tab, isOpen]);
 
   const triggerShake = () => {
@@ -314,6 +322,78 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               Вернуться назад
             </button>
           </div >
+        ) : showForgotPassword ? (
+          <div className="space-y-4">
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              Введите ваш email, и мы отправим вам ссылку для сброса пароля.
+            </p>
+            <div>
+              <label className="mb-1 block text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
+                Email
+              </label>
+              <input
+                type="email"
+                placeholder="example@mail.com"
+                value={forgotPasswordEmail}
+                onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                required
+                className="w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors focus:border-[#1e3a8a]"
+                style={{ borderColor: "var(--accent-border)", color: "var(--text-primary)", backgroundColor: "var(--bg-main)" }}
+              />
+            </div>
+
+            {error && <p className="text-red-500 text-xs font-medium mt-1">{error}</p>}
+
+            {forgotPasswordSuccess ? (
+              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
+                Письмо отправлено! Проверьте вашу почту.
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={async () => {
+                  setError("");
+                  if (!forgotPasswordEmail) {
+                    setError("Введите email");
+                    return;
+                  }
+                  setIsLoading(true);
+                  try {
+                    const res = await fetch("/api/auth/forgot-password", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email: forgotPasswordEmail }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || "Ошибка отправки");
+                    setForgotPasswordSuccess(true);
+                  } catch (err: any) {
+                    setError(err.message);
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
+                disabled={isLoading}
+                className="btn-primary w-full !py-3 !text-sm"
+              >
+                {isLoading ? "Отправка..." : "Отправить ссылку"}
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowForgotPassword(false);
+                setForgotPasswordEmail("");
+                setForgotPasswordSuccess(false);
+                setError("");
+              }}
+              className="text-sm hover:underline mt-2 block mx-auto transition-all"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Вернуться к входу
+            </button>
+          </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {tab === "register" && (
@@ -401,6 +481,19 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             >
               {isLoading ? "Обработка..." : tab === "login" ? "Войти" : "Зарегистрироваться"}
             </button>
+
+            {tab === "login" && !showForgotPassword && (
+              <div className="text-center mt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm hover:underline transition-all"
+                  style={{ color: "var(--accent-primary)" }}
+                >
+                  Забыли пароль?
+                </button>
+              </div>
+            )}
           </form >
         )
         }

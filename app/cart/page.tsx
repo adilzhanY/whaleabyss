@@ -228,6 +228,11 @@ export default function CartPage() {
                     )}
                     <div>
                       <p className="font-semibold text-slate-800">{item.subtitle}</p>
+                      {item.startDate && item.endDate && (
+                        <p className="text-xs text-slate-500 mt-1">
+                          {new Date(item.startDate).toLocaleDateString("ru-RU")} - {new Date(item.endDate).toLocaleDateString("ru-RU")}
+                        </p>
+                      )}
 
                       <div className="flex items-center gap-3 mt-3">
                         <button onClick={() => removeFromCart(item.id)} className="w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors cursor-pointer" aria-label="Удалить">

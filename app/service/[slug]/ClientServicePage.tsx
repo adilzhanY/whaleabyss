@@ -71,6 +71,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
       subtitle: service.subtitle,
       price: pricePerItem,
       image: service.background || "/images/genshin_background.jpg",
+      ...(service.isPerDay ? { startDate, endDate } : {}),
     }, activeDays);
     openCart();
   };

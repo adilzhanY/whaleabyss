@@ -113,6 +113,8 @@ export async function POST(req: NextRequest) {
         serviceId: actualServiceId,
         quantity: item.quantity,
         priceAtPurchase: item.price.toString(),
+        ...(item.startDate ? { startDate: new Date(item.startDate) } : {}),
+        ...(item.endDate ? { endDate: new Date(item.endDate) } : {}),
       };
     });
     await db.insert(orderItems).values(insertItems);

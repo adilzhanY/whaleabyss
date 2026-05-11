@@ -178,13 +178,23 @@ async function handle(req: NextRequest) {
           title: services.title,
           quantity: orderItems.quantity,
           price: orderItems.priceAtPurchase,
+          startDate: orderItems.startDate,
+          endDate: orderItems.endDate,
         })
         .from(orderItems)
         .leftJoin(services, eqInner(orderItems.serviceId, services.id))
         .where(eqInner(orderItems.orderId, merchantOrderId));
 
       const itemsDescription = items
-        .map((i) => `- ${i.title} (x${i.quantity}) - ${i.price} руб.`)
+        .map((i) => {
+          let desc = `- ${i.title} (x${i.quantity}) - ${i.price} руб.`;
+          if (i.startDate && i.endDate) {
+            const start = new Date(i.startDate).toLocaleDateString('ru-RU');
+            const end = new Date(i.endDate).toLocaleDateString('ru-RU');
+            desc += `\n  Период: ${start} - ${end}`;
+          }
+          return desc;
+        })
         .join('\n');
 
       await notifyAdminAboutOrder({

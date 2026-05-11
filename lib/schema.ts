@@ -65,6 +65,8 @@ export const orderItems = pgTable('order_items', {
   serviceId: uuid('service_id').references(() => services.id, { onDelete: 'cascade' }),
   quantity: integer('quantity').default(1),
   priceAtPurchase: decimal('price_at_purchase', { precision: 10, scale: 2 }).notNull(),
+  startDate: timestamp('start_date', { withTimezone: true }),
+  endDate: timestamp('end_date', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 

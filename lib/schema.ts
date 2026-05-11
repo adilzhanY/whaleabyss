@@ -124,3 +124,13 @@ export const reviews = pgTable('reviews', {
   status: reviewStatusEnum('status').default('pending'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
+
+export const cartItems = pgTable('cart_items', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  serviceId: uuid('service_id').references(() => services.id, { onDelete: 'cascade' }).notNull(),
+  quantity: integer('quantity').notNull().default(1),
+  startDate: timestamp('start_date', { withTimezone: true }),
+  endDate: timestamp('end_date', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});

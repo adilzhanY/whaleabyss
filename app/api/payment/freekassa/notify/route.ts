@@ -270,6 +270,19 @@ async function handle(req: NextRequest) {
       console.error('[Email] Failed to send order confirmation:', emailError);
     }
 
+    // 9. Clear cart from database for logged-in users (best effort).
+    if (order.userId) {
+      try {
+        const { cartItems } = await import('@/lib/schema');
+        const { eq: eqInner } = await import('drizzle-orm');
+
+        await db.delete(cartItems).where(eqInner(cartItems.userId, order.userId));
+        console.log(`[Cart] Cleared cart for user ${order.userId}`);
+      } catch (cartError) {
+        console.error('[Cart] Failed to clear cart:', cartError);
+      }
+    }
+
     return new NextResponse('YES', { status: 200 });
   } catch (err) {
     console.error('[Freekassa Webhook Error]', err);

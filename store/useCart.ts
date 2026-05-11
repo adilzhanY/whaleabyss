@@ -23,6 +23,8 @@ interface CartState {
   closeCart: () => void;
   cartTotal: () => number;
   cartCount: () => number;
+  syncToDb: () => Promise<void>;
+  loadFromDb: () => Promise<void>;
 }
 
 export const useCart = create<CartState>()(
@@ -43,10 +45,14 @@ export const useCart = create<CartState>()(
           }
           return { items: [...state.items, { ...item, quantity }] };
         });
+        // Sync to DB after adding (fire and forget)
+        get().syncToDb().catch(err => console.error('Failed to sync cart:', err));
       },
 
       removeFromCart: (id) => {
         set((state) => ({ items: state.items.filter((i) => i.id !== id) }));
+        // Sync to DB after removing
+        get().syncToDb().catch(err => console.error('Failed to sync cart:', err));
       },
 
       updateQuantity: (id, quantity) => {
@@ -55,9 +61,15 @@ export const useCart = create<CartState>()(
             ? state.items.map((i) => (i.id === id ? { ...i, quantity } : i))
             : state.items.filter((i) => i.id !== id)
         }));
+        // Sync to DB after updating
+        get().syncToDb().catch(err => console.error('Failed to sync cart:', err));
       },
 
-      clearCart: () => set({ items: [] }),
+      clearCart: () => {
+        set({ items: [] });
+        // Sync to DB after clearing
+        get().syncToDb().catch(err => console.error('Failed to sync cart:', err));
+      },
 
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
@@ -67,6 +79,64 @@ export const useCart = create<CartState>()(
 
       cartCount: () =>
         get().items.reduce((sum, item) => sum + item.quantity, 0),
+
+      // Sync localStorage cart to database (for logged-in users)
+      syncToDb: async () => {
+        try {
+          const items = get().items;
+          const res = await fetch('/api/cart/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items }),
+          });
+
+          if (!res.ok && res.status !== 401) {
+            console.error('Failed to sync cart to DB');
+          }
+        } catch (error) {
+          // Silently fail - user might not be logged in
+          console.debug('Cart sync skipped:', error);
+        }
+      },
+
+      // Load cart from database and merge with localStorage
+      loadFromDb: async () => {
+        try {
+          const res = await fetch('/api/cart/load');
+
+          if (!res.ok) {
+            if (res.status === 401) {
+              // Not logged in, skip
+              return;
+            }
+            throw new Error('Failed to load cart');
+          }
+
+          const data = await res.json();
+          const dbItems: CartItem[] = data.items || [];
+
+          if (dbItems.length === 0) {
+            return;
+          }
+
+          // Merge strategy: DB items take precedence, but keep localStorage items not in DB
+          set((state) => {
+            const localItems = state.items;
+            const dbItemIds = new Set(dbItems.map(item => item.id));
+
+            // Keep local items that are not in DB
+            const localOnlyItems = localItems.filter(item => !dbItemIds.has(item.id));
+
+            // Merge: DB items + local-only items
+            return { items: [...dbItems, ...localOnlyItems] };
+          });
+
+          // After merging, sync back to DB to save the merged state
+          await get().syncToDb();
+        } catch (error) {
+          console.error('Failed to load cart from DB:', error);
+        }
+      },
     }),
     {
       name: 'cart-storage',

@@ -52,11 +52,11 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
   const [startDate, setStartDate] = useState(todayDate.toISOString().split("T")[0]);
   const [endDate, setEndDate] = useState(tomorrowDate.toISOString().split("T")[0]);
 
-  // Calculate days difference
+  // Calculate days difference (inclusive)
   const start = new Date(startDate);
   const end = new Date(endDate);
   const timeDiff = end.getTime() - start.getTime();
-  const calculatedDays = timeDiff > 0 ? Math.ceil(timeDiff / (1000 * 3600 * 24)) : 1;
+  const calculatedDays = timeDiff >= 0 ? Math.floor(timeDiff / (1000 * 3600 * 24)) + 1 : 1;
 
   // Use calculatedDays if per day, otherwise default to 1
   const activeDays = service.isPerDay ? calculatedDays : 1;

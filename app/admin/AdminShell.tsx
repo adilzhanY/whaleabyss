@@ -16,6 +16,7 @@ import {
   Ticket,
   Calendar,
   Star,
+  Users,
 } from "lucide-react";
 
 interface NavItem {
@@ -29,6 +30,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "Дашборд", icon: LayoutDashboard, matches: ["/admin"] },
   { href: "/admin/orders", label: "Заказы", icon: ShoppingBag, matches: ["/admin/orders"] },
+  { href: "/admin/users", label: "Юзеры", icon: Users, matches: ["/admin/users"] },
   { href: "/admin/services", label: "Услуги", icon: Package, matches: ["/admin/services"] },
   { href: "/admin/promocodes", label: "Промокоды", icon: Ticket, matches: ["/admin/promocodes"] },
   { href: "/admin/events", label: "События", icon: Calendar, matches: ["/admin/events"] },
@@ -254,6 +256,8 @@ export default function AdminShell({ userName, userEmail, children }: AdminShell
 function breadcrumbLabel(pathname: string): string {
   if (pathname === "/admin") return "Дашборд";
   if (pathname.startsWith("/admin/orders")) return "Заказы";
+  if (pathname.startsWith("/admin/users/") && pathname !== "/admin/users") return "Юзеры · Профиль";
+  if (pathname.startsWith("/admin/users")) return "Юзеры";
   if (pathname === "/admin/services/new") return "Услуги · Новая услуга";
   if (pathname.startsWith("/admin/services/")) return "Услуги · Редактирование";
   if (pathname.startsWith("/admin/services")) return "Услуги";

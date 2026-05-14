@@ -427,57 +427,6 @@ Building this project solo taught me:
 
 ---
 
-## 🛠️ Local Development
-
-### Prerequisites
-- Node.js 20+
-- PostgreSQL 14+
-- npm or yarn
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/genshin_abyss.git
-cd genshin_abyss
-
-# Install dependencies
-npm install
-
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your credentials
-
-# Run database migrations
-node run_migrations.mjs
-
-# Start development server
-npm run dev
-```
-
-### Environment Variables
-
-```env
-DATABASE_URL=postgresql://user:password@localhost:5432/dbname
-NEXTAUTH_SECRET=your-secret-key
-NEXTAUTH_URL=http://localhost:3000
-EMAIL_SERVER_HOST=smtp.example.com
-EMAIL_SERVER_PORT=465
-EMAIL_SERVER_USER=your-email
-EMAIL_SERVER_PASSWORD=your-password
-FREEKASSA_SHOP_ID=your-shop-id
-FREEKASSA_SECRET_1=your-secret-1
-FREEKASSA_SECRET_2=your-secret-2
-FREEKASSA_API_KEY=your-api-key
-TELEGRAM_BOT_TOKEN=your-bot-token
-TELEGRAM_ADMIN_CHAT_ID=your-chat-id
-YANDEX_KEY_ID=your-key-id
-YANDEX_SECRET_KEY=your-secret-key
-NEXT_PUBLIC_SITE_URL=https://yourdomain.com
-```
-
----
-
 ## 📝 Project Structure
 
 ```

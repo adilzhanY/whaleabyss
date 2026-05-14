@@ -25,7 +25,7 @@ export default function ReviewsPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
-  const [columns, setColumns] = useState<Review[][]>([[], [], [], []]);
+  const [columns, setColumns] = useState<Review[][]>([[], [], []]);
   const [averageRating, setAverageRating] = useState(0);
   const [totalReviews, setTotalReviews] = useState(0);
 
@@ -59,7 +59,7 @@ export default function ReviewsPage() {
   };
 
   const distributeToColumns = () => {
-    const columnCount = 4; // Default to 4 columns, can be made responsive
+    const columnCount = 3; // 3 columns
     const newColumns: Review[][] = Array.from({ length: columnCount }, () => []);
 
     // Distribute reviews in order, filling shortest column first
@@ -98,7 +98,7 @@ export default function ReviewsPage() {
         setLoadingMore(true);
       }
 
-      const res = await fetch(`/api/reviews?offset=${offset}&limit=5`);
+      const res = await fetch(`/api/reviews?offset=${offset}&limit=8`);
       const data = await res.json();
 
       if (offset === 0) {

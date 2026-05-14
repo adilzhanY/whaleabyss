@@ -99,7 +99,7 @@ export const useCart = create<CartState>()(
         }
       },
 
-      // Load cart from database and merge with localStorage
+      // Load cart from database and replace localStorage
       loadFromDb: async () => {
         try {
           const res = await fetch('/api/cart/load');
@@ -115,24 +115,9 @@ export const useCart = create<CartState>()(
           const data = await res.json();
           const dbItems: CartItem[] = data.items || [];
 
-          if (dbItems.length === 0) {
-            return;
-          }
-
-          // Merge strategy: DB items take precedence, but keep localStorage items not in DB
-          set((state) => {
-            const localItems = state.items;
-            const dbItemIds = new Set(dbItems.map(item => item.id));
-
-            // Keep local items that are not in DB
-            const localOnlyItems = localItems.filter(item => !dbItemIds.has(item.id));
-
-            // Merge: DB items + local-only items
-            return { items: [...dbItems, ...localOnlyItems] };
-          });
-
-          // After merging, sync back to DB to save the merged state
-          await get().syncToDb();
+          // Replace strategy: DB is the source of truth for logged-in users
+          // This ensures deletions are respected
+          set({ items: dbItems });
         } catch (error) {
           console.error('Failed to load cart from DB:', error);
         }

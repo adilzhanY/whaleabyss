@@ -28,13 +28,22 @@ export default async function AdminServicesPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Услуги</h1>
           <p className="text-sm text-slate-500 mt-1">{rows.length} услуг в каталоге</p>
         </div>
-        <Link
-          href="/admin/services/new"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors"
-        >
-          <Plus className="w-4 h-4" strokeWidth={2.5} />
-          Новая услуга
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            href="/admin/services/categories"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-600 text-white text-sm font-semibold hover:bg-slate-700 transition-colors"
+          >
+            <Plus className="w-4 h-4" strokeWidth={2.5} />
+            Новая категория
+          </Link>
+          <Link
+            href="/admin/services/new"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors"
+          >
+            <Plus className="w-4 h-4" strokeWidth={2.5} />
+            Новая услуга
+          </Link>
+        </div>
       </div>
 
       {rows.length === 0 ? (

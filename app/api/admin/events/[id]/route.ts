@@ -5,6 +5,42 @@ import { eq } from 'drizzle-orm';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    // @ts-ignore
+    if (session?.user?.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    const { id } = await params;
+
+    const [event] = await db.select().from(events).where(eq(events.id, id));
+
+    if (!event) {
+      return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+    }
+
+    const eventServiceRecords = await db
+      .select({ serviceId: eventServices.serviceId })
+      .from(eventServices)
+      .where(eq(eventServices.eventId, id));
+
+    const serviceIds = eventServiceRecords.map((es) => es.serviceId);
+
+    return NextResponse.json({
+      ...event,
+      serviceIds,
+    });
+  } catch (error) {
+    console.error('[Admin Event GET Error]', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

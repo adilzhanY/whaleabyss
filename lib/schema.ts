@@ -35,6 +35,7 @@ export const categories = pgTable('categories', {
   slug: varchar('slug', { length: 255 }).notNull().unique(),
   title: varchar('title', { length: 255 }).notNull(),
   description: varchar('description'),
+  order: integer('order').default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 

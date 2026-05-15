@@ -12,8 +12,9 @@ export interface ActiveEvent {
   discountPercent: number;
 }
 
-// 🔧 TOGGLE THIS FOR TESTING
-const FORCE_SHOW_EVENT: EventType = null; // Set to "theatre", "abyss", or null to disable
+// 🔧 TOGGLE THIS FOR TESTING/PRESENTATION
+const FORCE_SHOW_EVENT: EventType = "abyss"; // Set to "theatre", "abyss", or null to disable
+const STATIC_TIMER_FOR_PRESENTATION = true; // Set to true to show static 23:59:59 timer
 // 🔧 END TOGGLE
 
 /**
@@ -23,8 +24,19 @@ export function getActiveEvent(): ActiveEvent | null {
   // 🔧 TESTING MODE: Force show event
   if (FORCE_SHOW_EVENT !== null) {
     const now = new Date();
-    const endsAt = new Date(now.getTime() + 2 * 60 * 60 * 1000); // Ends in 2 hours for testing
 
+    // For presentation: show static timer at 23:59:59
+    if (STATIC_TIMER_FOR_PRESENTATION) {
+      const endsAt = new Date(now.getTime() + (23 * 60 * 60 * 1000) + (59 * 60 * 1000) + (59 * 1000));
+      return {
+        type: FORCE_SHOW_EVENT,
+        endsAt,
+        discountPercent: 15,
+      };
+    }
+
+    // Normal testing: ends in 2 hours
+    const endsAt = new Date(now.getTime() + 2 * 60 * 60 * 1000);
     return {
       type: FORCE_SHOW_EVENT,
       endsAt,

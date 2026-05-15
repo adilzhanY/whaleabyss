@@ -13,7 +13,7 @@ export interface ActiveEvent {
 }
 
 // 🔧 TOGGLE THIS FOR TESTING/PRESENTATION
-const FORCE_SHOW_EVENT: EventType = "abyss"; // Set to "theatre", "abyss", or null to disable
+const FORCE_SHOW_EVENT: EventType = null; // Set to "theatre", "abyss", or null to disable
 const STATIC_TIMER_FOR_PRESENTATION = true; // Set to true to show static 23:59:59 timer
 // 🔧 END TOGGLE
 

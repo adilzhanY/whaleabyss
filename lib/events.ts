@@ -56,8 +56,9 @@ export function getActiveEvent(): ActiveEvent | null {
 
   // Theatre Event: 1st day 6AM - 2nd day 6AM
   if ((day === 1 && hour >= 6) || (day === 2 && hour < 6)) {
-    const endsAt = new Date(year, month, 2, 6, 0, 0); // 2nd day at 6AM Moscow
-    const endsAtUTC = new Date(endsAt.toLocaleString("en-US", { timeZone: "UTC" }));
+    // Create end time: 2nd day at 6AM Moscow time
+    // Moscow is UTC+3, so 6AM Moscow = 3AM UTC
+    const endsAtUTC = new Date(Date.UTC(year, month, 2, 3, 0, 0));
 
     return {
       type: "theatre",
@@ -68,8 +69,9 @@ export function getActiveEvent(): ActiveEvent | null {
 
   // Abyss Event: 16th day 6AM - 17th day 6AM
   if ((day === 16 && hour >= 6) || (day === 17 && hour < 6)) {
-    const endsAt = new Date(year, month, 17, 6, 0, 0); // 17th day at 6AM Moscow
-    const endsAtUTC = new Date(endsAt.toLocaleString("en-US", { timeZone: "UTC" }));
+    // Create end time: 17th day at 6AM Moscow time
+    // Moscow is UTC+3, so 6AM Moscow = 3AM UTC
+    const endsAtUTC = new Date(Date.UTC(year, month, 17, 3, 0, 0));
 
     return {
       type: "abyss",

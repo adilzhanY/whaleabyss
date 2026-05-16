@@ -141,7 +141,6 @@ export default function EventsClient() {
                   <div
                     className="relative overflow-hidden rounded-3xl cursor-pointer transition-transform hover:scale-[1.02] duration-300"
                     style={{
-                      background: `linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)`,
                       minHeight: "320px",
                     }}
                   >
@@ -168,20 +167,9 @@ export default function EventsClient() {
 
                     {/* Background image */}
                     <div
-                      className="absolute inset-0 bg-cover bg-center opacity-70 group-hover:opacity-80 transition-opacity duration-300"
+                      className="absolute inset-0 bg-cover bg-center transition-opacity duration-300"
                       style={{
                         backgroundImage: `url(${activeEvent.type === "theatre" ? "/images/events/teatr_event.png" : "/images/events/abyss_event.png"})`,
-                      }}
-                    />
-
-                    {/* Gradient overlay */}
-                    <div
-                      className="absolute inset-0"
-                      style={{
-                        background: `linear-gradient(135deg,
-                          rgba(139, 92, 246, 0.2) 0%,
-                          rgba(59, 130, 246, 0.15) 50%,
-                          rgba(168, 85, 247, 0.2) 100%)`,
                       }}
                     />
 

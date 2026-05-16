@@ -51,7 +51,6 @@ export default function EventBanner({ eventType, endsAt }: EventBannerProps) {
           onClick={handleClick}
           className="relative overflow-hidden rounded-3xl cursor-pointer group transition-transform hover:scale-[1.02] duration-300"
           style={{
-            background: `linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)`,
             minHeight: "320px",
           }}
         >
@@ -78,20 +77,9 @@ export default function EventBanner({ eventType, endsAt }: EventBannerProps) {
 
           {/* Background image */}
           <div
-            className="absolute inset-0 bg-cover bg-center opacity-70 group-hover:opacity-80 transition-opacity duration-300"
+            className="absolute inset-0 bg-cover bg-center transition-opacity duration-300"
             style={{
               backgroundImage: `url(${bgImage})`,
-            }}
-          />
-
-          {/* Gradient overlay */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background: `linear-gradient(135deg,
-                rgba(139, 92, 246, 0.2) 0%,
-                rgba(59, 130, 246, 0.15) 50%,
-                rgba(168, 85, 247, 0.2) 100%)`,
             }}
           />
 

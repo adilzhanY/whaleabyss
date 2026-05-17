@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ShieldCheck, FileText, MessageSquare, ArrowRight } from "lucide-react";
 import { LEGAL, getPartyShortLabel } from "@/lib/legal";
+import Breadcrumb from "@/components/Breadcrumb";
 
 export default function InfoPage() {
   const [, setAuthOpen] = useState(false);
@@ -16,6 +17,7 @@ export default function InfoPage() {
 
       <main className="flex-1 pt-24 pb-16 px-4 sm:px-6">
         <div className="mx-auto max-w-4xl">
+          <Breadcrumb />
           <div className="mb-10 text-center">
             <h1
               className="text-3xl sm:text-4xl font-black mb-3"

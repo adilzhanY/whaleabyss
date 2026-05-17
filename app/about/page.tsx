@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Breadcrumb from "@/components/Breadcrumb";
 
 export default function AboutPage() {
   const [authOpen, setAuthOpen] = useState(false);
@@ -13,6 +14,7 @@ export default function AboutPage() {
 
       <main className="flex-1 pt-24 pb-20">
         <div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "50rem" }}>
+          <Breadcrumb />
           <div className="mb-12 text-center">
             <h1
               className="text-3xl font-black mb-6"

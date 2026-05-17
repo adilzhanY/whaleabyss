@@ -7,6 +7,7 @@ import { Star, Plus } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import AuthModal from "@/components/AuthModal";
+import Breadcrumb from "@/components/Breadcrumb";
 
 interface Review {
   id: string;
@@ -168,6 +169,7 @@ export default function ReviewsPage() {
 
       <main className="flex-1 pt-24 pb-20">
         <div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "75rem" }}>
+          <Breadcrumb />
           <div className="mb-12 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-center sm:text-left">
               <h1

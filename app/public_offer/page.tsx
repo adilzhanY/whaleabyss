@@ -4,6 +4,7 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { LEGAL, getPartyLabel, getFullRequisites, pluralizeHours } from "@/lib/legal";
+import Breadcrumb from "@/components/Breadcrumb";
 
 /**
  * Публичная оферта (агентский договор).
@@ -33,6 +34,7 @@ export default function PublicOfferPage() {
           className="mx-auto max-w-4xl bg-white p-8 sm:p-12 text-black"
           style={{ fontFamily: "var(--font-primary), sans-serif" }}
         >
+          <Breadcrumb />
           <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-center text-black">
             АГЕНТСКИЙ ДОГОВОР
           </h1>

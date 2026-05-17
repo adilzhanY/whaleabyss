@@ -4,6 +4,7 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { LEGAL, getPartyLabel, getFullRequisites } from "@/lib/legal";
+import Breadcrumb from "@/components/Breadcrumb";
 
 /**
  * Политика конфиденциальности. Оформлена по 152-ФЗ «О персональных данных».
@@ -28,6 +29,7 @@ export default function PrivacyPage() {
           className="mx-auto max-w-4xl bg-white p-8 sm:p-12 text-black"
           style={{ fontFamily: "var(--font-primary), sans-serif" }}
         >
+          <Breadcrumb />
           <h1 className="text-2xl sm:text-3xl font-bold mb-8 text-center text-black">
             Политика конфиденциальности
           </h1>

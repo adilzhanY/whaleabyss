@@ -8,6 +8,7 @@ import AuthModal from "@/components/AuthModal";
 import { Clock, Percent, Calendar } from "lucide-react";
 import { getActiveEvent } from "@/lib/events";
 import Link from "next/link";
+import Breadcrumb from "@/components/Breadcrumb";
 
 interface Event {
   id: string;
@@ -103,6 +104,7 @@ export default function EventsClient() {
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
       <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-24 pb-16">
+        <Breadcrumb />
         <div className="mb-12 text-center">
           <h1
             className="text-4xl sm:text-5xl font-black text-blue-950 mb-4"

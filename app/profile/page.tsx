@@ -7,6 +7,7 @@ import AvatarEditor from "@/components/AvatarEditor";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Settings, Edit3 } from "lucide-react";
+import Breadcrumb from "@/components/Breadcrumb";
 
 export default function ProfilePage() {
   const { data: session, status, update } = useSession();
@@ -111,7 +112,8 @@ export default function ProfilePage() {
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
       <main className="pt-24 pb-10">
-        <div className="mx-auto max-w-4xl px-4 space-y-6">        {/* Profile Header Block */}
+        <div className="mx-auto max-w-4xl px-4 space-y-6">
+          <Breadcrumb />        {/* Profile Header Block */}
           <div
             className="rounded-[2rem] p-6 sm:p-10 shadow-sm flex flex-col md:flex-row items-center md:items-center gap-8 relative overflow-hidden"
             style={{ backgroundColor: "var(--bg-card)" }}

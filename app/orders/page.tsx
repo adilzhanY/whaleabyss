@@ -1,14 +1,14 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Clock, Search, FilterX, ChevronRight } from "lucide-react";
-import Link from "next/link";
+import { Clock, Search, FilterX } from "lucide-react";
 import AuthModal from "@/components/AuthModal";
 import OrderCard from "@/components/OrderCard";
 import { ORDER_STATUSES, orderStatusLabel } from "@/lib/orderStatus";
+import Breadcrumb from "@/components/Breadcrumb";
 
 interface OrderItem {
   serviceId?: string;
@@ -107,11 +107,7 @@ export default function OrdersPage() {
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
       <main className="mx-auto max-w-6xl px-4 sm:px-6 pt-24 pb-8">
-        <div className="flex items-center gap-2 text-sm text-slate-400 mb-6">
-          <Link href="/" className="hover:text-blue-900 transition-colors">Главная</Link>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-blue-300">История заказов</span>
-        </div>
+        <Breadcrumb />
 
         <h1 className="text-3xl font-black text-blue-950 mb-8" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
           Мои заказы

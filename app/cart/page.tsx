@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react";
 import { useCart } from "@/store/useCart";
 import Header from "@/components/Header";
-import { Trash2, Plus, Minus, ChevronRight, Edit2 } from "lucide-react";
+import { Trash2, Plus, Minus, Edit2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import Footer from "@/components/Footer";
 import DataSecurityModal from "@/components/DataSecurityModal";
 import AuthModal from "@/components/AuthModal";
 import { useSession } from "next-auth/react";
+import Breadcrumb from "@/components/Breadcrumb";
 
 /**
  * Available payment methods. The numeric `id` is the Freekassa method id
@@ -187,12 +188,7 @@ export default function CartPage() {
       <DataSecurityModal isOpen={isDataSecurityModalOpen} onClose={() => setIsDataSecurityModalOpen(false)} />
 
       <main className="mx-auto max-w-6xl px-4 sm:px-6 pt-24 pb-8">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-slate-400 mb-6">
-          <Link href="/" className="hover:text-blue-900 transition-colors">Главная</Link>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-blue-300">Корзина</span>
-        </div>
+        <Breadcrumb />
 
         <h1 className="text-3xl font-black text-blue-950 mb-8" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
           Корзина

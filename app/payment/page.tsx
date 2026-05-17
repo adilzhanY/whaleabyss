@@ -4,6 +4,7 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { LEGAL, getFullRequisites, pluralizeHours } from "@/lib/legal";
+import Breadcrumb from "@/components/Breadcrumb";
 
 /**
  * Правила оплаты и безопасность платежей. Отдельная страница, которую
@@ -29,6 +30,7 @@ export default function PaymentPage() {
           className="mx-auto max-w-4xl bg-white p-8 sm:p-12 text-black"
           style={{ fontFamily: "var(--font-primary), sans-serif" }}
         >
+          <Breadcrumb />
           <h1 className="text-2xl sm:text-3xl font-bold mb-8 text-center text-black">
             Правила оплаты и безопасность платежей
           </h1>

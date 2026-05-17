@@ -8,6 +8,7 @@ import AuthModal from "@/components/AuthModal";
 import ServiceCard from "@/components/ServiceCard";
 import SuggestServiceModal from "@/components/SuggestServiceModal";
 import { Search } from "lucide-react";
+import Breadcrumb from "@/components/Breadcrumb";
 
 export default function ServicesClient({ categories }: { categories: any[] }) {
   const [authOpen, setAuthOpen] = useState(false);
@@ -80,6 +81,7 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
         </div>
 
         <div className="mx-auto px-4 sm:px-6 relative z-10" style={{ maxWidth: "75rem" }}>
+          <Breadcrumb />
           <div className="mb-12 text-center text-white">
             <h1 className="text-4xl font-black mb-4 text-slate-800" style={{ fontFamily: "var(--font-primary), sans-serif" }}>Все услуги</h1>
             <p className="text-slate-500 max-w-2xl mx-auto">Полный каталог наших услуг для развития аккаунта и сопровождения в Genshin Impact.</p>

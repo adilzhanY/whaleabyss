@@ -129,7 +129,7 @@ export default function ProfilePage() {
 
             {/* User Info Section */}
             <div className="flex-1 flex flex-col z-10 text-center md:text-left">
-              <h1 className="text-3xl md:text-4xl font-extrabold mb-1" style={{ color: "var(--text-primary)" }}>
+              <h1 className="text-4xl font-black text-blue-950 mb-1" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
                 {session.user.name || "Пользователь"}
               </h1>
               <p className="text-sm font-medium mb-6" style={{ color: "var(--text-secondary)" }}>

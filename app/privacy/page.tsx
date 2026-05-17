@@ -30,7 +30,7 @@ export default function PrivacyPage() {
           style={{ fontFamily: "var(--font-primary), sans-serif" }}
         >
           <Breadcrumb />
-          <h1 className="text-2xl sm:text-3xl font-bold mb-8 text-center text-black">
+          <h1 className="text-3xl font-bold text-blue-950 mb-8 text-center" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
             Политика конфиденциальности
           </h1>
 

@@ -17,8 +17,8 @@ export default function AboutPage() {
           <Breadcrumb />
           <div className="mb-12 text-center">
             <h1
-              className="text-3xl font-black mb-6"
-              style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
+              className="text-4xl font-black text-blue-950 mb-4"
+              style={{ fontFamily: "var(--font-primary), sans-serif" }}
             >
               О нас
             </h1>

@@ -80,11 +80,11 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
           </svg>
         </div>
 
-        <div className="mx-auto px-4 sm:px-6 relative z-10" style={{ maxWidth: "75rem" }}>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 relative z-10">
           <Breadcrumb />
-          <div className="mb-12 text-center text-white">
-            <h1 className="text-4xl font-black mb-4 text-slate-800" style={{ fontFamily: "var(--font-primary), sans-serif" }}>Все услуги</h1>
-            <p className="text-slate-500 max-w-2xl mx-auto">Полный каталог наших услуг для развития аккаунта и сопровождения в Genshin Impact.</p>
+          <div className="mb-12 text-center">
+            <h1 className="text-4xl font-black text-blue-950 mb-4" style={{ fontFamily: "var(--font-primary), sans-serif" }}>Все услуги</h1>
+            <p className="text-slate-600 max-w-2xl mx-auto">Полный каталог наших услуг для развития аккаунта и сопровождения в Genshin Impact.</p>
           </div>
 
           <div className="mb-8">

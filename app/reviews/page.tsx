@@ -168,17 +168,17 @@ export default function ReviewsPage() {
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
       <main className="flex-1 pt-24 pb-20">
-        <div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "75rem" }}>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <Breadcrumb />
           <div className="mb-12 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-center sm:text-left">
               <h1
-                className="text-3xl font-black mb-2"
-                style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
+                className="text-4xl font-black text-blue-950 mb-2"
+                style={{ fontFamily: "var(--font-primary), sans-serif" }}
               >
                 Отзывы клиентов
               </h1>
-              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              <p className="text-sm text-slate-600">
                 Более 500 довольных игроков по всей России
               </p>
             </div>

@@ -35,10 +35,10 @@ export default function PublicOfferPage() {
           style={{ fontFamily: "var(--font-primary), sans-serif" }}
         >
           <Breadcrumb />
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-center text-black">
+          <h1 className="text-3xl font-bold text-blue-950 mb-2 text-center" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
             АГЕНТСКИЙ ДОГОВОР
           </h1>
-          <p className="text-center text-base sm:text-lg font-medium mb-8 text-black">
+          <p className="text-center text-base sm:text-lg font-medium mb-8 text-slate-600">
             (Публичная оферта)
           </p>
 

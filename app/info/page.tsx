@@ -20,12 +20,12 @@ export default function InfoPage() {
           <Breadcrumb />
           <div className="mb-10 text-center">
             <h1
-              className="text-3xl sm:text-4xl font-black mb-3"
-              style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
+              className="text-4xl font-black text-blue-950 mb-4"
+              style={{ fontFamily: "var(--font-primary), sans-serif" }}
             >
               О сервисе
             </h1>
-            <p className="text-sm sm:text-base max-w-xl mx-auto" style={{ color: "var(--text-secondary)" }}>
+            <p className="text-sm sm:text-base text-slate-600 max-w-xl mx-auto">
               Правовая информация, условия использования и контакты для связи. Ознакомьтесь перед оформлением заказа.
             </p>
           </div>

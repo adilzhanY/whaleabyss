@@ -95,21 +95,58 @@ html {
 
 ### Heading Hierarchy
 
+**CRITICAL: All main page headers MUST be identical for visual harmony.**
+
+#### H1 - Main Page Title (Standard Pattern)
+
+**ALL pages must use this exact pattern:**
+
+```tsx
+<div className="mb-12 text-center">
+  <h1 className="text-4xl sm:text-5xl font-black text-blue-950 mb-4" 
+      style={{ fontFamily: "var(--font-primary), sans-serif" }}>
+    Page Title
+  </h1>
+  {/* Optional description */}
+  <p className="text-slate-600 max-w-2xl mx-auto">
+    Page description text
+  </p>
+</div>
+```
+
+**Specifications:**
+- **Size**: `text-4xl sm:text-5xl` (2.25rem → 2.8125rem / 39.375px → 49.2px)
+- **Weight**: `font-black` (900)
+- **Color**: `text-blue-950` (#172554)
+- **Margin Bottom**: `mb-4` (1rem / 16px)
+- **Alignment**: Always centered (`text-center`)
+- **Font Family**: `var(--font-primary)` (Onest)
+- **Container**: Wrapped in `<div className="mb-12 text-center">`
+- **Description** (optional): `text-slate-600 max-w-2xl mx-auto`
+
+**Why this matters:**
+When users navigate between pages, the main title should feel identical in size, weight, and position. This creates visual harmony and professional consistency. `/services` and `/events` should look the same, `/cart` and `/orders` should look the same - all main page titles are equal.
+
+**Examples:**
+- ✅ `/services`: "Все услуги" - text-4xl sm:text-5xl font-black centered
+- ✅ `/events`: "Активные события" - text-4xl sm:text-5xl font-black centered
+- ✅ `/cart`: "Корзина" - text-4xl sm:text-5xl font-black centered
+- ✅ `/orders`: "Мои заказы" - text-4xl sm:text-5xl font-black centered
+- ✅ `/reviews`: "Отзывы клиентов" - text-4xl sm:text-5xl font-black centered
+- ✅ `/faq`: "Часто задаваемые вопросы" - text-4xl sm:text-5xl font-black centered
+- ✅ `/about`: "О нас" - text-4xl sm:text-5xl font-black centered
+- ✅ `/privacy`: "Политика конфиденциальности" - text-4xl sm:text-5xl font-black centered
+
+**Special Cases:**
+- `/profile`: User name is displayed as H1 (dynamic content, not a page title)
+- `/service/[slug]`: Service title overlaid on hero image (different layout pattern)
+
+#### H2 - Section Headings
+
 | Level | Size Class | Actual Size | Weight | Use Case |
 |-------|-----------|-------------|--------|----------|
-| H1 | `text-4xl` | 2.25rem (39.375px) | `font-black` | Main page titles (catalog pages) |
-| H1 | `text-3xl` | 1.875rem (32.8px) | `font-black` | Standard page titles |
-| H1 (Legal) | `text-2xl sm:text-3xl` | 1.5rem → 1.875rem | `font-bold` | Legal document titles |
 | H2 | `text-xl` or `text-2xl` | 1.25rem or 1.5rem | `font-bold` | Section headings |
 | H3 | `text-lg` | 1.125rem | `font-semibold` | Subsection headings |
-
-**Standard H1 Pattern:**
-```tsx
-<h1 className="text-3xl font-black text-blue-950 mb-8" 
-    style={{ fontFamily: "var(--font-primary), sans-serif" }}>
-  Page Title
-</h1>
-```
 
 ### Body Text
 
@@ -400,19 +437,21 @@ transition-all duration-300
 
 ## 9. Current Inconsistencies (To Be Fixed)
 
-### Container Widths
-- ❌ `/services` uses `max-w-[75rem]` (1200px) instead of standard `max-w-7xl`
-- ❌ `/events` uses `max-w-7xl` (1280px) while similar pages use `max-w-6xl`
-- ❌ `/service/[slug]` mixes Tailwind class with inline style `maxWidth: "1200px"`
+### ✅ FIXED - Container Widths
+- ✅ `/services` now uses `max-w-7xl` (1280px)
+- ✅ `/events` uses `max-w-7xl` (1280px)
+- ✅ `/service/[slug]` uses `max-w-6xl` without inline styles
 
-### Typography
-- ❌ H1 sizes vary: `text-3xl` vs `text-4xl` on similar page types
-- ❌ Heading colors inconsistent: `text-blue-950` vs `text-slate-800`
-- ❌ Legal pages use `text-2xl sm:text-3xl` while others use fixed `text-3xl`
+### ✅ FIXED - Typography
+- ✅ All H1 headers now use `text-4xl sm:text-5xl font-black text-blue-950`
+- ✅ All headers are centered with consistent `mb-4` spacing
+- ✅ Legal pages now use `font-black` instead of `font-bold`
+- ✅ All pages follow the standard H1 pattern
 
-### Spacing
-- ❌ Main content `pt-24` is consistent, but `pb-8` / `pb-16` / `pb-20` varies without clear pattern
-- ❌ Some pages use `px-4 sm:px-6`, others just `px-4`
+### ✅ FIXED - Spacing
+- ✅ All pages use `px-4 sm:px-6` for horizontal padding
+- ✅ Consistent `pt-24` for top padding (accounts for fixed header)
+- ✅ Header containers use `mb-12` consistently
 
 ---
 

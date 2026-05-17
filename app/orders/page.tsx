@@ -109,9 +109,11 @@ export default function OrdersPage() {
       <main className="mx-auto max-w-6xl px-4 sm:px-6 pt-24 pb-8">
         <Breadcrumb />
 
-        <h1 className="text-3xl font-black text-blue-950 mb-8" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
-          Мои заказы
-        </h1>
+        <div className="mb-12 text-center">
+          <h1 className="text-4xl sm:text-5xl font-black text-blue-950 mb-4" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
+            Мои заказы
+          </h1>
+        </div>
 
         {/* Filters */}
         <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-100 flex flex-col md:flex-row gap-4 mb-8">

@@ -94,12 +94,12 @@ export default function FaqPage() {
           <Breadcrumb />
           <div className="mb-12 text-center">
             <h1
-              className="text-4xl font-black text-blue-950 mb-4"
+              className="text-4xl sm:text-5xl font-black text-blue-950 mb-4"
               style={{ fontFamily: "var(--font-primary), sans-serif" }}
             >
               Часто задаваемые вопросы
             </h1>
-            <p className="text-slate-600">
+            <p className="text-slate-600 max-w-2xl mx-auto">
               Ответы на популярные вопросы о наших услугах и процессе работы
             </p>
           </div>

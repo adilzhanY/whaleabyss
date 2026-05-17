@@ -170,18 +170,19 @@ export default function ReviewsPage() {
       <main className="flex-1 pt-24 pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <Breadcrumb />
-          <div className="mb-12 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-center sm:text-left">
-              <h1
-                className="text-4xl font-black text-blue-950 mb-2"
-                style={{ fontFamily: "var(--font-primary), sans-serif" }}
-              >
-                Отзывы клиентов
-              </h1>
-              <p className="text-sm text-slate-600">
-                Более 500 довольных игроков по всей России
-              </p>
-            </div>
+          <div className="mb-12 text-center">
+            <h1
+              className="text-4xl sm:text-5xl font-black text-blue-950 mb-4"
+              style={{ fontFamily: "var(--font-primary), sans-serif" }}
+            >
+              Отзывы клиентов
+            </h1>
+            <p className="text-slate-600 max-w-2xl mx-auto">
+              Более 500 довольных игроков по всей России
+            </p>
+          </div>
+
+          <div className="mb-8 flex justify-center">
             {session?.user ? (
               <Link
                 href="/reviews/new"

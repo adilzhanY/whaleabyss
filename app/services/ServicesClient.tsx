@@ -83,7 +83,9 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 relative z-10">
           <Breadcrumb />
           <div className="mb-12 text-center">
-            <h1 className="text-4xl font-black text-blue-950 mb-4" style={{ fontFamily: "var(--font-primary), sans-serif" }}>Все услуги</h1>
+            <h1 className="text-4xl sm:text-5xl font-black text-blue-950 mb-4" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
+              Все услуги
+            </h1>
             <p className="text-slate-600 max-w-2xl mx-auto">Полный каталог наших услуг для развития аккаунта и сопровождения в Genshin Impact.</p>
           </div>
 

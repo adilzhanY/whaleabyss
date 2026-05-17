@@ -190,9 +190,11 @@ export default function CartPage() {
       <main className="mx-auto max-w-6xl px-4 sm:px-6 pt-24 pb-8">
         <Breadcrumb />
 
-        <h1 className="text-3xl font-black text-blue-950 mb-8" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
-          Корзина
-        </h1>
+        <div className="mb-12 text-center">
+          <h1 className="text-4xl sm:text-5xl font-black text-blue-950 mb-4" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
+            Корзина
+          </h1>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column - Cart Items */}

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users, orders, orderItems, services, reviews } from '@/lib/schema';
-import { eq, sql } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 
 export async function GET(
   _request: Request,
@@ -9,6 +9,7 @@ export async function GET(
 ) {
   try {
     const { userId } = await params;
+    console.log('[API] Fetching user with ID:', userId);
 
     // Fetch user details
     const [user] = await db
@@ -16,7 +17,10 @@ export async function GET(
       .from(users)
       .where(eq(users.id, userId));
 
+    console.log('[API] User query result:', user ? 'Found' : 'Not found');
+
     if (!user) {
+      console.log('[API] Returning 404 - User not found');
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
@@ -62,7 +66,7 @@ export async function GET(
         })
         .from(orderItems)
         .leftJoin(services, eq(orderItems.serviceId, services.id))
-        .where(sql`${orderItems.orderId} = ANY(${revenueOrderIds})`);
+        .where(inArray(orderItems.orderId, revenueOrderIds));
 
       // Count service purchases
       const serviceCounts = new Map<string, { title: string; count: number }>();

@@ -41,16 +41,18 @@ export async function GET(
       .from(reviews)
       .where(eq(reviews.userId, userId));
 
-    // Calculate total money spent (only paid orders)
-    const paidOrders = userOrders.filter(o => o.status === 'paid');
-    const totalSpent = paidOrders.reduce((sum, order) => sum + Number(order.totalPrice), 0);
+    // Calculate total money spent (all orders except pending and cancelled)
+    const revenueOrders = userOrders.filter(
+      o => o.status !== 'pending' && o.status !== 'cancelled'
+    );
+    const totalSpent = revenueOrders.reduce((sum, order) => sum + Number(order.totalPrice), 0);
 
-    // Get all order items for this user's paid orders
-    const paidOrderIds = paidOrders.map(o => o.id);
+    // Get all order items for this user's revenue-generating orders
+    const revenueOrderIds = revenueOrders.map(o => o.id);
 
     let topServices: Array<{ serviceId: string; title: string; count: number }> = [];
 
-    if (paidOrderIds.length > 0) {
+    if (revenueOrderIds.length > 0) {
       // Fetch order items with service details
       const items = await db
         .select({
@@ -60,7 +62,7 @@ export async function GET(
         })
         .from(orderItems)
         .leftJoin(services, eq(orderItems.serviceId, services.id))
-        .where(sql`${orderItems.orderId} = ANY(${paidOrderIds})`);
+        .where(sql`${orderItems.orderId} = ANY(${revenueOrderIds})`);
 
       // Count service purchases
       const serviceCounts = new Map<string, { title: string; count: number }>();
@@ -110,7 +112,7 @@ export async function GET(
       stats: {
         totalSpent,
         totalOrders: userOrders.length,
-        paidOrders: paidOrders.length,
+        paidOrders: revenueOrders.length,
         totalReviews: userReviews.length,
       },
       topServices,

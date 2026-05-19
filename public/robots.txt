@@ -1,0 +1,21 @@
+# robots.txt for Whale Abyss
+# This file tells search engines which pages they can and cannot crawl
+
+# Allow all search engines
+User-agent: *
+
+# Allow all public pages
+Allow: /
+
+# Disallow private/admin pages
+Disallow: /admin/
+Disallow: /api/
+Disallow: /profile
+Disallow: /orders
+Disallow: /checkout
+
+# Sitemap location
+Sitemap: https://whaleabyss.ru/sitemap.xml
+
+# Crawl delay (optional, helps prevent server overload)
+Crawl-delay: 1

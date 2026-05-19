@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { orders, orderItems, services, users } from "@/lib/schema";
-import { desc, eq, sql, and, gte } from "drizzle-orm";
+import { desc, eq, sql, and, gte, inArray } from "drizzle-orm";
 import {
   ShoppingBag,
   TrendingUp,
@@ -23,12 +23,17 @@ async function getStats() {
       revenue: sql<string>`coalesce(sum(${orders.totalPrice}), 0)::text`,
     })
     .from(orders)
-    .where(and(gte(orders.createdAt, startOfMonth), eq(orders.status, "paid")));
+    .where(
+      and(
+        gte(orders.createdAt, startOfMonth),
+        inArray(orders.status, ["paid", "in_progress", "completed", "refunded"])
+      )
+    );
 
   const [pending] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(orders)
-    .where(eq(orders.status, "paid")); // "paid" == awaiting fulfilment
+    .where(inArray(orders.status, ["paid", "in_progress"]));
 
   const [userCount] = await db
     .select({ count: sql<number>`count(*)::int` })
@@ -70,7 +75,7 @@ async function getTopServices() {
     .from(services)
     .leftJoin(orderItems, eq(orderItems.serviceId, services.id))
     .leftJoin(orders, eq(orderItems.orderId, orders.id))
-    .where(eq(orders.status, "paid"))
+    .where(inArray(orders.status, ["paid", "in_progress", "completed", "refunded"]))
     .groupBy(services.id, services.title)
     .orderBy(desc(sql<number>`count(${orderItems.id})`))
     .limit(5);

@@ -163,13 +163,13 @@ export default function Header({ onAuthOpen }: HeaderProps) {
 
               <Link
                 href="/"
-                className="flex items-center gap-2.5 font-bold text-xl"
+                className="flex items-center gap-1 font-bold text-[28px]"
                 style={{ color: "var(--accent-primary)" }}
               >
                 <img
-                  src="/icons/whale_logo_circle.png"
+                  src="/icons/whaleabyss_new_logo_clean.png"
                   alt="Whale Abyss"
-                  className="h-9 w-9 md:h-11 md:w-11 object-contain"
+                  className="h-11 w-11 md:h-15 md:w-15 object-contain"
                 />
                 <span className="hidden lg:inline-block font-display tracking-tight">
                   Whale Abyss
@@ -319,7 +319,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
         <div className="flex items-center justify-between p-4 border-b border-slate-100">
           <div className="flex items-center gap-2">
             <img
-              src="/icons/whale_logo_circle.png"
+              src="/icons/whaleabyss_new_logo_clean.png"
               alt="Whale Abyss Logo"
               className="h-10 w-10 object-contain"
             />

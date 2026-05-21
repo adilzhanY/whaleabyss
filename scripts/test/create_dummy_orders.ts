@@ -2,7 +2,7 @@ import { config } from "dotenv";
 config({ path: ".env" });
 import { Pool } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { users, services, orders, orderItems } from "./lib/schema";
+import { users, services, orders, orderItems } from "../../lib/schema";
 
 const parsedUrl = process.env.DATABASE_URL!.split(' ')[0].replace(/"/g, '');
 const pool = new Pool({ connectionString: parsedUrl });

@@ -76,18 +76,29 @@
             width: 50%;
         }
 
-        /* Logo Container - on the right side.
-           Inset from right edge so it stays clear of the parallelogram's
-           bottom-right slant (clip-path cuts inward at 90% there). */
-        .logo-container {
+        /* Brand statement — italic slogan that took over the spot of the
+           old full-logo image. Sized to fill the same right-side real
+           estate; each <span> is a separate line. */
+        .brand-statement {
             position: absolute;
-            top: 52%;
-            right: 9%;
+            top: 65%;
+            right: 14%;
             transform: translateY(-50%);
-            width: 55%;
-            max-width: 400px;
-            height: auto;
+            width: 62%;
+            max-width: 460px;
             z-index: 30;
+            text-align: center;
+            color: #0B5191;
+            font-style: italic;
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -0.01em;
+            font-size: 3.2rem;
+            text-shadow: 0 2px 8px rgba(11, 81, 145, 0.15);
+        }
+
+        .brand-statement span {
+            display: block;
         }
 
         /* CTA Text - above logo. Same right inset as the logo so they stay
@@ -288,9 +299,12 @@
             <img src="images/valle_chibi_happy.png" alt="Valle Happy" class="valle-img">
         </div>
 
-        <!-- Logo Container -->
-        <div class="logo-container" id="logo-container">
-            <img src="images/whale_abyss_full_logo.png" alt="Whale Abyss" class="logo-img">
+        <!-- Brand statement — replaced the full-logo image with a punchy
+             three-line slogan that fills the same right-side area. -->
+        <div class="brand-statement" id="brand-statement">
+            <span>Безопасно.</span>
+            <span>Надёжно.</span>
+            <span>Выгодно.</span>
         </div>
 
         <!-- CTA Text -->
@@ -314,7 +328,7 @@
         // Setting up initial states
         gsap.set("#valle-sad", { autoAlpha: 0, rotation: 0 });
         gsap.set("#valle-happy", { autoAlpha: 0, rotation: 0 });
-        gsap.set("#logo-container", { autoAlpha: 0, x: 100 });
+        gsap.set("#brand-statement", { autoAlpha: 0, x: 100 });
         gsap.set("#cta-text", { autoAlpha: 0, x: 100 });
         gsap.set("#text-question1", { autoAlpha: 0, x: 100 });
         gsap.set("#text-question2", { autoAlpha: 0, x: 100 });
@@ -388,7 +402,7 @@
           }, "-=0.2");
 
         // --- SCENE 4: Logo + CTA + happy Valle appear together, ticking starts ---
-        tl.to("#logo-container", {
+        tl.to("#brand-statement", {
               duration: 0.8,
               autoAlpha: 1,
               x: 0,
@@ -411,7 +425,7 @@
         tl.to({}, { duration: 2 });
 
         // --- SCENE 5: Everything fades out, ticking stops ---
-        tl.to("#logo-container", {
+        tl.to("#brand-statement", {
             duration: 0.5,
             autoAlpha: 0,
             x: 100,

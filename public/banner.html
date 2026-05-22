@@ -24,16 +24,18 @@
             overflow: hidden;
         }
 
-        /* Banner Wrapper to maintain aspect ratio */
+        /* Banner Wrapper — parallelogram silhouette with rounded corners
+           via an inline SVG <clipPath>. drop-shadow follows the rounded
+           clipped shape (box-shadow does not). */
         .banner-wrapper {
             position: relative;
             width: 100%;
-            max-width: 800px;
-            aspect-ratio: 21 / 9;
+            max-width: 1000px;
+            aspect-ratio: 3 / 1;
             background: #FFFFFF;
-            border-radius: 24px;
             overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            clip-path: url(#parallelogramClip);
+            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.18));
         }
 
         /* Floating Particles Background - REMOVED */
@@ -41,7 +43,7 @@
         /* Valle Mascot - lagging effect, positioned on the left */
         .valle-wrapper {
             position: absolute;
-            left: 5%;
+            left: 8%;
             top: 50%;
             transform: translateY(-50%);
             width: 320px;
@@ -66,7 +68,7 @@
             font-style: italic;
             text-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
             top: 50%;
-            right: 3%;
+            right: 8%;
             transform: translateY(-50%);
             font-size: 2.5rem;
             text-align: left;
@@ -74,11 +76,13 @@
             width: 50%;
         }
 
-        /* Logo Container - on the right side */
+        /* Logo Container - on the right side.
+           Inset from right edge so it stays clear of the parallelogram's
+           bottom-right slant (clip-path cuts inward at 90% there). */
         .logo-container {
             position: absolute;
             top: 50%;
-            right: 5%;
+            right: 9%;
             transform: translateY(-50%);
             width: 55%;
             max-width: 400px;
@@ -86,11 +90,12 @@
             z-index: 30;
         }
 
-        /* CTA Text - above logo */
+        /* CTA Text - above logo. Same right inset as the logo so they stay
+           visually aligned. */
         .cta-text {
             position: absolute;
             top: 20%;
-            right: 5%;
+            right: 9%;
             transform: translateY(-50%);
             z-index: 35;
             text-align: center;
@@ -107,7 +112,7 @@
         }
 
         .cta-url {
-            font-size: 2.2rem;
+            font-size: 2.6rem;
             font-weight: 900;
             color: #000000;
             letter-spacing: -0.02em;
@@ -118,6 +123,27 @@
     </style>
 </head>
 <body>
+
+    <!-- SVG clip-path defining the rounded parallelogram silhouette.
+         All coords are in objectBoundingBox units (0–1), so the shape
+         scales with .banner-wrapper. Each vertex is a small quadratic
+         Bezier giving a gentle rounded corner. -->
+    <svg width="0" height="0" style="position:absolute;" aria-hidden="true">
+        <defs>
+            <clipPath id="parallelogramClip" clipPathUnits="objectBoundingBox">
+                <path d="M 0.112,0
+                         L 0.988,0
+                         Q 1,0 0.9964,0.036
+                         L 0.9036,0.964
+                         Q 0.9,1 0.888,1
+                         L 0.012,1
+                         Q 0,1 0.0036,0.964
+                         L 0.0964,0.036
+                         Q 0.1,0 0.112,0
+                         Z" />
+            </clipPath>
+        </defs>
+    </svg>
 
     <div class="banner-wrapper" id="banner">
         <!-- Valle Mascot Sad -->
@@ -161,60 +187,75 @@
         gsap.set("#text-question1", { autoAlpha: 0, x: 100 });
         gsap.set("#text-question2", { autoAlpha: 0, x: 100 });
 
+        // --- Independent ticking loops (stepped / hold keyframes) ---
+        // Each Valle snaps between rotation poses with NO interpolation —
+        // .set() jumps instantly, "+=0.3" holds that pose for 0.3s. Mimics
+        // stop-motion / "hold keyframes" in After Effects. Runs while Valle
+        // is visible and never stops between scene transitions.
+        const HOLD = 0.3;
+
+        const sadTick = gsap.timeline({ repeat: -1, paused: true });
+        sadTick.set("#valle-sad", { rotation: -8 })
+               .set("#valle-sad", { rotation:  6 }, `+=${HOLD}`)
+               .set("#valle-sad", { rotation: -5 }, `+=${HOLD}`)
+               .set("#valle-sad", { rotation:  7 }, `+=${HOLD}`)
+               .to({}, { duration: HOLD }); // hold last pose before looping
+
+        const happyTick = gsap.timeline({ repeat: -1, paused: true });
+        happyTick.set("#valle-happy", { rotation:  8 })
+                 .set("#valle-happy", { rotation: -5 }, `+=${HOLD}`)
+                 .set("#valle-happy", { rotation:  7 }, `+=${HOLD}`)
+                 .set("#valle-happy", { rotation: -3 }, `+=${HOLD}`)
+                 .to({}, { duration: HOLD }); // hold last pose before looping
+
         const tl = gsap.timeline({ repeat: -1, repeatDelay: 1 });
 
-        // --- SCENE 1: First question appears with animation, sad Valle lagging effect ---
+        // --- SCENE 1: First CIA + sad Valle appear together, ticking starts ---
         tl.to("#text-question1", {
-              duration: 0.6,
+              duration: 0.3,
               autoAlpha: 1,
               x: 0,
               ease: "power2.out"
-          });
+          })
+          .to("#valle-sad", {
+              duration: 0.3,
+              autoAlpha: 1,
+              ease: "power2.out",
+              onStart: () => sadTick.restart()
+          }, "<");
 
-        // Sad Valle appears with faster lagging rotation effect (more frequent, more catchy)
-        tl.to("#valle-sad", { duration: 0.05, autoAlpha: 1, rotation: -8 }, "+=0.3")
-          .to("#valle-sad", { duration: 0.05, rotation: 5 }, "+=0.25")
-          .to("#valle-sad", { duration: 0.05, rotation: -6 }, "+=0.25")
-          .to("#valle-sad", { duration: 0.05, rotation: 7 }, "+=0.25")
-          .to("#valle-sad", { duration: 0.05, rotation: -4 }, "+=0.25")
-          .to("#valle-sad", { duration: 0.05, rotation: 6 }, "+=0.25")
-          .to("#valle-sad", { duration: 0.05, rotation: 0 }, "+=0.25");
-
-        // --- SCENE 2: Second question appears ---
+        // --- SCENE 2: Swap CIA texts (sad Valle keeps ticking) ---
         tl.to("#text-question1", {
             duration: 0.4,
             autoAlpha: 0,
             x: -100,
             ease: "power2.in"
-        }, "+=1")
+        }, "+=2")
           .to("#text-question2", {
-              duration: 0.6,
+              duration: 0.3,
               autoAlpha: 1,
               x: 0,
               ease: "power2.out"
           }, "-=0.2");
 
-        // Continue sad Valle lagging with more frequency
-        tl.to("#valle-sad", { duration: 0.05, rotation: -7 }, "+=0.25")
-          .to("#valle-sad", { duration: 0.05, rotation: 4 }, "+=0.25")
-          .to("#valle-sad", { duration: 0.05, rotation: -5 }, "+=0.25")
-          .to("#valle-sad", { duration: 0.05, rotation: 6 }, "+=0.25")
-          .to("#valle-sad", { duration: 0.05, rotation: -3 }, "+=0.25");
-
-        // --- SCENE 3: Remove sad Valle and second question ---
+        // --- SCENE 3: Fade out CIA2 + sad Valle, ticking stops ---
         tl.to("#text-question2", {
             duration: 0.4,
             autoAlpha: 0,
             x: -100,
             ease: "power2.in"
-        }, "+=1")
+        }, "+=2")
           .to("#valle-sad", {
               duration: 0.3,
               autoAlpha: 0,
-              ease: "power2.in"
+              ease: "power2.in",
+              onComplete: () => {
+                  sadTick.pause();
+                  gsap.set("#valle-sad", { rotation: 0 });
+              }
           }, "-=0.2");
 
-        // --- SCENE 4: Show website logo on the right ---
+        // --- SCENE 4: Logo + CTA + happy Valle appear together, ticking starts ---
         tl.to("#logo-container", {
               duration: 0.8,
               autoAlpha: 1,
@@ -222,26 +263,22 @@
               ease: "back.out(1.3)"
           }, "+=0.3")
           .to("#cta-text", {
-              duration: 0.8,
+              duration: 0.5,
               autoAlpha: 1,
               x: 0,
               ease: "back.out(1.3)"
-          }, "-=0.6");
-
-        // --- SCENE 5: Happy Valle appears on the left with faster lagging effect ---
-        tl.to("#valle-happy", { duration: 0.05, autoAlpha: 1, rotation: 8 }, "+=0.3")
-          .to("#valle-happy", { duration: 0.05, rotation: -5 }, "+=0.25")
-          .to("#valle-happy", { duration: 0.05, rotation: 7 }, "+=0.25")
-          .to("#valle-happy", { duration: 0.05, rotation: -4 }, "+=0.25")
-          .to("#valle-happy", { duration: 0.05, rotation: 6 }, "+=0.25")
-          .to("#valle-happy", { duration: 0.05, rotation: -3 }, "+=0.25")
-          .to("#valle-happy", { duration: 0.05, rotation: 5 }, "+=0.25")
-          .to("#valle-happy", { duration: 0.05, rotation: 0 }, "+=0.25");
+          }, "-=0.6")
+          .to("#valle-happy", {
+              duration: 0.5,
+              autoAlpha: 1,
+              ease: "back.out(1.3)",
+              onStart: () => happyTick.restart()
+          }, "<");
 
         // --- Hold the scene ---
         tl.to({}, { duration: 2 });
 
-        // --- SCENE 6: Everything fades out ---
+        // --- SCENE 5: Everything fades out, ticking stops ---
         tl.to("#logo-container", {
             duration: 0.5,
             autoAlpha: 0,
@@ -257,7 +294,11 @@
           .to("#valle-happy", {
               duration: 0.4,
               autoAlpha: 0,
-              ease: "power2.in"
+              ease: "power2.in",
+              onComplete: () => {
+                  happyTick.pause();
+                  gsap.set("#valle-happy", { rotation: 0 });
+              }
           }, "-=0.3");
 
     </script>

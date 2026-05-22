@@ -63,10 +63,10 @@
         .text-overlay {
             position: absolute;
             z-index: 35;
-            color: #3b82f6;
+            color: #0B5191;
             font-weight: 800;
             font-style: italic;
-            text-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+            text-shadow: 0 2px 8px rgba(11, 81, 145, 0.2);
             top: 50%;
             right: 8%;
             transform: translateY(-50%);
@@ -81,7 +81,7 @@
            bottom-right slant (clip-path cuts inward at 90% there). */
         .logo-container {
             position: absolute;
-            top: 50%;
+            top: 52%;
             right: 9%;
             transform: translateY(-50%);
             width: 55%;
@@ -106,7 +106,7 @@
         .cta-heading {
             font-size: 2.2rem;
             font-weight: 800;
-            color: #3b82f6;
+            color: #0B5191;
             margin-bottom: 0.5rem;
             line-height: 1.2;
         }
@@ -236,17 +236,18 @@
                         stroke-width="2" fill="none" />
             </g>
 
-            <!-- Bubbles in the gap between Valle and the logo -->
+            <!-- Bubbles pushed to the bottom edge so they don't clutter
+                 the text area in the middle of the card. -->
             <g class="deco">
-                <circle cx="400" cy="130" r="4" stroke="#9ca3af"
+                <circle cx="350" cy="285" r="4" stroke="#9ca3af"
                         stroke-width="2" fill="none" />
             </g>
             <g class="deco">
-                <circle cx="430" cy="200" r="6" stroke="#9ca3af"
+                <circle cx="500" cy="305" r="6" stroke="#9ca3af"
                         stroke-width="2" fill="none" />
             </g>
             <g class="deco">
-                <circle cx="370" cy="245" r="3" stroke="#9ca3af"
+                <circle cx="620" cy="290" r="3" stroke="#9ca3af"
                         stroke-width="2" fill="none" />
             </g>
 
@@ -323,7 +324,7 @@
         // .set() jumps instantly, "+=0.3" holds that pose for 0.3s. Mimics
         // stop-motion / "hold keyframes" in After Effects. Runs while Valle
         // is visible and never stops between scene transitions.
-        const HOLD = 0.3;
+        const HOLD = 0.6;
 
         const sadTick = gsap.timeline({ repeat: -1, paused: true });
         sadTick.set("#valle-sad", { rotation: -8 })

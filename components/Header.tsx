@@ -147,13 +147,13 @@ export default function Header({ onAuthOpen }: HeaderProps) {
         style={{ fontFamily: "var(--font-primary), sans-serif" }}
       >
         <div className="mx-auto w-full max-w-[75rem] glass-panel rounded-[28px] md:rounded-[32px]">
-          <div className="flex h-14 md:h-16 items-center justify-between pl-3 pr-3 md:pl-5 md:pr-4">
-            {/* Left: burger (mobile/tablet only) + logo */}
+          <div className="relative flex h-14 md:h-16 items-center justify-between pl-3 pr-3 md:pl-5 md:pr-4">
+            {/* Left: burger (mobile/tablet only) + desktop logo */}
             <div className="flex items-center gap-2 md:gap-3">
               {/* Wrapper with lg:hidden so cascade specificity can't revive the button on desktop */}
               <div className="lg:hidden">
                 <button
-                  className="btn-icon !h-10 !w-10 !rounded-xl"
+                  className="btn-icon !h-10 !w-10 !rounded-full"
                   onClick={() => setIsMobileMenuOpen(true)}
                   aria-label="Открыть меню"
                 >
@@ -161,9 +161,11 @@ export default function Header({ onAuthOpen }: HeaderProps) {
                 </button>
               </div>
 
+              {/* Desktop logo (whale icon + brand text). Hidden on mobile —
+                  mobile gets the centered full logo below instead. */}
               <Link
                 href="/"
-                className="flex items-center gap-1 font-bold text-[28px]"
+                className="hidden lg:flex items-center gap-1 font-bold text-[28px]"
                 style={{ color: "var(--accent-primary)" }}
               >
                 <img
@@ -176,6 +178,25 @@ export default function Header({ onAuthOpen }: HeaderProps) {
                 </span>
               </Link>
             </div>
+
+            {/* Mobile-only centered logo — same whale icon + "Whale Abyss"
+                text as desktop, just absolutely centered between burger and
+                the right-side actions. */}
+            <Link
+              href="/"
+              className="lg:hidden absolute left-1/2 -translate-x-1/2 flex items-center gap-1 font-bold text-[22px]"
+              style={{ color: "var(--accent-primary)" }}
+              aria-label="Whale Abyss"
+            >
+              <img
+                src="/icons/whaleabyss_new_logo_clean.png"
+                alt="Whale Abyss"
+                className="h-11 w-11 object-contain"
+              />
+              <span className="font-display tracking-tight">
+                Whale Abyss
+              </span>
+            </Link>
 
             {/* Desktop nav with sliding pill indicator */}
             <nav
@@ -245,7 +266,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
                 <Link
                   href="/profile"
                   aria-label="Профиль"
-                  className="btn-icon !p-0 overflow-hidden"
+                  className="btn-icon !p-0 !rounded-full overflow-hidden"
                 >
                   {session.user?.image ? (
                     <img
@@ -278,7 +299,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
 
               <button
                 onClick={openCart}
-                className="btn-icon relative"
+                className="btn-icon !rounded-full relative"
                 aria-label="Корзина"
               >
                 <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />

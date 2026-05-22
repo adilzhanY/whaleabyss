@@ -123,10 +123,30 @@ async function handle(req: NextRequest) {
     }
     console.log('[Freekassa] Amount verified successfully');
 
-    // 5. If already processed, still answer YES so FK stops retrying.
-    if (order.status !== 'pending') {
-      console.log(`[Freekassa] Order ${merchantOrderId} already processed with status: ${order.status}`);
+    // 5. Decide whether to (re)process this payment.
+    //
+    //    - `pending`: normal first-time payment confirmation.
+    //    - `cancelled` with no paymentId: order was auto-cancelled by the
+    //      cleanup job after the user took too long on the FK page. The
+    //      payment is still legitimate, so re-open it and run full fulfillment.
+    //    - any other status: already processed (paid, in_progress, completed,
+    //      refunded, or admin-cancelled after payment). Answer YES so FK
+    //      stops retrying, but DO NOT re-run fulfillment.
+    const isReopenableCancellation =
+      order.status === 'cancelled' && !order.paymentId;
+    const shouldProcess = order.status === 'pending' || isReopenableCancellation;
+
+    if (!shouldProcess) {
+      console.log(
+        `[Freekassa] Order ${merchantOrderId} already processed with status: ${order.status}, skipping fulfillment.`
+      );
       return new NextResponse('YES', { status: 200 });
+    }
+
+    if (isReopenableCancellation) {
+      console.warn(
+        `[Freekassa] Late payment on auto-cancelled order ${merchantOrderId}. Re-opening and running fulfillment.`
+      );
     }
 
     // 6. Mark paid; store FK's internal order id as paymentId.

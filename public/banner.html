@@ -15,7 +15,7 @@
         body {
             margin: 0;
             padding: 0;
-            background-color: #FFFFFF;
+            background-color: #000000;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -31,9 +31,9 @@
             max-width: 800px;
             aspect-ratio: 21 / 9;
             background: #FFFFFF;
-            border-radius: 20px;
+            border-radius: 24px;
             overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
         }
 
         /* Floating Particles Background - REMOVED */
@@ -101,7 +101,7 @@
         .cta-heading {
             font-size: 1.8rem;
             font-weight: 800;
-            color: #1e293b;
+            color: #3b82f6;
             margin-bottom: 0.5rem;
             line-height: 1.2;
         }
@@ -109,7 +109,7 @@
         .cta-url {
             font-size: 2.2rem;
             font-weight: 900;
-            color: #3b82f6;
+            color: #000000;
             letter-spacing: -0.02em;
         }
 
@@ -172,13 +172,13 @@
           });
 
         // Sad Valle appears with faster lagging rotation effect (more frequent, more catchy)
-        tl.to("#valle-sad", { duration: 0.1, autoAlpha: 1, rotation: -8 }, "+=0.3")
-          .to("#valle-sad", { duration: 0.1, rotation: 5 }, "+=0.5")
-          .to("#valle-sad", { duration: 0.1, rotation: -6 }, "+=0.5")
-          .to("#valle-sad", { duration: 0.1, rotation: 7 }, "+=0.5")
-          .to("#valle-sad", { duration: 0.1, rotation: -4 }, "+=0.5")
-          .to("#valle-sad", { duration: 0.1, rotation: 6 }, "+=0.5")
-          .to("#valle-sad", { duration: 0.1, rotation: 0 }, "+=0.5");
+        tl.to("#valle-sad", { duration: 0.05, autoAlpha: 1, rotation: -8 }, "+=0.3")
+          .to("#valle-sad", { duration: 0.05, rotation: 5 }, "+=0.25")
+          .to("#valle-sad", { duration: 0.05, rotation: -6 }, "+=0.25")
+          .to("#valle-sad", { duration: 0.05, rotation: 7 }, "+=0.25")
+          .to("#valle-sad", { duration: 0.05, rotation: -4 }, "+=0.25")
+          .to("#valle-sad", { duration: 0.05, rotation: 6 }, "+=0.25")
+          .to("#valle-sad", { duration: 0.05, rotation: 0 }, "+=0.25");
 
         // --- SCENE 2: Second question appears ---
         tl.to("#text-question1", {
@@ -195,11 +195,11 @@
           }, "-=0.2");
 
         // Continue sad Valle lagging with more frequency
-        tl.to("#valle-sad", { duration: 0.1, rotation: -7 }, "+=0.5")
-          .to("#valle-sad", { duration: 0.1, rotation: 4 }, "+=0.5")
-          .to("#valle-sad", { duration: 0.1, rotation: -5 }, "+=0.5")
-          .to("#valle-sad", { duration: 0.1, rotation: 6 }, "+=0.5")
-          .to("#valle-sad", { duration: 0.1, rotation: -3 }, "+=0.5");
+        tl.to("#valle-sad", { duration: 0.05, rotation: -7 }, "+=0.25")
+          .to("#valle-sad", { duration: 0.05, rotation: 4 }, "+=0.25")
+          .to("#valle-sad", { duration: 0.05, rotation: -5 }, "+=0.25")
+          .to("#valle-sad", { duration: 0.05, rotation: 6 }, "+=0.25")
+          .to("#valle-sad", { duration: 0.05, rotation: -3 }, "+=0.25");
 
         // --- SCENE 3: Remove sad Valle and second question ---
         tl.to("#text-question2", {
@@ -229,14 +229,14 @@
           }, "-=0.6");
 
         // --- SCENE 5: Happy Valle appears on the left with faster lagging effect ---
-        tl.to("#valle-happy", { duration: 0.1, autoAlpha: 1, rotation: 8 }, "+=0.3")
-          .to("#valle-happy", { duration: 0.1, rotation: -5 }, "+=0.5")
-          .to("#valle-happy", { duration: 0.1, rotation: 7 }, "+=0.5")
-          .to("#valle-happy", { duration: 0.1, rotation: -4 }, "+=0.5")
-          .to("#valle-happy", { duration: 0.1, rotation: 6 }, "+=0.5")
-          .to("#valle-happy", { duration: 0.1, rotation: -3 }, "+=0.5")
-          .to("#valle-happy", { duration: 0.1, rotation: 5 }, "+=0.5")
-          .to("#valle-happy", { duration: 0.1, rotation: 0 }, "+=0.5");
+        tl.to("#valle-happy", { duration: 0.05, autoAlpha: 1, rotation: 8 }, "+=0.3")
+          .to("#valle-happy", { duration: 0.05, rotation: -5 }, "+=0.25")
+          .to("#valle-happy", { duration: 0.05, rotation: 7 }, "+=0.25")
+          .to("#valle-happy", { duration: 0.05, rotation: -4 }, "+=0.25")
+          .to("#valle-happy", { duration: 0.05, rotation: 6 }, "+=0.25")
+          .to("#valle-happy", { duration: 0.05, rotation: -3 }, "+=0.25")
+          .to("#valle-happy", { duration: 0.05, rotation: 5 }, "+=0.25")
+          .to("#valle-happy", { duration: 0.05, rotation: 0 }, "+=0.25");
 
         // --- Hold the scene ---
         tl.to({}, { duration: 2 });

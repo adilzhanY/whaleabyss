@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { db } from "@/lib/db";
 import { orders, orderItems, services, users } from "@/lib/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, or, ne, isNotNull } from "drizzle-orm";
 
 export async function GET() {
   try {
@@ -19,6 +19,9 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Exclude orders that were cancelled before ever being paid (abandoned
+    // checkouts auto-cancelled by the cleanup job). They are not interesting
+    // history for the customer.
     const userOrders = await db
       .select({
         id: orders.id,
@@ -27,7 +30,12 @@ export async function GET() {
         createdAt: orders.createdAt,
       })
       .from(orders)
-      .where(eq(orders.userId, user.id))
+      .where(
+        and(
+          eq(orders.userId, user.id),
+          or(ne(orders.status, "cancelled"), isNotNull(orders.paymentId))
+        )
+      )
       .orderBy(desc(orders.createdAt));
 
     // For each order, fetch items and service names

@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { db } from "@/lib/db";
 import { orders, orderItems, services, users } from "@/lib/schema";
-import { eq, inArray, desc, and } from "drizzle-orm";
+import { eq, inArray, desc, and, or, ne, isNotNull } from "drizzle-orm";
 
 export async function GET() {
   try {
@@ -30,7 +30,9 @@ export async function GET() {
       .where(
         and(
           eq(orders.userId, user.id),
-          inArray(orders.status, ["completed", "cancelled", "refunded"])
+          inArray(orders.status, ["completed", "cancelled", "refunded"]),
+          // Hide never-paid auto-cancelled orders from history.
+          or(ne(orders.status, "cancelled"), isNotNull(orders.paymentId))
         )
       )
       .orderBy(desc(orders.createdAt));

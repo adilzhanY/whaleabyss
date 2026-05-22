@@ -80,6 +80,11 @@ export default async function OrderDetailPage({ params }: PageProps) {
               ? new Date(order.createdAt).toLocaleString("ru-RU")
               : "—"}
           </p>
+          {order.status === "cancelled" && !order.paymentId && (
+            <p className="text-xs text-rose-600 mt-1 font-medium">
+              Автоматически отменён — оплата не была получена
+            </p>
+          )}
         </div>
         <OrderStatusBadge status={order.status ?? "pending"} />
       </div>

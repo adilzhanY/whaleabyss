@@ -70,7 +70,7 @@
             top: 50%;
             right: 8%;
             transform: translateY(-50%);
-            font-size: 2.5rem;
+            font-size: 3rem;
             text-align: left;
             line-height: 1.4;
             width: 50%;
@@ -91,34 +91,68 @@
         }
 
         /* CTA Text - above logo. Same right inset as the logo so they stay
-           visually aligned. */
+           visually aligned. Container widened to give the larger URL room. */
         .cta-text {
             position: absolute;
-            top: 20%;
+            top: 22%;
             right: 9%;
             transform: translateY(-50%);
             z-index: 35;
             text-align: center;
-            width: 55%;
-            max-width: 400px;
+            width: 62%;
+            max-width: 560px;
         }
 
         .cta-heading {
-            font-size: 1.8rem;
+            font-size: 2.2rem;
             font-weight: 800;
             color: #3b82f6;
             margin-bottom: 0.5rem;
             line-height: 1.2;
         }
 
+        /* URL is the visual hero of the happy scene — sized to dominate the
+           right side without overflowing the parallelogram or hitting the logo. */
         .cta-url {
-            font-size: 2.6rem;
+            font-size: 4rem;
             font-weight: 900;
             color: #000000;
             letter-spacing: -0.02em;
+            line-height: 1;
         }
 
-        /* Glow effect - REMOVED */
+        /* Decorative SVG layer — bubbles, tildes, dot grids, three-dot
+           ellipses. Sits behind Valle / text / logo as background ambience.
+           Each <g class="deco"> ticks via stepped/hold keyframes (no
+           interpolation), matching Valle's effect but at half speed
+           (0.6s per pose vs Valle's 0.3s). Three offset groups so they
+           don't all tick in unison. */
+        .decorations {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .deco {
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: deco-tick 2.4s step-end infinite;
+        }
+
+        .decorations .deco:nth-of-type(3n+2) { animation-delay: 0.6s; }
+        .decorations .deco:nth-of-type(3n)   { animation-delay: 1.2s; }
+
+        @keyframes deco-tick {
+            0%   { transform: rotate(-8deg) scale(1.4); }
+            25%  { transform: rotate(6deg)  scale(1.4); }
+            50%  { transform: rotate(-5deg) scale(1.4); }
+            75%  { transform: rotate(7deg)  scale(1.4); }
+            100% { transform: rotate(-8deg) scale(1.4); }
+        }
 
     </style>
 </head>
@@ -146,6 +180,103 @@
     </svg>
 
     <div class="banner-wrapper" id="banner">
+        <!-- Decorative background ambience: bubbles, tildes, dot grids,
+             three-dot ellipses. Each <g class="deco"> ticks independently
+             via the deco-tick keyframes defined in CSS. -->
+        <svg class="decorations" viewBox="0 0 1000 333" aria-hidden="true">
+            <!-- Top-left tilde (3-hump wave) -->
+            <g class="deco">
+                <path d="M 80,55 q 10,-8 20,0 t 20,0 t 20,0"
+                      stroke="#9ca3af" stroke-width="3"
+                      stroke-linecap="round" fill="none" />
+            </g>
+
+            <!-- Top-middle three-dot ellipsis -->
+            <g class="deco">
+                <circle cx="490" cy="45" r="3.5" fill="#9ca3af" />
+                <circle cx="502" cy="45" r="3.5" fill="#9ca3af" />
+                <circle cx="514" cy="45" r="3.5" fill="#9ca3af" />
+            </g>
+
+            <!-- Top-right 4x4 dot grid -->
+            <g class="deco">
+                <circle cx="892" cy="38" r="2.5" fill="#9ca3af" />
+                <circle cx="905" cy="38" r="2.5" fill="#9ca3af" />
+                <circle cx="918" cy="38" r="2.5" fill="#9ca3af" />
+                <circle cx="931" cy="38" r="2.5" fill="#9ca3af" />
+                <circle cx="892" cy="51" r="2.5" fill="#9ca3af" />
+                <circle cx="905" cy="51" r="2.5" fill="#9ca3af" />
+                <circle cx="918" cy="51" r="2.5" fill="#9ca3af" />
+                <circle cx="931" cy="51" r="2.5" fill="#9ca3af" />
+                <circle cx="892" cy="64" r="2.5" fill="#9ca3af" />
+                <circle cx="905" cy="64" r="2.5" fill="#9ca3af" />
+                <circle cx="918" cy="64" r="2.5" fill="#9ca3af" />
+                <circle cx="931" cy="64" r="2.5" fill="#9ca3af" />
+                <circle cx="892" cy="77" r="2.5" fill="#9ca3af" />
+                <circle cx="905" cy="77" r="2.5" fill="#9ca3af" />
+                <circle cx="918" cy="77" r="2.5" fill="#9ca3af" />
+                <circle cx="931" cy="77" r="2.5" fill="#9ca3af" />
+            </g>
+
+            <!-- Bubbles around Valle -->
+            <g class="deco">
+                <circle cx="220" cy="75" r="7" stroke="#9ca3af"
+                        stroke-width="2" fill="none" />
+            </g>
+            <g class="deco">
+                <circle cx="255" cy="115" r="4" stroke="#9ca3af"
+                        stroke-width="2" fill="none" />
+            </g>
+            <g class="deco">
+                <circle cx="225" cy="155" r="3" stroke="#9ca3af"
+                        stroke-width="2" fill="none" />
+            </g>
+            <g class="deco">
+                <circle cx="290" cy="85" r="5" stroke="#9ca3af"
+                        stroke-width="2" fill="none" />
+            </g>
+
+            <!-- Bubbles in the gap between Valle and the logo -->
+            <g class="deco">
+                <circle cx="400" cy="130" r="4" stroke="#9ca3af"
+                        stroke-width="2" fill="none" />
+            </g>
+            <g class="deco">
+                <circle cx="430" cy="200" r="6" stroke="#9ca3af"
+                        stroke-width="2" fill="none" />
+            </g>
+            <g class="deco">
+                <circle cx="370" cy="245" r="3" stroke="#9ca3af"
+                        stroke-width="2" fill="none" />
+            </g>
+
+            <!-- Bottom-left 3x3 dot grid -->
+            <g class="deco">
+                <circle cx="55" cy="270" r="2" fill="#9ca3af" />
+                <circle cx="65" cy="270" r="2" fill="#9ca3af" />
+                <circle cx="75" cy="270" r="2" fill="#9ca3af" />
+                <circle cx="55" cy="280" r="2" fill="#9ca3af" />
+                <circle cx="65" cy="280" r="2" fill="#9ca3af" />
+                <circle cx="75" cy="280" r="2" fill="#9ca3af" />
+                <circle cx="55" cy="290" r="2" fill="#9ca3af" />
+                <circle cx="65" cy="290" r="2" fill="#9ca3af" />
+                <circle cx="75" cy="290" r="2" fill="#9ca3af" />
+            </g>
+
+            <!-- Bottom-center small tilde (2-hump wave) -->
+            <g class="deco">
+                <path d="M 450,285 q 10,-6 20,0 t 20,0"
+                      stroke="#9ca3af" stroke-width="2.5"
+                      stroke-linecap="round" fill="none" />
+            </g>
+
+            <!-- Bottom-center bubble -->
+            <g class="deco">
+                <circle cx="540" cy="265" r="4" stroke="#9ca3af"
+                        stroke-width="2" fill="none" />
+            </g>
+        </svg>
+
         <!-- Valle Mascot Sad -->
         <div class="valle-wrapper" id="valle-sad">
             <img src="images/valle_chibi_sad.png" alt="Valle Sad" class="valle-img">

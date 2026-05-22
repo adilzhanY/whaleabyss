@@ -93,9 +93,28 @@ const result = await db.select().from(services).where(eq(services.id, id));
 
 **Payment Flow:**
 - Freekassa SCI form redirect (default checkout method)
-- Webhook at `/api/payment/freekassa/webhook` verifies signature and updates order status
+- Webhook at `/api/payment/freekassa/notify` verifies signature and updates order status
 - Signature verification: `md5("{shop_id}:{amount}:{SECRET_2}:{merchant_order_id}")`
 - Must respond with plain text "YES" to webhook
+- Late-payment re-open: a webhook for an order with `status='cancelled' AND paymentId IS NULL`
+  is treated as a first-time payment — the order is flipped to `paid` and full fulfillment
+  runs (admin notified, email sent, cart cleared). This covers the case where the cleanup
+  job auto-cancels an order while the user is still slowly completing payment on FK's page.
+  Orders with `paymentId` already set are never re-processed.
+
+**Order Lifecycle Cleanup:**
+- `pending` orders older than 1 hour are auto-flipped to `cancelled` (abandoned checkouts).
+- `cancelled` orders with `paymentId IS NULL` and `updatedAt` older than 1 day are hard-deleted.
+- The 1-day buffer covers Freekassa's 24h webhook retry window — a late payment can still
+  re-open and fulfill the order during that buffer (see Payment Flow).
+- Orders that were paid and later cancelled by an admin (`paymentId` set) are never auto-deleted.
+- Logic in `lib/orderCleanup.ts`. Exposed two ways:
+  - `node cleanup_stale_orders.mjs` — raw-SQL script for system cron or manual runs.
+  - `GET/POST /api/cron/cleanup-orders` — protected by `Authorization: Bearer ${CRON_SECRET}`,
+    for serverless / external schedulers.
+- User-facing order lists (`/api/user/orders`, `…/past`) hide cancelled-with-no-paymentId
+  rows so abandoned checkouts don't clutter "Мои заказы".
+- Admin order detail shows "Автоматически отменён" subtitle when status=cancelled + no paymentId.
 
 **Order Notifications:**
 - Telegram bot sends notifications to admin chat on new paid orders
@@ -139,6 +158,7 @@ Required in `.env`:
 - `TELEGRAM_ADMIN_CHAT_ID` - Admin chat ID for notifications
 - `YANDEX_KEY_ID` & `YANDEX_SECRET_KEY` - S3 credentials
 - `NEXT_PUBLIC_SITE_URL` - Public site URL
+- `CRON_SECRET` - Bearer token for `/api/cron/cleanup-orders` (order lifecycle cleanup)
 
 ## Testing & Development
 

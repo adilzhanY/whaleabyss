@@ -10,26 +10,58 @@ import {
   ArrowRight,
 } from "lucide-react";
 import OrderStatusBadge from "./_components/OrderStatusBadge";
+import TimeRangeSelect from "./_components/TimeRangeSelect";
+import { TIME_RANGE_OPTIONS, type TimeRange } from "./_components/timeRange";
 
 export const dynamic = "force-dynamic";
 
-async function getStats() {
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+const RANGE_VALUES = TIME_RANGE_OPTIONS.map((o) => o.value) as readonly TimeRange[];
 
-  const [monthStats] = await db
+const RANGE_SUFFIX: Record<TimeRange, string> = {
+  "1d": "за 1 день",
+  "3d": "за 3 дня",
+  "7d": "за 7 дней",
+  "1m": "за месяц",
+  "6m": "за полгода",
+  "1y": "за год",
+  all: "за всё время",
+};
+
+function parseRange(raw: string | string[] | undefined): TimeRange {
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  return RANGE_VALUES.includes(value as TimeRange) ? (value as TimeRange) : "all";
+}
+
+function rangeCutoff(range: TimeRange): Date | null {
+  if (range === "all") return null;
+  const d = new Date();
+  switch (range) {
+    case "1d": d.setDate(d.getDate() - 1); break;
+    case "3d": d.setDate(d.getDate() - 3); break;
+    case "7d": d.setDate(d.getDate() - 7); break;
+    case "1m": d.setMonth(d.getMonth() - 1); break;
+    case "6m": d.setMonth(d.getMonth() - 6); break;
+    case "1y": d.setFullYear(d.getFullYear() - 1); break;
+  }
+  return d;
+}
+
+async function getStats(cutoff: Date | null) {
+  const successfulStatuses = ["paid", "in_progress", "completed", "refunded"] as const;
+
+  const orderWhere = cutoff
+    ? and(gte(orders.createdAt, cutoff), inArray(orders.status, successfulStatuses))
+    : inArray(orders.status, successfulStatuses);
+
+  const [orderStats] = await db
     .select({
       count: sql<number>`count(*)::int`,
       revenue: sql<string>`coalesce(sum(${orders.totalPrice}), 0)::text`,
     })
     .from(orders)
-    .where(
-      and(
-        gte(orders.createdAt, startOfMonth),
-        inArray(orders.status, ["paid", "in_progress", "completed", "refunded"])
-      )
-    );
+    .where(orderWhere);
 
+  // Awaiting-fulfilment is a current-state count; not affected by the range.
   const [pending] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(orders)
@@ -37,11 +69,12 @@ async function getStats() {
 
   const [userCount] = await db
     .select({ count: sql<number>`count(*)::int` })
-    .from(users);
+    .from(users)
+    .where(cutoff ? gte(users.createdAt, cutoff) : sql`true`);
 
   return {
-    monthOrders: monthStats?.count ?? 0,
-    monthRevenue: Number(monthStats?.revenue ?? 0),
+    orderCount: orderStats?.count ?? 0,
+    revenue: Number(orderStats?.revenue ?? 0),
     awaitingFulfilment: pending?.count ?? 0,
     userCount: userCount?.count ?? 0,
   };
@@ -83,9 +116,18 @@ async function getTopServices() {
   return rows;
 }
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string | string[] }>;
+}) {
+  const { range: rangeParam } = await searchParams;
+  const range = parseRange(rangeParam);
+  const cutoff = rangeCutoff(range);
+  const suffix = RANGE_SUFFIX[range];
+
   const [stats, recent, top] = await Promise.all([
-    getStats(),
+    getStats(cutoff),
     getRecentOrders(),
     getTopServices(),
   ]);
@@ -93,25 +135,28 @@ export default async function AdminDashboardPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-8">
       {/* Greeting */}
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Обзор</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Быстрая сводка по магазину за текущий месяц
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Обзор</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Быстрая сводка по магазину {suffix}
+          </p>
+        </div>
+        <TimeRangeSelect value={range} />
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           icon={TrendingUp}
-          label="Выручка за месяц"
-          value={`${stats.monthRevenue.toLocaleString("ru-RU")} ₽`}
+          label={`Выручка ${suffix}`}
+          value={`${stats.revenue.toLocaleString("ru-RU")} ₽`}
           tone="indigo"
         />
         <StatCard
           icon={ShoppingBag}
-          label="Заказов за месяц"
-          value={stats.monthOrders.toString()}
+          label={`Заказов ${suffix}`}
+          value={stats.orderCount.toString()}
           tone="emerald"
         />
         <StatCard
@@ -122,7 +167,7 @@ export default async function AdminDashboardPage() {
         />
         <StatCard
           icon={UsersIcon}
-          label="Пользователей"
+          label={`Пользователей ${suffix}`}
           value={stats.userCount.toString()}
           tone="slate"
         />

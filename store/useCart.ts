@@ -56,11 +56,33 @@ export const useCart = create<CartState>()(
       },
 
       updateQuantity: (id, quantity) => {
-        set((state) => ({
-          items: quantity > 0
-            ? state.items.map((i) => (i.id === id ? { ...i, quantity } : i))
-            : state.items.filter((i) => i.id !== id)
-        }));
+        set((state) => {
+          // Dropping below 1 removes the line — same UX as clicking the trash.
+          if (quantity <= 0) {
+            return { items: state.items.filter((i) => i.id !== id) };
+          }
+          return {
+            items: state.items.map((i) => {
+              if (i.id !== id) return i;
+              // For per-day services (account management) `quantity` is the
+              // number of days, and endDate is derived from startDate so the
+              // two stay in sync. Recompute endDate = startDate + (qty − 1)
+              // whenever qty changes so +/- shifts the period in real time.
+              const isPerDay = Boolean(i.startDate && i.endDate);
+              if (!isPerDay) {
+                return { ...i, quantity };
+              }
+              const start = new Date(i.startDate as string);
+              const newEnd = new Date(start);
+              newEnd.setDate(start.getDate() + quantity - 1);
+              return {
+                ...i,
+                quantity,
+                endDate: newEnd.toISOString().split("T")[0],
+              };
+            }),
+          };
+        });
         // Sync to DB after updating
         get().syncToDb().catch(err => console.error('Failed to sync cart:', err));
       },

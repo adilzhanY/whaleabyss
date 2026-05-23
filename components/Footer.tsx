@@ -1,7 +1,7 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Lock } from "lucide-react";
 import { LEGAL, getPartyShortLabel } from "@/lib/legal";
+import SocialIcon from "./SocialIcon";
 
 export default function Footer() {
   return (
@@ -46,42 +46,36 @@ export default function Footer() {
               href="https://t.me/whaleabyss"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all overflow-hidden"
+              aria-label="Telegram"
+              className="group flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all"
             >
-              <Image
-                src="/icons/tg_logo.png"
-                alt="Telegram"
-                width={40}
-                height={40}
-                className="w-full h-full object-cover"
+              <SocialIcon
+                type="telegram"
+                className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700 group-hover:text-[var(--accent-primary)] transition-colors"
               />
             </a>
             <a
               href="https://www.tiktok.com/@whaleyuureiq"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all overflow-hidden"
+              aria-label="TikTok"
+              className="group flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all"
             >
-              <Image
-                src="/icons/tiktok_logo.jpg"
-                alt="TikTok"
-                width={40}
-                height={40}
-                className="w-full h-full object-cover"
+              <SocialIcon
+                type="tiktok"
+                className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700 group-hover:text-[var(--accent-primary)] transition-colors"
               />
             </a>
             <a
               href="https://www.twitch.tv/whaleabyssboost"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all overflow-hidden p-0.5"
+              aria-label="Twitch"
+              className="group flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all"
             >
-              <Image
-                src="/icons/twitch.png"
-                alt="Twitch"
-                width={40}
-                height={40}
-                className="w-full h-full object-cover rounded-[10px]"
+              <SocialIcon
+                type="twitch"
+                className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700 group-hover:text-[var(--accent-primary)] transition-colors"
               />
             </a>
           </div>

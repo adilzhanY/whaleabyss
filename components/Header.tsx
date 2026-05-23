@@ -12,8 +12,8 @@ import {
   useLayoutEffect,
   useCallback,
 } from "react";
-import Image from "next/image";
 import LiquidGlassFilter from "./LiquidGlassFilter";
+import SocialIcon from "./SocialIcon";
 
 interface HeaderProps {
   onAuthOpen: () => void;
@@ -410,30 +410,39 @@ export default function Header({ onAuthOpen }: HeaderProps) {
                 href="https://t.me/whaleabyss"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center w-10 h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all overflow-hidden"
+                aria-label="Telegram"
+                className="group flex items-center justify-center w-10 h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <Image
-                  src="/icons/tg_logo.png"
-                  alt="Telegram"
-                  width={40}
-                  height={40}
-                  className="w-full h-full object-cover"
+                <SocialIcon
+                  type="telegram"
+                  className="w-5 h-5 text-slate-700 group-hover:text-[var(--accent-primary)] transition-colors"
                 />
               </a>
               <a
                 href="https://www.tiktok.com/@whaleyuureiq"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center w-10 h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all overflow-hidden"
+                aria-label="TikTok"
+                className="group flex items-center justify-center w-10 h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <Image
-                  src="/icons/tiktok_logo.jpg"
-                  alt="TikTok"
-                  width={40}
-                  height={40}
-                  className="w-full h-full object-cover"
+                <SocialIcon
+                  type="tiktok"
+                  className="w-5 h-5 text-slate-700 group-hover:text-[var(--accent-primary)] transition-colors"
+                />
+              </a>
+              <a
+                href="https://www.twitch.tv/whaleabyssboost"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Twitch"
+                className="group flex items-center justify-center w-10 h-10 bg-[#E2E8F0] rounded-xl hover:shadow-md transition-all"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <SocialIcon
+                  type="twitch"
+                  className="w-5 h-5 text-slate-700 group-hover:text-[var(--accent-primary)] transition-colors"
                 />
               </a>
             </div>

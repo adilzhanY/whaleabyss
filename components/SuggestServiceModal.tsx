@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import SocialIcon from "./SocialIcon";
 
 interface SuggestServiceModalProps {
   isOpen: boolean;
@@ -63,13 +63,7 @@ export default function SuggestServiceModal({ isOpen, onClose }: SuggestServiceM
           rel="noopener noreferrer"
           className="flex w-full items-center justify-center gap-3 rounded-xl bg-[#2AABEE] px-4 py-3.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#2AABEE]/30"
         >
-          <Image
-            src="/icons/tg_logo.png"
-            alt="Telegram"
-            width={24}
-            height={24}
-            className="object-contain"
-          />
+          <SocialIcon type="telegram" className="w-5 h-5 text-white" />
           Написать в Телеграм
         </a>
       </div>

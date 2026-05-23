@@ -3,6 +3,7 @@
 
 import { X, LogIn, UserPlus, Eye, EyeOff } from "lucide-react";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 interface AuthModalProps {
@@ -23,6 +24,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -53,6 +55,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setEmail("");
     setPassword("");
     setConfirmPassword("");
+    setAgreedToPrivacy(false);
     setStep("form");
     setOtpValues(Array(6).fill(""));
     setShowForgotPassword(false);
@@ -132,6 +135,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           setError("Пароль должен быть не менее 6 символов");
           return;
         }
+        if (!agreedToPrivacy) {
+          setError("Необходимо согласиться на обработку персональных данных");
+          return;
+        }
         await sendOtp();
       } else if (step === "otp") {
         const fullOtp = otpValues.join("");
@@ -200,6 +207,54 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         .animate-shake {
           animation: shake 0.4s ease-in-out;
         }
+        .checkbox-wrapper-65 *,
+        .checkbox-wrapper-65 ::after,
+        .checkbox-wrapper-65 ::before {
+          box-sizing: border-box;
+        }
+        .checkbox-wrapper-65 {
+          user-select: none;
+        }
+        .checkbox-wrapper-65 label {
+          cursor: pointer;
+        }
+        .checkbox-wrapper-65 input[type="checkbox"] {
+          display: none;
+          visibility: hidden;
+        }
+        .checkbox-wrapper-65 .cbx {
+          position: relative;
+          display: block;
+          width: 18px;
+          height: 18px;
+          flex-shrink: 0;
+          border-radius: 4px;
+          background-color: #606062;
+          background-image: linear-gradient(#474749, #606062);
+          box-shadow: inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -1px 1px rgba(0,0,0,0.15);
+          transition: all 0.15s ease;
+        }
+        .checkbox-wrapper-65 .cbx svg {
+          position: absolute;
+          top: 3px;
+          left: 3px;
+          fill: none;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+          stroke: #fff;
+          stroke-width: 2;
+          stroke-dasharray: 17;
+          stroke-dashoffset: 17;
+          transform: translate3d(0, 0, 0);
+        }
+        .checkbox-wrapper-65 input[type="checkbox"]:checked + .cbx {
+          background-color: #606062;
+          background-image: linear-gradient(#255cd2, #1d52c1);
+        }
+        .checkbox-wrapper-65 input[type="checkbox"]:checked + .cbx svg {
+          stroke-dashoffset: 0;
+          transition: all 0.15s ease;
+        }
       `}</style>
       <div
         className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ease-in-out ${animate ? "opacity-100" : "opacity-0"}`}
@@ -228,14 +283,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
         {step === "form" && (
           <div
-            className="mb-6 flex rounded-lg p-1"
+            className="mb-6 flex rounded-full p-1"
             style={{ backgroundColor: "var(--bg-highlight)" }}
           >
             {(["login", "register"] as Tab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className="flex flex-1 items-center justify-center gap-2 rounded-md py-2 text-sm font-semibold transition-all"
+                className="flex flex-1 items-center justify-center gap-2 rounded-full py-2 text-sm font-semibold transition-all"
                 style={{
                   backgroundColor: tab === t ? "var(--bg-card)" : "transparent",
                   color: tab === t ? "var(--accent-primary)" : "var(--text-secondary)",
@@ -469,6 +524,47 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
+              </div>
+            )}
+
+            {tab === "register" && (
+              <div className="checkbox-wrapper-65 mt-2">
+                <label htmlFor="auth-privacy-policy" className="flex items-start gap-2">
+                  <input
+                    id="auth-privacy-policy"
+                    type="checkbox"
+                    checked={agreedToPrivacy}
+                    onChange={(e) => setAgreedToPrivacy(e.target.checked)}
+                  />
+                  <span className="cbx">
+                    <svg width="12px" height="11px" viewBox="0 0 12 11">
+                      <polyline points="1 6.29411765 4.5 10 11 1"></polyline>
+                    </svg>
+                  </span>
+                  <span className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
+                    Я согласен на обработку моих персональных данных и принимаю условия{" "}
+                    <Link
+                      href="/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:opacity-80 transition-opacity"
+                      style={{ color: "var(--accent-primary)" }}
+                    >
+                      Политики конфиденциальности
+                    </Link>
+                    {" "}и{" "}
+                    <Link
+                      href="/public_offer"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:opacity-80 transition-opacity"
+                      style={{ color: "var(--accent-primary)" }}
+                    >
+                      Пользовательского соглашения
+                    </Link>
+                    .
+                  </span>
+                </label>
               </div>
             )}
 

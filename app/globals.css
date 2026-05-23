@@ -270,41 +270,81 @@ h6 {
  * `position: relative` нужен для ::before-блика; дочерние элементы поднимаем
  * `z-index: 1`, чтобы они оставались поверх блика и интерактивно работали.
  * ------------------------------------------------------------------------- */
+/* Layered to mirror the shader's structure:
+ *   .glass-panel   ≈ rb1  body mask + lens distortion (via SVG backdrop-filter)
+ *   ::before       ≈ gradient lighting (shader's `gradient` term)
+ *   ::after        ≈ rb2  rim ring (the bright edge band the shader adds)
+ *
+ * Outside Chromium the SVG filter is dropped, so .glass-panel falls back to a
+ * plain blur + denser tint (see @supports rule below). */
 .glass-panel {
   position: relative;
-  /* Сильная белая плёнка — основной фактор того, что текст за стеклом пропадает.
-   * 0.78 хватает, чтобы скрыть даже жирные/контрастные надписи карточек.
-   * Если в будущем захочется «больше прозрачности» — снизить до 0.65–0.7. */
-  background-color: rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(60px) saturate(200%) brightness(1.06);
-  -webkit-backdrop-filter: blur(60px) saturate(200%) brightness(1.06);
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  background-color: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 0 rgba(30, 58, 138, 0.08),
-    0 10px 30px -10px rgba(15, 23, 42, 0.18),
+    0 8px 24px -8px rgba(15, 23, 42, 0.18),
     0 24px 60px -24px rgba(30, 58, 138, 0.22);
 }
 
+/* Firefox/Safari: SVG-url-in-backdrop-filter is ignored, so we bump the tint
+ * back up to keep text readable over busy backgrounds. */
+@supports not (backdrop-filter: url(#test)) {
+  .glass-panel {
+    background-color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+/* Shader `gradient`: top half catches more light than the bottom — creates
+ * the "viewed from slightly below" sense of volume. Plus a soft side
+ * highlight on the upper-left, like the shader's specular term. */
 .glass-panel::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  /* Двухслойная маска:
-   *   1) Равномерная подложка rgba(255,255,255,0.18) — добивает opacity
-   *      по всей площади, чтобы низ панели не «протекал».
-   *   2) Градиентный specular highlight сверху для жидкого блика. */
   background:
     linear-gradient(
       180deg,
-      rgba(255, 255, 255, 0.45) 0%,
-      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(255, 255, 255, 0.08) 45%,
       rgba(255, 255, 255, 0) 100%
     ),
-    rgba(255, 255, 255, 0.18);
+    radial-gradient(
+      ellipse at 22% 15%,
+      rgba(255, 255, 255, 0.4) 0%,
+      rgba(255, 255, 255, 0) 55%
+    );
   pointer-events: none;
   z-index: 0;
+  mix-blend-mode: screen;
+  opacity: 0.9;
+}
+
+/* Shader `rb2`: thin bright ring hugging the rounded-rect outline, getting a
+ * +0.3 brightness boost in the shader. We fake it with stacked inset shadows
+ * — the outermost is a hard 1px white outline (the "rim"), then progressively
+ * softer falloff inward. Plus a subtle brand-blue tint at the bottom edge for
+ * a sense of depth. */
+.glass-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  box-shadow:
+    /* Hard bright outline — the rim ring itself. */
+    inset 0 0 0 1px rgba(255, 255, 255, 0.75),
+    /* Inner glow that softens the outline into the body. */
+    inset 0 0 0 2px rgba(255, 255, 255, 0.25),
+    /* Top edge: strong specular line — "light from above". */
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 3px 8px -3px rgba(255, 255, 255, 0.65),
+    /* Bottom edge: brand-blue tint at depth. */
+    inset 0 -1px 0 rgba(30, 58, 138, 0.2),
+    inset 0 -4px 12px -5px rgba(30, 58, 138, 0.25);
 }
 
 .glass-panel > * {

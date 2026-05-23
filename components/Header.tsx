@@ -13,10 +13,13 @@ import {
   useCallback,
 } from "react";
 import Image from "next/image";
+import LiquidGlassFilter from "./LiquidGlassFilter";
 
 interface HeaderProps {
   onAuthOpen: () => void;
 }
+
+const LIQUID_GLASS_FILTER_ID = "whaleabyss-header-liquid-glass";
 
 const NAV_LINKS = [
   { label: "Главная", href: "/" },
@@ -82,6 +85,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
   /* ------------------------- Sliding pill indicator ---------------------- */
   const linksRef = useRef<Array<HTMLAnchorElement | null>>([]);
   const navRef = useRef<HTMLElement | null>(null);
+  const glassPanelRef = useRef<HTMLDivElement | null>(null);
 
   const [pill, setPill] = useState({ left: 0, top: 0, width: 0, height: 0 });
   const [pillVisible, setPillVisible] = useState(false);
@@ -141,12 +145,30 @@ export default function Header({ onAuthOpen }: HeaderProps) {
 
   return (
     <>
+      {/* SVG filter for the liquid-glass refraction. Renders at zero size and
+          must be mounted somewhere in the document so backdrop-filter: url(#…)
+          can reference it. */}
+      <LiquidGlassFilter
+        filterId={LIQUID_GLASS_FILTER_ID}
+        targetRef={glassPanelRef}
+      />
+
       {/* Floating navbar — fixed, glass, rounded. */}
       <header
         className="fixed top-3 left-3 right-3 md:top-5 md:left-6 md:right-6 z-40"
         style={{ fontFamily: "var(--font-primary), sans-serif" }}
       >
-        <div className="mx-auto w-full max-w-[75rem] glass-panel rounded-[28px] md:rounded-[32px]">
+        <div
+          ref={glassPanelRef}
+          className="mx-auto w-full max-w-[75rem] glass-panel liquid-glass rounded-[28px] md:rounded-[32px]"
+          style={{
+            // Chromium honors SVG-filter URLs in backdrop-filter; Firefox/Safari
+            // drop the whole declaration as invalid and fall back to the plain
+            // blur defined on .glass-panel in globals.css.
+            backdropFilter: `url(#${LIQUID_GLASS_FILTER_ID})`,
+            WebkitBackdropFilter: `blur(18px) saturate(180%)`,
+          }}
+        >
           <div className="flex h-14 md:h-16 items-center justify-between pl-3 pr-3 md:pl-5 md:pr-4">
             {/* Left: burger (mobile/tablet only) + logo (whale icon always,
                 brand text on desktop only) */}

@@ -151,7 +151,18 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 			{session?.user ? (
 				<section
 					className="relative overflow-hidden pt-24 pb-16 sm:pb-24"
-					style={{ backgroundColor: "#ffffff" }}
+					style={{
+						backgroundColor: "#ffffff",
+						backgroundImage: `
+							radial-gradient(at 40% 20%, hsla(210,100%,74%,0.3) 0px, transparent 50%),
+							radial-gradient(at 80% 0%, hsla(250,100%,79%,0.3) 0px, transparent 50%),
+							radial-gradient(at 0% 50%, hsla(350,100%,89%,0.3) 0px, transparent 50%),
+							radial-gradient(at 80% 50%, hsla(180,100%,74%,0.3) 0px, transparent 50%),
+							radial-gradient(at 0% 100%, hsla(290,100%,84%,0.3) 0px, transparent 50%),
+							radial-gradient(at 80% 100%, hsla(20,100%,89%,0.3) 0px, transparent 50%),
+							radial-gradient(at 0% 0%, hsla(220,100%,79%,0.3) 0px, transparent 50%)
+						`,
+					}}
 				>
 					<div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-between gap-8 px-4 sm:px-12 text-center sm:text-left">
 						<div className="w-full">

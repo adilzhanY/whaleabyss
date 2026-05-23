@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Trash2, ShoppingBag } from "lucide-react";
+import Image from "next/image";
+import { X, Trash2, ShoppingBag, Plus, Minus } from "lucide-react";
 import { useCart } from "@/store/useCart";
 import { useRouter } from "next/navigation";
 
 export default function CartModal() {
-  const { items, isOpen, closeCart, removeFromCart, cartTotal } = useCart();
+  const { items, isOpen, closeCart, removeFromCart, updateQuantity, cartTotal } = useCart();
   const total = cartTotal();
   const router = useRouter();
 
@@ -93,32 +94,68 @@ export default function CartModal() {
               {items.map((item) => (
                 <li
                   key={item.id}
-                  className="flex items-center gap-3 rounded-xl p-3"
-                  style={{ backgroundColor: "var(--bg-highlight)", border: "1px solid var(--accent-border)" }}
+                  className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col gap-3"
                 >
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-                      {item.title}
-                    </p>
-                    <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                      {item.subtitle}
-                    </p>
-                    <p className="mt-1 text-sm font-bold" style={{ color: "var(--text-price)" }}>
-                      {(item.price * item.quantity).toLocaleString("ru-RU")} ₽
-                      {item.quantity > 1 && (
-                        <span className="ml-1 text-xs font-normal" style={{ color: "var(--text-secondary)" }}>
-                          × {item.quantity}
-                        </span>
+                  {/* Top row: image + title/date */}
+                  <div className="flex items-start gap-3">
+                    {item.image ? (
+                      <Image
+                        src={item.image}
+                        alt={item.title}
+                        width={64}
+                        height={64}
+                        className="w-16 h-16 rounded-xl shrink-0 object-cover"
+                      />
+                    ) : (
+                      <div
+                        className="w-16 h-16 rounded-xl shrink-0 flex items-center justify-center font-black text-[10px] text-white text-center leading-tight shadow-inner"
+                        style={{ background: "linear-gradient(135deg, #60a5fa 0%, #1e3a8a 50%, #1e3a8a 100%)" }}
+                      >
+                        {item.title}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-slate-800 text-sm break-words">
+                        {item.subtitle}
+                      </p>
+                      {item.startDate && item.endDate && (
+                        <p className="text-xs text-slate-500 mt-1">
+                          {new Date(item.startDate).toLocaleDateString("ru-RU")} - {new Date(item.endDate).toLocaleDateString("ru-RU")}
+                        </p>
                       )}
+                    </div>
+                  </div>
+
+                  {/* Bottom row: trash | qty | price (matches /cart mobile layout) */}
+                  <div className="flex items-center justify-between gap-3">
+                    <button
+                      onClick={() => removeFromCart(item.id)}
+                      className="w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors cursor-pointer"
+                      aria-label="Удалить"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        className="btn-primary w-8 h-8 flex items-center justify-center !rounded-full !py-0 !px-0 cursor-pointer"
+                        aria-label="Уменьшить"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="text-sm font-medium w-6 text-center">{item.quantity} шт.</span>
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        className="btn-primary w-8 h-8 flex items-center justify-center !rounded-full !py-0 !px-0 cursor-pointer"
+                        aria-label="Увеличить"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+                    <p className="text-base font-bold text-blue-950" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
+                      {(item.price * item.quantity).toLocaleString("ru-RU")} ₽
                     </p>
                   </div>
-                  <button
-                    onClick={() => removeFromCart(item.id)}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-red-50"
-                    aria-label="Удалить"
-                  >
-                    <Trash2 className="h-4 w-4 text-red-400" />
-                  </button>
                 </li>
               ))}
             </ul>

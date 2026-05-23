@@ -78,7 +78,15 @@ export const useCart = create<CartState>()(
         get().items.reduce((sum, item) => sum + item.price * item.quantity, 0),
 
       cartCount: () =>
-        get().items.reduce((sum, item) => sum + item.quantity, 0),
+        get().items.reduce((sum, item) => {
+          // Per-day services (account management) carry startDate/endDate and
+          // use `quantity` to mean "number of days". For the header badge we
+          // want them to count as a single line item regardless of duration —
+          // a 365-day purchase shouldn't render as "9+". DB, API, checkout
+          // totals and Telegram notifications continue to use the real qty.
+          const isPerDay = Boolean(item.startDate && item.endDate);
+          return sum + (isPerDay ? 1 : item.quantity);
+        }, 0),
 
       // Sync localStorage cart to database (for logged-in users)
       syncToDb: async () => {

@@ -279,9 +279,12 @@ h6 {
  * plain blur + denser tint (see @supports rule below). */
 .glass-panel {
   position: relative;
-  background-color: rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  /* Tint adds a white film so nav text stays readable while scrolling over
+   * dark/busy content; pair with the strong post-displacement blur in
+   * LiquidGlassFilter for a frosted, but still translucent, glass look. */
+  background-color: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(60px) saturate(180%);
+  -webkit-backdrop-filter: blur(60px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.4);
   box-shadow:
     0 8px 24px -8px rgba(15, 23, 42, 0.18),

@@ -92,7 +92,7 @@ export default function LiquidGlassFilter({
   targetRef,
   maxOffsetPx = 40,
   lensPower = 6,
-  blurAmount = 2.5,
+  blurAmount = 40,
   saturation = 1.7,
 }: LiquidGlassFilterProps) {
   const [mapUrl, setMapUrl] = useState<string>("");

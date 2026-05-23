@@ -208,9 +208,9 @@ export default function CartPage() {
               </div>
             ) : (
               items.map((item) => (
-                <div key={item.id} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-4 flex-1">
-                    {/* Service Image */}
+                <div key={item.id} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  {/* Top row on mobile, left side on desktop: image + title block */}
+                  <div className="flex items-start sm:items-center gap-4 sm:flex-1 min-w-0">
                     {item.image ? (
                       <Image
                         src={item.image}
@@ -224,15 +224,16 @@ export default function CartPage() {
                         {item.title}
                       </div>
                     )}
-                    <div>
-                      <p className="font-semibold text-slate-800">{item.subtitle}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-slate-800 break-words">{item.subtitle}</p>
                       {item.startDate && item.endDate && (
                         <p className="text-xs text-slate-500 mt-1">
                           {new Date(item.startDate).toLocaleDateString("ru-RU")} - {new Date(item.endDate).toLocaleDateString("ru-RU")}
                         </p>
                       )}
-
-                      <div className="flex items-center gap-3 mt-3">
+                      {/* Trash lives in the title column only on desktop — mobile
+                          gets a dedicated bottom row alongside qty + price. */}
+                      <div className="hidden sm:flex items-center gap-3 mt-3">
                         <button onClick={() => removeFromCart(item.id)} className="w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors cursor-pointer" aria-label="Удалить">
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -240,7 +241,13 @@ export default function CartPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-end gap-3">
+                  {/* Bottom row on mobile (full width), right column on desktop.
+                      Mobile lays out [trash | qty | price] across the card so
+                      the qty buttons never crowd the title. */}
+                  <div className="flex items-center justify-between sm:flex-col sm:items-end gap-3 sm:gap-3">
+                    <button onClick={() => removeFromCart(item.id)} className="sm:hidden w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors cursor-pointer" aria-label="Удалить">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                     <div className="flex items-center gap-3">
                       <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="btn-primary w-8 h-8 flex items-center justify-center !rounded-full !py-0 !px-0 cursor-pointer">
                         <Minus className="w-3 h-3" />
@@ -336,22 +343,20 @@ export default function CartPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={promocode}
-                      onChange={(e) => setPromocode(e.target.value.toUpperCase())}
-                      placeholder="Введите промокод"
-                      className="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-mono font-bold uppercase outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                    />
-                    <button
-                      onClick={handleValidatePromocode}
-                      disabled={isValidatingPromocode || !promocode.trim()}
-                      className="btn-primary !px-4 !py-3 !rounded-xl"
-                    >
-                      {isValidatingPromocode ? "..." : "Применить"}
-                    </button>
-                  </div>
+                  <input
+                    type="text"
+                    value={promocode}
+                    onChange={(e) => setPromocode(e.target.value.toUpperCase())}
+                    placeholder="Введите промокод"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-mono font-bold uppercase outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  />
+                  <button
+                    onClick={handleValidatePromocode}
+                    disabled={isValidatingPromocode || !promocode.trim()}
+                    className="btn-primary w-full !py-3 !rounded-xl"
+                  >
+                    {isValidatingPromocode ? "..." : "Применить"}
+                  </button>
                   {promocodeError && (
                     <p className="text-xs text-red-600 font-semibold">{promocodeError}</p>
                   )}

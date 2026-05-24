@@ -12,6 +12,7 @@ export interface ServiceItem {
   description: string;
   gradient: string;
   background: string;
+  categorySlug?: string;
   isWide?: boolean;
   isTall?: boolean;
   isExtraTall?: boolean;
@@ -113,6 +114,7 @@ export const getServiceCategories = cache(async (): Promise<ServiceCategory[]> =
           price: parseFloat(s.price),
           description: s.description || '',
           background: s.imageUrl || '',
+          categorySlug: cat.slug,
           ...enrichItemUI(s, idx)
         };
       })

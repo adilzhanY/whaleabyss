@@ -121,7 +121,13 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
                 >
                   {category.title}
                 </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
+                <div
+                  className={
+                    category.slug === "actual"
+                      ? "grid grid-cols-2 gap-3 sm:gap-6"
+                      : "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6"
+                  }
+                >
                   {category.items.map((item: any) => (
                     <div
                       key={item.id}

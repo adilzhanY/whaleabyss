@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Search } from "lucide-react";
+import CustomSelect from "@/components/CustomSelect";
 
 interface User {
   id: string;
@@ -123,30 +124,34 @@ export default function AdminUsersPage() {
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Сортировка
             </label>
-            <select
+            <CustomSelect
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as "newest" | "oldest")}
-              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm"
-            >
-              <option value="newest">Сначала новые</option>
-              <option value="oldest">Сначала старые</option>
-            </select>
+              onChange={(v) => setSortBy(v as "newest" | "oldest")}
+              className="w-full"
+              buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+              options={[
+                { value: "newest", label: "Сначала новые" },
+                { value: "oldest", label: "Сначала старые" },
+              ]}
+            />
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Роль
             </label>
-            <select
+            <CustomSelect
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm"
-            >
-              <option value="all">Все</option>
-              <option value="user">Пользователь</option>
-              <option value="admin">Администратор</option>
-              <option value="booster">Бустер</option>
-            </select>
+              onChange={setRoleFilter}
+              className="w-full"
+              buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+              options={[
+                { value: "all", label: "Все" },
+                { value: "user", label: "Пользователь" },
+                { value: "admin", label: "Администратор" },
+                { value: "booster", label: "Бустер" },
+              ]}
+            />
           </div>
         </div>
 

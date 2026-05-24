@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Trash2, Search, Star } from "lucide-react";
+import CustomSelect from "@/components/CustomSelect";
 
 interface Review {
   id: string;
@@ -342,14 +343,16 @@ export default function AdminReviewsPage() {
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Сортировка
             </label>
-            <select
+            <CustomSelect
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as "newest" | "oldest")}
-              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm"
-            >
-              <option value="newest">Сначала новые</option>
-              <option value="oldest">Сначала старые</option>
-            </select>
+              onChange={(v) => setSortBy(v as "newest" | "oldest")}
+              className="w-full"
+              buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+              options={[
+                { value: "newest", label: "Сначала новые" },
+                { value: "oldest", label: "Сначала старые" },
+              ]}
+            />
           </div>
 
           <div>
@@ -380,34 +383,38 @@ export default function AdminReviewsPage() {
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Рейтинг
             </label>
-            <select
+            <CustomSelect
               value={ratingFilter}
-              onChange={(e) => setRatingFilter(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm"
-            >
-              <option value="all">Все</option>
-              <option value="5">5 звёзд</option>
-              <option value="4">4 звезды</option>
-              <option value="3">3 звезды</option>
-              <option value="2">2 звезды</option>
-              <option value="1">1 звезда</option>
-            </select>
+              onChange={setRatingFilter}
+              className="w-full"
+              buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+              options={[
+                { value: "all", label: "Все" },
+                { value: "5", label: "5 звёзд" },
+                { value: "4", label: "4 звезды" },
+                { value: "3", label: "3 звезды" },
+                { value: "2", label: "2 звезды" },
+                { value: "1", label: "1 звезда" },
+              ]}
+            />
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Статус
             </label>
-            <select
+            <CustomSelect
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm"
-            >
-              <option value="all">Все</option>
-              <option value="pending">На модерации</option>
-              <option value="approved">Одобрен</option>
-              <option value="rejected">Отклонён</option>
-            </select>
+              onChange={setStatusFilter}
+              className="w-full"
+              buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+              options={[
+                { value: "all", label: "Все" },
+                { value: "pending", label: "На модерации" },
+                { value: "approved", label: "Одобрен" },
+                { value: "rejected", label: "Отклонён" },
+              ]}
+            />
           </div>
         </div>
 

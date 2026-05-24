@@ -4,6 +4,7 @@ import { useState, useEffect, FormEvent } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import Checkbox from "@/components/Checkbox";
 
 interface Service {
   id: string;
@@ -240,17 +241,20 @@ export default function EditEventPage() {
             </div>
 
             <div>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
+              <div className="flex items-center gap-3">
+                <Checkbox
                   checked={isActive}
-                  onChange={(e) => setIsActive(e.target.checked)}
-                  className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  onChange={setIsActive}
+                  size={20}
+                  aria-label="Событие активно"
                 />
-                <span className="text-sm font-semibold text-slate-700">
+                <span
+                  onClick={() => setIsActive(!isActive)}
+                  className="text-sm font-semibold text-slate-700 cursor-pointer"
+                >
                   Событие активно
                 </span>
-              </label>
+              </div>
               <p className="text-xs text-slate-500 mt-2 ml-8">
                 Неактивные события не отображаются на сайте
               </p>
@@ -311,23 +315,26 @@ export default function EditEventPage() {
               ) : (
                 <div className="space-y-2">
                   {allServices.map((service) => (
-                    <label
+                    <div
                       key={service.id}
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors"
                     >
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={selectedServices.includes(service.id)}
                         onChange={() => toggleService(service.id)}
-                        className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                        size={20}
+                        aria-label={`Выбрать услугу ${service.title}`}
                       />
-                      <div className="flex-1">
+                      <div
+                        className="flex-1 cursor-pointer"
+                        onClick={() => toggleService(service.id)}
+                      >
                         <p className="text-sm font-semibold text-slate-800">
                           {service.title}
                         </p>
                         <p className="text-xs text-slate-500">{service.subtitle}</p>
                       </div>
-                    </label>
+                    </div>
                   ))}
                 </div>
               )}

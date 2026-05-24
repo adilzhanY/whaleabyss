@@ -9,6 +9,7 @@ import AuthModal from "@/components/AuthModal";
 import OrderCard from "@/components/OrderCard";
 import { ORDER_STATUSES, orderStatusLabel } from "@/lib/orderStatus";
 import Breadcrumb from "@/components/Breadcrumb";
+import CustomSelect from "@/components/CustomSelect";
 
 interface OrderItem {
   serviceId?: string;
@@ -129,28 +130,28 @@ export default function OrdersPage() {
           </div>
 
           <div className="flex gap-4 flex-col sm:flex-row">
-            <select
+            <CustomSelect
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-3 bg-slate-50 border-none rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-100 transition-all"
-            >
-              <option value="all">Любой статус</option>
-              {ORDER_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {orderStatusLabel(s)}
-                </option>
-              ))}
-            </select>
+              onChange={setStatusFilter}
+              className="w-full sm:w-52"
+              buttonClassName="bg-slate-50 rounded-xl px-4 py-3 font-medium text-slate-700"
+              options={[
+                { value: "all", label: "Любой статус" },
+                ...ORDER_STATUSES.map((s) => ({ value: s, label: orderStatusLabel(s) })),
+              ]}
+            />
 
-            <select
+            <CustomSelect
               value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="px-4 py-3 bg-slate-50 border-none rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-100 transition-all"
-            >
-              <option value="all">За все время</option>
-              <option value="week">За эту неделю</option>
-              <option value="month">За последний месяц</option>
-            </select>
+              onChange={setDateFilter}
+              className="w-full sm:w-52"
+              buttonClassName="bg-slate-50 rounded-xl px-4 py-3 font-medium text-slate-700"
+              options={[
+                { value: "all", label: "За все время" },
+                { value: "week", label: "За эту неделю" },
+                { value: "month", label: "За последний месяц" },
+              ]}
+            />
 
             {(statusFilter !== "all" || dateFilter !== "all" || searchQuery !== "") && (
               <button

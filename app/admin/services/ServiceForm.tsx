@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { Trash2, Upload, Sparkles, X, ImageIcon } from "lucide-react";
 import { generateSlug } from "@/lib/slug";
+import CustomSelect from "@/components/CustomSelect";
 
 export interface Category {
   id: string;
@@ -277,18 +278,16 @@ export default function ServiceForm({
           />
         </Field>
         <Field label="Категория">
-          <select
+          <CustomSelect
             value={form.categoryId ?? ""}
-            onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-            className={inputClass}
-          >
-            <option value="">— без категории —</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.title}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => setForm({ ...form, categoryId: v })}
+            className="w-full"
+            buttonClassName="bg-white px-4 py-2.5 rounded-xl border border-slate-200 text-sm"
+            options={[
+              { value: "", label: "— без категории —" },
+              ...categories.map((c) => ({ value: c.id, label: c.title })),
+            ]}
+          />
         </Field>
       </div>
 

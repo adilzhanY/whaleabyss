@@ -178,6 +178,73 @@ h6 {
   box-shadow: var(--shadow-btn);
 }
 
+/* CustomSelect dropdown open/close animation */
+@keyframes cs-dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes cs-dropdown-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+}
+.cs-dropdown-enter {
+  animation: cs-dropdown-in 0.15s ease-out forwards;
+  transform-origin: top;
+}
+.cs-dropdown-exit {
+  animation: cs-dropdown-out 0.15s ease-in forwards;
+  transform-origin: top;
+}
+
+/* Custom animated checkbox (see components/Checkbox.tsx) */
+.checkbox-custom {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  border-width: 2px;
+  border-style: solid;
+  transition: all 0.3s ease;
+  outline: none;
+  box-shadow: var(--shadow-input);
+  cursor: pointer;
+}
+.checkbox-custom:hover {
+  transform: scale(1.1);
+}
+.checkbox-custom:active {
+  transform: scale(0.95);
+}
+.checkbox-custom:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+.checkbox-custom-checked {
+  border-color: var(--accent-primary);
+  background-color: var(--accent-primary);
+}
+.checkbox-custom-unchecked {
+  border-color: #94a3b8;
+  background-color: transparent;
+}
+.checkbox-custom-unchecked:hover {
+  border-color: #64748b;
+}
+
 .btn-icon {
   display: inline-flex;
   align-items: center;

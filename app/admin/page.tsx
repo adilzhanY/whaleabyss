@@ -56,7 +56,7 @@ async function getStats(cutoff: Date | null) {
   const [orderStats] = await db
     .select({
       count: sql<number>`count(*)::int`,
-      revenue: sql<string>`coalesce(sum(${orders.totalPrice}), 0)::text`,
+      revenue: sql<string>`coalesce(sum(case when ${orders.status} = 'refunded' then 0 else ${orders.totalPrice} end), 0)::text`,
     })
     .from(orders)
     .where(orderWhere);

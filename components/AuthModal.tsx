@@ -2,7 +2,8 @@
 "use client";
 
 import { X, LogIn, UserPlus, Eye, EyeOff } from "lucide-react";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Checkbox from "@/components/Checkbox";
@@ -20,6 +21,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [tab, setTab] = useState<Tab>("login");
   const [show, setShow] = useState(false);
   const [animate, setAnimate] = useState(false);
+
+  const router = useRouter();
 
   // Form states
   const [username, setUsername] = useState("");
@@ -170,8 +173,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             throw new Error(signInRes.error || "Ошибка при входе");
           }
 
+          // Ensure the session cookie is committed before continuing.
+          await getSession();
           setStep("success");
           setOtpValues(Array(6).fill(""));
+          router.refresh();
         } catch (err: any) {
           setError(err.message);
         } finally {
@@ -189,7 +195,13 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         if (res?.error) {
           throw new Error("Неверный email или пароль");
         }
+        // Wait until the session cookie is actually committed & readable
+        // server-side before letting the user navigate — otherwise the first
+        // hit to a server-guarded route (e.g. /admin) can miss the fresh
+        // cookie and bounce back to home ("log in twice" bug).
+        await getSession();
         onClose();
+        router.refresh();
       } catch (err: any) {
         setError(err.message);
       } finally {

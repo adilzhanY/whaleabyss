@@ -38,7 +38,7 @@ export default function CartPage() {
   // Form Fields
   const [inGameName, setInGameName] = useState("");
   const [email, setEmail] = useState("");
-  const [telegram, setTelegram] = useState("");
+  const [telegram, setTelegram] = useState("@");
 
   const [isEditingInGameName, setIsEditingInGameName] = useState(true);
   const [isEditingEmail, setIsEditingEmail] = useState(true);
@@ -61,7 +61,10 @@ export default function CartPage() {
               }
             }
             if (data.telegramUsername) {
-              setTelegram(data.telegramUsername);
+              const tg = data.telegramUsername.startsWith("@")
+                ? data.telegramUsername
+                : `@${data.telegramUsername}`;
+              setTelegram(tg);
               setIsEditingTelegram(false);
             }
           }
@@ -69,6 +72,15 @@ export default function CartPage() {
         .catch(err => console.error("Failed to load profile", err));
     }
   }, [session]);
+
+  // Keep a single leading "@" and allow only ASCII (blocks Cyrillic / other
+  // scripts) while still permitting digits and special symbols for the username.
+  const handleTelegramChange = (raw: string) => {
+    const username = raw
+      .replace(/[^\x00-\x7F]/g, "") // strip non-English letters
+      .replace(/@/g, ""); // we manage the leading @ ourselves
+    setTelegram(`@${username}`);
+  };
 
   const [paymentMethod, setPaymentMethod] = useState<number>(PAYMENT_METHODS[0].id);
   const [isLoading, setIsLoading] = useState(false);
@@ -143,7 +155,7 @@ export default function CartPage() {
       setError("Необходимо согласиться на обработку персональных данных");
       return;
     }
-    if (!inGameName || !email || !telegram) {
+    if (!inGameName || !email || telegram.replace("@", "").trim().length === 0) {
       setError("Пожалуйста, заполните все поля (Ник, Email, Telegram)");
       return;
     }
@@ -271,6 +283,9 @@ export default function CartPage() {
 
             {/* Данные */}
             <div className="space-y-4">
+              <p className="text-xs text-slate-500 leading-relaxed bg-blue-50/60 border border-blue-100 rounded-xl px-3.5 py-2.5">
+                Укажите ваш <span className="font-semibold text-slate-700">username в Telegram</span> (например, <span className="font-semibold text-slate-700">@username</span>) — именно по нему мы свяжемся с вами после оплаты. Это не имя профиля, а адрес вида @username.
+              </p>
               <div className="grid grid-cols-2 gap-4 pt-1">
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Ник в игре:</label>
@@ -286,9 +301,9 @@ export default function CartPage() {
                   )}
                 </div>
                 <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Для связи:</label>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Username в Telegram:</label>
                   {isEditingTelegram ? (
-                    <input type="text" value={telegram} onChange={e => setTelegram(e.target.value)} placeholder="@telegram" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
+                    <input type="text" value={telegram} onChange={e => handleTelegramChange(e.target.value)} placeholder="@username" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
                   ) : (
                     <div className="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-transparent bg-slate-100/50 text-sm font-semibold text-slate-700">
                       <span className="truncate">{telegram}</span>

@@ -145,8 +145,7 @@ export default function ProfilePage() {
                 </button>
                 <button
                   onClick={() => { setIsSettingsOpen(!isSettingsOpen); setIsEditing(false); }}
-                  className="px-6 py-2.5 rounded-xl font-semibold flex items-center gap-2 transition-all"
-                  style={{ backgroundColor: "#B9E8E8", color: "#0B5B5B" }}
+                  className="btn-primary !px-6 !py-2.5 !rounded-xl !font-semibold flex items-center gap-2 !bg-[#B9E8E8] !text-[#0B5B5B] !border-[#9ed6d6] hover:!bg-[#a5dede]"
                 >
                   Настройки аккаунта
                 </button>
@@ -243,8 +242,7 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
-                    className="rounded-xl border px-4 py-3 font-semibold transition-colors"
-                    style={{ borderColor: "var(--accent-primary)", color: "var(--accent-primary)" }}
+                    className="btn-primary !rounded-xl !px-4 !py-3 !font-semibold !bg-white !text-[#1e3a8a] !border-[#1e3a8a] hover:!bg-[#eef2ff]"
                   >
                     Отмена
                   </button>
@@ -263,8 +261,7 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={() => signOut({ callbackUrl: '/' })}
-                    className="flex-1 rounded-xl px-4 py-3 font-semibold transition-colors"
-                    style={{ backgroundColor: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--accent-border)" }}
+                    className="btn-primary flex-1 !rounded-xl !px-4 !py-3 !font-semibold !bg-[#f1f5f9] !text-[#0f172a] !border-[#e2e8f0] hover:!bg-[#e2e8f0]"
                   >
                     Выйти из аккаунта
                   </button>
@@ -317,7 +314,7 @@ export default function ProfilePage() {
                       setDeleteConfirmationText("");
                       setDeleteMessage("");
                     }}
-                    className="flex-1 rounded-xl bg-gray-200 px-4 py-3 font-semibold text-gray-800 hover:bg-gray-300 transition-colors"
+                    className="btn-primary flex-1 !rounded-xl !px-4 !py-3 !font-semibold !bg-gray-200 !text-gray-800 hover:!bg-gray-300"
                   >
                     Отмена
                   </button>

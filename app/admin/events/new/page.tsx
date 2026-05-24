@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Upload } from "lucide-react";
 import Link from "next/link";
 import Checkbox from "@/components/Checkbox";
+import Input from "@/components/Input";
+import Textarea from "@/components/Textarea";
 
 interface Service {
   id: string;
@@ -120,12 +122,12 @@ export default function NewEventPage() {
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Название события *
               </label>
-              <input
+              <Input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Театр Воображариум"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-lg font-semibold outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                className="text-lg font-semibold"
                 required
               />
             </div>
@@ -134,12 +136,12 @@ export default function NewEventPage() {
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Slug (для URL) *
               </label>
-              <input
+              <Input
                 type="text"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))}
                 placeholder="theatre-event"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-lg font-mono outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                className="text-lg font-mono"
                 required
               />
             </div>
@@ -149,12 +151,12 @@ export default function NewEventPage() {
             <label className="block text-sm font-semibold text-slate-700 mb-2">
               Описание
             </label>
-            <textarea
+            <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Описание события..."
               rows={3}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-base outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="text-base"
             />
           </div>
 
@@ -162,13 +164,13 @@ export default function NewEventPage() {
             <label className="block text-sm font-semibold text-slate-700 mb-2">
               Скидка (%) *
             </label>
-            <input
+            <Input
               type="number"
               value={discountPercent}
               onChange={(e) => setDiscountPercent(Number(e.target.value))}
               min={1}
               max={100}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-lg font-semibold outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="text-lg font-semibold"
               required
             />
           </div>
@@ -177,12 +179,12 @@ export default function NewEventPage() {
             <label className="block text-sm font-semibold text-slate-700 mb-2">
               URL фона
             </label>
-            <input
+            <Input
               type="text"
               value={backgroundUrl}
               onChange={(e) => setBackgroundUrl(e.target.value)}
               placeholder="/images/events/teatr_event.png"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-base outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="text-base"
             />
             <p className="text-xs text-slate-500 mt-1">
               Загрузите изображение в /public/images/events/ и укажите путь
@@ -194,11 +196,11 @@ export default function NewEventPage() {
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Начало события *
               </label>
-              <input
+              <Input
                 type="datetime-local"
                 value={startsAt}
                 onChange={(e) => setStartsAt(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-base outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                className="text-base"
                 required
               />
             </div>
@@ -207,11 +209,11 @@ export default function NewEventPage() {
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Конец события *
               </label>
-              <input
+              <Input
                 type="datetime-local"
                 value={endsAt}
                 onChange={(e) => setEndsAt(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-base outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                className="text-base"
                 required
               />
             </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Search } from "lucide-react";
 import CustomSelect from "@/components/CustomSelect";
+import Input from "@/components/Input";
 
 interface User {
   id: string;
@@ -157,12 +158,12 @@ export default function AdminUsersPage() {
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <input
+          <Input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Поиск по ID, имени, email, Telegram..."
-            className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 text-sm"
+            className="pl-10 text-sm"
           />
         </div>
       </div>

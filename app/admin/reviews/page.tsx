@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Trash2, Search, Star } from "lucide-react";
 import CustomSelect from "@/components/CustomSelect";
+import Input from "@/components/Input";
 
 interface Review {
   id: string;
@@ -359,11 +360,11 @@ export default function AdminReviewsPage() {
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Дата от
             </label>
-            <input
+            <Input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm"
+              className="text-sm"
             />
           </div>
 
@@ -371,11 +372,11 @@ export default function AdminReviewsPage() {
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Дата до
             </label>
-            <input
+            <Input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm"
+              className="text-sm"
             />
           </div>
 
@@ -420,12 +421,12 @@ export default function AdminReviewsPage() {
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <input
+          <Input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Поиск по ID, имени пользователя, тексту отзыва..."
-            className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 text-sm"
+            className="pl-10 text-sm"
           />
         </div>
       </div>

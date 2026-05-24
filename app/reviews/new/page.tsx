@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Star } from "lucide-react";
+import Textarea from "@/components/Textarea";
 
 export default function NewReviewPage() {
   const router = useRouter();
@@ -124,17 +125,12 @@ export default function NewReviewPage() {
                 <label className="block text-sm font-bold mb-3" style={{ color: "var(--text-primary)" }}>
                   Ваш отзыв
                 </label>
-                <textarea
+                <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Расскажите о вашем опыте..."
                   rows={6}
-                  className="w-full px-4 py-3 rounded-xl border text-base"
-                  style={{
-                    backgroundColor: "var(--bg-main)",
-                    borderColor: "var(--accent-border)",
-                    color: "var(--text-primary)",
-                  }}
+                  className="text-base"
                   required
                   minLength={10}
                   maxLength={1000}

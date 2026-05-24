@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import Link from "next/link";
+import Input from "@/components/Input";
+import Textarea from "@/components/Textarea";
 
 export default function NewTestServicePage() {
   const router = useRouter();
@@ -92,12 +94,11 @@ export default function NewTestServicePage() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Slug (URL)
             </label>
-            <input
+            <Input
               type="text"
               name="slug"
               required
               placeholder="test-service"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -105,12 +106,11 @@ export default function NewTestServicePage() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Название
             </label>
-            <input
+            <Input
               type="text"
               name="title"
               required
               placeholder="Test Service"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -118,11 +118,10 @@ export default function NewTestServicePage() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Подзаголовок
             </label>
-            <input
+            <Input
               type="text"
               name="subtitle"
               placeholder="Тестовая услуга"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -130,11 +129,10 @@ export default function NewTestServicePage() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Описание
             </label>
-            <textarea
+            <Textarea
               name="description"
               rows={4}
               placeholder="Описание тестовой услуги"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -142,14 +140,13 @@ export default function NewTestServicePage() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Цена (₽)
             </label>
-            <input
+            <Input
               type="number"
               name="price"
               required
               defaultValue="10"
               step="0.01"
               min="0"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 

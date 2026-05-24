@@ -10,6 +10,7 @@ import Footer from "@/components/Footer";
 import DataSecurityModal from "@/components/DataSecurityModal";
 import AuthModal from "@/components/AuthModal";
 import Checkbox from "@/components/Checkbox";
+import Input from "@/components/Input";
 import { useSession } from "next-auth/react";
 import Breadcrumb from "@/components/Breadcrumb";
 
@@ -291,7 +292,7 @@ export default function CartPage() {
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Ник в игре:</label>
                   {isEditingInGameName ? (
-                    <input type="text" value={inGameName} onChange={e => setInGameName(e.target.value)} placeholder="Ник в игре" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
+                    <Input type="text" value={inGameName} onChange={e => setInGameName(e.target.value)} placeholder="Ник в игре" className="text-sm font-medium" />
                   ) : (
                     <div className="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-transparent bg-slate-100/50 text-sm font-semibold text-slate-700">
                       <span className="truncate">{inGameName}</span>
@@ -304,7 +305,7 @@ export default function CartPage() {
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Username в Telegram:</label>
                   {isEditingTelegram ? (
-                    <input type="text" value={telegram} onChange={e => handleTelegramChange(e.target.value)} placeholder="@username" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
+                    <Input type="text" value={telegram} onChange={e => handleTelegramChange(e.target.value)} placeholder="@username" className="text-sm font-medium" />
                   ) : (
                     <div className="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-transparent bg-slate-100/50 text-sm font-semibold text-slate-700">
                       <span className="truncate">{telegram}</span>
@@ -317,7 +318,7 @@ export default function CartPage() {
                 <div className="col-span-2">
                   <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">E-mail для чека:</label>
                   {isEditingEmail ? (
-                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@example.com" className="w-full px-4 py-3 rounded-xl border border-white bg-white text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium placeholder:font-normal placeholder:text-slate-400" />
+                    <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@example.com" className="text-sm font-medium" />
                   ) : (
                     <div className="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-transparent bg-slate-100/50 text-sm font-semibold text-slate-700">
                       <span className="truncate">{email}</span>
@@ -359,12 +360,12 @@ export default function CartPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <input
+                  <Input
                     type="text"
                     value={promocode}
                     onChange={(e) => setPromocode(e.target.value.toUpperCase())}
                     placeholder="Введите промокод"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-mono font-bold uppercase outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    className="text-sm font-mono font-bold uppercase"
                   />
                   <button
                     onClick={handleValidatePromocode}

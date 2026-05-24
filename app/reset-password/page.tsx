@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Eye, EyeOff, Lock, CheckCircle } from "lucide-react";
+import Input from "@/components/Input";
+import { stripNonLatin } from "@/lib/validators";
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -118,12 +120,13 @@ function ResetPasswordForm() {
                 Новый пароль
               </label>
               <div className="relative">
-                <input
+                <Input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  sanitize={stripNonLatin}
                   placeholder="Минимум 6 символов"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                  className="pr-12"
                   disabled={isLoading || !token}
                 />
                 <button
@@ -142,12 +145,13 @@ function ResetPasswordForm() {
                 Подтвердите пароль
               </label>
               <div className="relative">
-                <input
+                <Input
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  sanitize={stripNonLatin}
                   placeholder="Повторите пароль"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                  className="pr-12"
                   disabled={isLoading || !token}
                 />
                 <button

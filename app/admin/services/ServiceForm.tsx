@@ -5,6 +5,8 @@ import { useRef, useState, useTransition } from "react";
 import { Trash2, Upload, Sparkles, X, ImageIcon } from "lucide-react";
 import { generateSlug } from "@/lib/slug";
 import CustomSelect from "@/components/CustomSelect";
+import Input from "@/components/Input";
+import Textarea from "@/components/Textarea";
 
 export interface Category {
   id: string;
@@ -206,12 +208,11 @@ export default function ServiceForm({
   return (
     <form onSubmit={submit} className="space-y-6 max-w-3xl">
       <Field label="Название" required>
-        <input
+        <Input
           type="text"
           value={form.title}
           onChange={(e) => setForm({ ...form, title: e.target.value })}
           required
-          className={inputClass}
         />
       </Field>
 
@@ -221,13 +222,13 @@ export default function ServiceForm({
         hint="Латиницей, строчные буквы, дефисы. Пример: my-service"
       >
         <div className="flex gap-2">
-          <input
+          <Input
             type="text"
             value={form.slug}
             onChange={(e) => setForm({ ...form, slug: e.target.value })}
             required
             pattern="[a-z0-9-]+"
-            className={`${inputClass} font-mono text-xs flex-1`}
+            className="font-mono text-xs flex-1"
           />
           <button
             type="button"
@@ -248,33 +249,30 @@ export default function ServiceForm({
       </Field>
 
       <Field label="Подзаголовок">
-        <input
+        <Input
           type="text"
           value={form.subtitle ?? ""}
           onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
-          className={inputClass}
         />
       </Field>
 
       <Field label="Описание">
-        <textarea
+        <Textarea
           value={form.description ?? ""}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
           rows={4}
-          className={inputClass}
         />
       </Field>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field label="Цена (₽)" required>
-          <input
+          <Input
             type="number"
             value={form.price}
             onChange={(e) => setForm({ ...form, price: e.target.value })}
             required
             min="0"
             step="0.01"
-            className={inputClass}
           />
         </Field>
         <Field label="Категория">
@@ -436,6 +434,3 @@ function Field({
     </label>
   );
 }
-
-const inputClass =
-  "w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors";

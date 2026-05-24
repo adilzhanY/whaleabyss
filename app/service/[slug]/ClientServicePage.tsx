@@ -10,6 +10,7 @@ import { useCart } from "@/store/useCart";
 import { UserCircle, Tag, Layers, CheckCircle, Info, ShoppingCart, Gauge, Shield, MonitorPlay } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import Input from "@/components/Input";
 
 interface ClientServicePageProps {
   service: ServiceItem;
@@ -195,24 +196,24 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">
               Дата начала
             </label>
-            <input
+            <Input
               type="date"
               value={currentStartDate}
               min={todayDate.toISOString().split("T")[0]}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-slate-700 bg-white shadow-sm text-sm"
+              className="text-slate-700 text-sm"
             />
           </div>
           <div className="flex-1">
             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">
               Дата окончания
             </label>
-            <input
+            <Input
               type="date"
               value={currentEndDate}
               min={currentStartDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-slate-700 bg-white shadow-sm text-sm"
+              className="text-slate-700 text-sm"
             />
           </div>
         </div>

@@ -20,6 +20,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import Input from "@/components/Input";
+import Textarea from "@/components/Textarea";
 
 interface Category {
   id: string;
@@ -241,12 +243,12 @@ export default function CategoriesPage() {
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Название *
               </label>
-              <input
+              <Input
                 type="text"
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
                 placeholder="Витая Бездна"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-base outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                className="text-base"
               />
             </div>
 
@@ -254,12 +256,12 @@ export default function CategoriesPage() {
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Slug (для URL) *
               </label>
-              <input
+              <Input
                 type="text"
                 value={newSlug}
                 onChange={(e) => setNewSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))}
                 placeholder="abyss"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-base font-mono outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                className="text-base font-mono"
               />
             </div>
 
@@ -267,12 +269,12 @@ export default function CategoriesPage() {
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Описание
               </label>
-              <textarea
+              <Textarea
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
                 placeholder="Описание категории..."
                 rows={2}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-base outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                className="text-base"
               />
             </div>
 

@@ -6,6 +6,8 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Checkbox from "@/components/Checkbox";
+import Input from "@/components/Input";
+import { stripNonLatin, passwordSchema, firstError } from "@/lib/validators";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -132,8 +134,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           setError("Пароли не совпадают");
           return;
         }
-        if (password.length < 6) {
-          setError("Пароль должен быть не менее 6 символов");
+        const passwordError = firstError(passwordSchema, password);
+        if (passwordError) {
+          setError(passwordError);
           return;
         }
         if (!agreedToPrivacy) {
@@ -339,14 +342,13 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <label className="mb-1 block text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
                 Email
               </label>
-              <input
+              <Input
                 type="email"
                 placeholder="example@mail.com"
                 value={forgotPasswordEmail}
                 onChange={(e) => setForgotPasswordEmail(e.target.value)}
                 required
-                className="w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors focus:border-[#1e3a8a]"
-                style={{ borderColor: "var(--accent-border)", color: "var(--text-primary)", backgroundColor: "var(--bg-main)" }}
+                className="text-sm"
               />
             </div>
 
@@ -409,14 +411,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <label className="mb-1 block text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
                   Имя пользователя
                 </label>
-                <input
+                <Input
                   type="text"
                   placeholder="Введите имя"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  sanitize={stripNonLatin}
                   required
-                  className="w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors focus:border-[#1e3a8a]"
-                  style={{ borderColor: "var(--accent-border)", color: "var(--text-primary)", backgroundColor: "var(--bg-main)" }}
+                  className="text-sm"
                 />
               </div>
             )}
@@ -424,28 +426,27 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <label className="mb-1 block text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
                 Email
               </label>
-              <input
+              <Input
                 type="email"
                 placeholder="example@mail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors focus:border-[#1e3a8a]"
-                style={{ borderColor: "var(--accent-border)", color: "var(--text-primary)", backgroundColor: "var(--bg-main)" }}
+                className="text-sm"
               />
             </div>
             <div className="relative">
               <label className="mb-1 block text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
                 Пароль
               </label>
-              <input
+              <Input
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                sanitize={stripNonLatin}
                 required
-                className="w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors pr-10 focus:border-[#1e3a8a]"
-                style={{ borderColor: "var(--accent-border)", color: "var(--text-primary)", backgroundColor: "var(--bg-main)" }}
+                className="text-sm pr-12"
               />
               <button
                 type="button"
@@ -461,14 +462,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <label className="mb-1 block text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
                   Повторите пароль
                 </label>
-                <input
+                <Input
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  sanitize={stripNonLatin}
                   required
-                  className="w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors pr-10 focus:border-[#1e3a8a]"
-                  style={{ borderColor: "var(--accent-border)", color: "var(--text-primary)", backgroundColor: "var(--bg-main)" }}
+                  className="text-sm pr-12"
                 />
                 <button
                   type="button"

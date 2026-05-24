@@ -9,6 +9,7 @@ import ServiceCard from "@/components/ServiceCard";
 import SuggestServiceModal from "@/components/SuggestServiceModal";
 import { Search } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import Input from "@/components/Input";
 
 export default function ServicesClient({ categories }: { categories: any[] }) {
   const [authOpen, setAuthOpen] = useState(false);
@@ -92,12 +93,12 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
           <div className="mb-8">
             <div className="relative max-w-2xl mx-auto">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-              <input
+              <Input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Поиск по названию услуги..."
-                className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="pl-12 text-sm"
               />
             </div>
           </div>

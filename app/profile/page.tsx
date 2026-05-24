@@ -8,6 +8,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Settings, Edit3 } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import Input from "@/components/Input";
 
 export default function ProfilePage() {
   const { data: session, status, update } = useSession();
@@ -160,68 +161,50 @@ export default function ProfilePage() {
               <form onSubmit={handleSave} className="space-y-6 max-w-xl">
                 <div>
                   <label className="mb-2 block text-sm font-medium" style={{ color: "var(--text-secondary)" }}>E-mail (нельзя изменить)</label>
-                  <input
+                  <Input
                     type="email"
                     value={email}
                     disabled
-                    className="w-full rounded-lg border px-4 py-3 outline-none"
-                    style={{ backgroundColor: "var(--bg-input)", borderColor: "var(--accent-border)", color: "var(--text-secondary)", opacity: 0.7, cursor: "not-allowed" }}
                   />
                 </div>
 
                 <div>
                   <label className="mb-2 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>Имя</label>
-                  <input
+                  <Input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    className="w-full rounded-lg border px-4 py-3 outline-none transition-colors"
-                    style={{ backgroundColor: "var(--bg-input)", borderColor: "var(--accent-border)", color: "var(--text-primary)" }}
-                    onFocus={(e) => (e.target.style.borderColor = "var(--accent-primary)")}
-                    onBlur={(e) => (e.target.style.borderColor = "var(--accent-border)")}
                   />
                 </div>
 
                 <div>
                   <label className="mb-2 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>Ник в игре</label>
-                  <input
+                  <Input
                     type="text"
                     value={gameUsername}
                     onChange={(e) => setGameUsername(e.target.value)}
                     placeholder="Ваш игровой ник"
-                    className="w-full rounded-lg border px-4 py-3 outline-none transition-colors"
-                    style={{ backgroundColor: "var(--bg-input)", borderColor: "var(--accent-border)", color: "var(--text-primary)" }}
-                    onFocus={(e) => (e.target.style.borderColor = "var(--accent-primary)")}
-                    onBlur={(e) => (e.target.style.borderColor = "var(--accent-border)")}
                   />
                 </div>
 
                 <div>
                   <label className="mb-2 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>Telegram</label>
-                  <input
+                  <Input
                     type="text"
                     value={telegramUsername}
                     onChange={(e) => setTelegramUsername(e.target.value)}
                     placeholder="@username"
-                    className="w-full rounded-lg border px-4 py-3 outline-none transition-colors"
-                    style={{ backgroundColor: "var(--bg-input)", borderColor: "var(--accent-border)", color: "var(--text-primary)" }}
-                    onFocus={(e) => (e.target.style.borderColor = "var(--accent-primary)")}
-                    onBlur={(e) => (e.target.style.borderColor = "var(--accent-border)")}
                   />
                 </div>
 
                 <div>
                   <label className="mb-2 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>E-mail для чека</label>
-                  <input
+                  <Input
                     type="email"
                     value={receiptEmail}
                     onChange={(e) => setReceiptEmail(e.target.value)}
                     placeholder="name@example.com"
-                    className="w-full rounded-lg border px-4 py-3 outline-none transition-colors"
-                    style={{ backgroundColor: "var(--bg-input)", borderColor: "var(--accent-border)", color: "var(--text-primary)" }}
-                    onFocus={(e) => (e.target.style.borderColor = "var(--accent-primary)")}
-                    onBlur={(e) => (e.target.style.borderColor = "var(--accent-border)")}
                   />
                 </div>
 
@@ -292,12 +275,11 @@ export default function ProfilePage() {
 
                 <div className="mb-6 text-left">
                   <label className="block text-sm font-bold text-gray-700 mb-2">Для подтверждения напишите слово «удалить»:</label>
-                  <input
+                  <Input
                     type="text"
                     value={deleteConfirmationText}
                     onChange={(e) => setDeleteConfirmationText(e.target.value)}
                     placeholder="удалить"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors"
                   />
                 </div>
 

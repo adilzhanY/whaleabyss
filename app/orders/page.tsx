@@ -10,6 +10,7 @@ import OrderCard from "@/components/OrderCard";
 import { ORDER_STATUSES, orderStatusLabel } from "@/lib/orderStatus";
 import Breadcrumb from "@/components/Breadcrumb";
 import CustomSelect from "@/components/CustomSelect";
+import Input from "@/components/Input";
 
 interface OrderItem {
   serviceId?: string;
@@ -120,12 +121,12 @@ export default function OrdersPage() {
         <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-100 flex flex-col md:flex-row gap-4 mb-8">
           <div className="flex-1 relative">
             <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
+            <Input
               type="text"
               placeholder="Поиск по ID или названию..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-100 transition-all placeholder:font-normal"
+              className="pl-11 text-sm font-medium"
             />
           </div>
 

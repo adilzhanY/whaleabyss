@@ -4,6 +4,7 @@ import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import Input from "@/components/Input";
 
 export default function NewPromocodePage() {
   const router = useRouter();
@@ -88,13 +89,13 @@ export default function NewPromocodePage() {
             <label className="block text-sm font-semibold text-slate-700 mb-2">
               Код промокода
             </label>
-            <input
+            <Input
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               placeholder="AKS"
               maxLength={10}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-lg font-mono font-bold uppercase outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="text-lg font-mono font-bold uppercase"
               required
             />
             <p className="text-xs text-slate-500 mt-1">
@@ -106,13 +107,13 @@ export default function NewPromocodePage() {
             <label className="block text-sm font-semibold text-slate-700 mb-2">
               Скидка (%)
             </label>
-            <input
+            <Input
               type="number"
               value={discountPercent}
               onChange={(e) => setDiscountPercent(Number(e.target.value))}
               min={1}
               max={100}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-lg font-semibold outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="text-lg font-semibold"
               required
             />
             <p className="text-xs text-slate-500 mt-1">
@@ -124,12 +125,12 @@ export default function NewPromocodePage() {
             <label className="block text-sm font-semibold text-slate-700 mb-2">
               Действует до
             </label>
-            <input
+            <Input
               type="date"
               value={expiresAt}
               onChange={(e) => setExpiresAt(e.target.value)}
               min={new Date().toISOString().split('T')[0]}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-lg font-semibold outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="text-lg font-semibold"
               required
             />
           </div>

@@ -198,7 +198,7 @@ export default function AdminReviewsPage() {
     return (
       <div className="relative group">
         <button
-          className={`px-2 py-1 rounded-lg text-xs font-semibold border transition-colors ${styles[status as keyof typeof styles]}`}
+          className={`px-2 py-1 rounded-full text-xs font-semibold border transition-colors ${styles[status as keyof typeof styles]}`}
         >
           {labels[status as keyof typeof labels]}
         </button>
@@ -498,7 +498,7 @@ export default function AdminReviewsPage() {
                       <td className="px-2 py-3 text-center">
                         <button
                           onClick={() => setDeleteId(review.id)}
-                          className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-1.5 text-red-600 hover:bg-red-50 rounded-full transition-colors"
                           title="Удалить отзыв"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -521,7 +521,7 @@ export default function AdminReviewsPage() {
                 {page > 1 && (
                   <button
                     onClick={() => setPage((p) => p - 1)}
-                    className="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl font-semibold hover:bg-slate-300 transition-colors"
+                    className="px-4 py-2 bg-slate-200 text-slate-700 rounded-full font-semibold hover:bg-slate-300 transition-colors"
                   >
                     Назад
                   </button>
@@ -529,7 +529,7 @@ export default function AdminReviewsPage() {
                 {page < totalPages && (
                   <button
                     onClick={() => setPage((p) => p + 1)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors"
                   >
                     Следующая
                   </button>
@@ -554,14 +554,14 @@ export default function AdminReviewsPage() {
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-full font-semibold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {deleting ? "Удаление..." : "Удалить"}
               </button>
               <button
                 onClick={() => setDeleteId(null)}
                 disabled={deleting}
-                className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-semibold hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 rounded-full font-semibold hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Отмена
               </button>

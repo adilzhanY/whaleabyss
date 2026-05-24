@@ -144,7 +144,7 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
           <div className="mt-16 flex justify-center">
             <button
               onClick={() => setSuggestOpen(true)}
-              className="btn-primary inline-flex items-center justify-center gap-2 !rounded-2xl !px-12 !py-5 !text-xl !font-bold"
+              className="btn-primary inline-flex items-center justify-center gap-2 !rounded-full !px-12 !py-5 !text-xl !font-bold"
             >
               Предложить услугу
             </button>

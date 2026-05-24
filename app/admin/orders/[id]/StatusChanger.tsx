@@ -78,7 +78,7 @@ export default function StatusChanger({
               key={s}
               onClick={() => setStatus(s)}
               className={[
-                "px-3 py-2 rounded-xl text-sm font-medium text-left transition-colors",
+                "px-3 py-2 rounded-full text-sm font-medium text-left transition-colors",
                 active
                   ? "bg-slate-900 text-white"
                   : "bg-slate-50 text-slate-700 hover:bg-slate-100",
@@ -94,7 +94,7 @@ export default function StatusChanger({
         onClick={save}
         disabled={!dirty || isBusy}
         className={[
-          "w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors",
+          "w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-colors",
           dirty && !isBusy
             ? "bg-indigo-600 text-white hover:bg-indigo-700"
             : "bg-slate-100 text-slate-400 cursor-not-allowed",

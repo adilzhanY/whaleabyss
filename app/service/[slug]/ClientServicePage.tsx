@@ -246,7 +246,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
   const buyButton = (
     <button
       onClick={handleAdd}
-      className="btn-primary w-full !px-6 !py-4 !rounded-xl !text-base flex items-center justify-center gap-2 mt-2"
+      className="btn-primary w-full !px-6 !py-4 !rounded-full !text-base flex items-center justify-center gap-2 mt-2"
     >
       <ShoppingCart className="w-5 h-5" />
       <span>Добавить в корзину</span>

@@ -116,7 +116,7 @@ h6 {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
-  border-radius: 0.875rem;
+  border-radius: 9999px;
   background-color: var(--accent-primary);
   color: #fff;
   font-weight: 600;
@@ -152,7 +152,7 @@ h6 {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
-  border-radius: 0.875rem;
+  border-radius: 9999px;
   background-color: var(--bg-card);
   color: var(--text-primary);
   font-weight: 500;

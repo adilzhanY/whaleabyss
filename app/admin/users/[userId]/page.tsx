@@ -136,7 +136,7 @@ export default function UserDetailPage() {
       <div className="mb-6 flex items-center gap-4">
         <button
           onClick={() => router.push('/admin/users')}
-          className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-slate-100 rounded-full transition-colors"
         >
           <ArrowLeft className="h-5 w-5 text-slate-600" />
         </button>

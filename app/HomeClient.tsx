@@ -214,7 +214,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 										</p>
 										<a
 											href="#services"
-											className="btn-primary inline-flex items-center justify-center gap-2 !rounded-xl !px-6 !py-3 !font-bold"
+											className="btn-primary inline-flex items-center justify-center gap-2 !rounded-full !px-6 !py-3 !font-bold"
 										>
 											<PlusCircle className="w-5 h-5" />
 											Создать заказ
@@ -233,7 +233,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 											<div className="mt-6 flex justify-center">
 												<Link
 													href="/orders"
-													className="btn-primary inline-flex items-center justify-center gap-2 !rounded-xl !px-6 sm:!px-8 !py-3 !font-bold w-full sm:w-auto"
+													className="btn-primary inline-flex items-center justify-center gap-2 !rounded-full !px-6 sm:!px-8 !py-3 !font-bold w-full sm:w-auto"
 												>
 													Показать все заказы ({activeOrders.length})
 												</Link>
@@ -266,7 +266,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 										<div className="mt-6 flex justify-start pb-8 sm:pb-0">
 											<Link
 												href="/orders"
-												className="btn-secondary !rounded-xl !px-8 !py-3.5 !font-bold"
+												className="btn-secondary !rounded-full !px-8 !py-3.5 !font-bold"
 											>
 												Посмотреть все заказы
 											</Link>
@@ -289,7 +289,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 									<div className="mt-6 flex justify-start pb-8 sm:pb-0">
 										<Link
 											href="/orders"
-											className="btn-secondary !rounded-xl !px-8 !py-3.5 !font-bold"
+											className="btn-secondary !rounded-full !px-8 !py-3.5 !font-bold"
 										>
 											Посмотреть все заказы
 										</Link>
@@ -355,13 +355,13 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 							<div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-3 w-full max-w-[100vw]">
 								<a
 									href="#services"
-									className="btn-primary w-full sm:w-auto !rounded-3xl !px-6 sm:!px-8 !py-3.5 !text-sm !font-bold"
+									className="btn-primary w-full sm:w-auto !rounded-full !px-6 sm:!px-8 !py-3.5 !text-sm !font-bold"
 								>
 									Выбрать услугу
 								</a>
 								<a
 									href="#how"
-									className="btn-secondary w-full sm:w-auto !rounded-3xl !px-6 sm:!px-8 !py-3.5 !text-sm !font-bold"
+									className="btn-secondary w-full sm:w-auto !rounded-full !px-6 sm:!px-8 !py-3.5 !text-sm !font-bold"
 								>
 									Как это работает?
 								</a>
@@ -570,14 +570,14 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 						{session?.user && (
 							<Link
 								href="/services"
-								className="btn-secondary w-full sm:w-auto !rounded-2xl !px-12 !py-5 !text-xl !font-bold"
+								className="btn-secondary w-full sm:w-auto !rounded-full !px-12 !py-5 !text-xl !font-bold"
 							>
 								Все услуги
 							</Link>
 						)}
 						<button
 							onClick={() => setSuggestOpen(true)}
-							className="btn-primary w-full sm:w-auto !rounded-2xl !px-12 !py-5 !text-xl !font-bold"
+							className="btn-primary w-full sm:w-auto !rounded-full !px-12 !py-5 !text-xl !font-bold"
 						>
 							Предложить услугу
 						</button>

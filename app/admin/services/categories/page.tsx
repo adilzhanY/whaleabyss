@@ -70,7 +70,7 @@ function SortableCategory({
 
       <button
         onClick={() => onDelete(category.id)}
-        className="text-slate-400 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-50"
+        className="text-slate-400 hover:text-red-600 transition-colors p-2 rounded-full hover:bg-red-50"
       >
         <Trash2 className="w-4 h-4" />
       </button>
@@ -210,7 +210,7 @@ export default function CategoriesPage() {
       <div className="flex items-center gap-4">
         <Link
           href="/admin/services"
-          className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-slate-100 transition-colors"
+          className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 transition-colors"
         >
           <ArrowLeft className="w-5 h-5 text-slate-600" />
         </Link>
@@ -225,7 +225,7 @@ export default function CategoriesPage() {
         {!showNewForm && (
           <button
             onClick={() => setShowNewForm(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Новая категория
@@ -280,7 +280,7 @@ export default function CategoriesPage() {
               <button
                 onClick={handleCreate}
                 disabled={saving}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
               >
                 <Check className="w-4 h-4" />
                 {saving ? "Создание..." : "Создать"}
@@ -292,7 +292,7 @@ export default function CategoriesPage() {
                   setNewSlug("");
                   setNewDescription("");
                 }}
-                className="px-4 py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-semibold hover:bg-slate-50 transition-colors"
+                className="px-4 py-3 rounded-full border-2 border-slate-200 bg-white text-slate-700 font-semibold hover:bg-slate-50 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -306,7 +306,7 @@ export default function CategoriesPage() {
           <p className="text-slate-500 mb-4">Категорий пока нет</p>
           <button
             onClick={() => setShowNewForm(true)}
-            className="btn-primary inline-flex items-center gap-2 !py-2 !px-4 !rounded-lg"
+            className="btn-primary inline-flex items-center gap-2 !py-2 !px-4 !rounded-full"
           >
             <Plus className="w-4 h-4" />
             Создать первую категорию

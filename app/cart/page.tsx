@@ -215,7 +215,7 @@ export default function CartPage() {
             {items.length === 0 ? (
               <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-slate-100">
                 <p className="text-slate-500 mb-4">Ваша корзина пуста</p>
-                <Link href="/" className="btn-primary inline-flex !py-2 !px-6 !rounded-lg !font-bold">
+                <Link href="/" className="btn-primary inline-flex !py-2 !px-6 !rounded-full !font-bold">
                   Вернуться к услугам
                 </Link>
               </div>
@@ -369,7 +369,7 @@ export default function CartPage() {
                   <button
                     onClick={handleValidatePromocode}
                     disabled={isValidatingPromocode || !promocode.trim()}
-                    className="btn-primary w-full !py-3 !rounded-xl"
+                    className="btn-primary w-full !py-3 !rounded-full"
                   >
                     {isValidatingPromocode ? "..." : "Применить"}
                   </button>
@@ -494,7 +494,7 @@ export default function CartPage() {
               <button
                 disabled={isLoading || items.length === 0}
                 onClick={handleCheckout}
-                className="btn-primary w-full mt-4 !py-4 !rounded-xl"
+                className="btn-primary w-full mt-4 !py-4 !rounded-full"
               >
                 {isLoading ? "Обработка..." : "Перейти к оплате"}
               </button>

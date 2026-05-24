@@ -79,7 +79,7 @@ export default function PromocodesPage() {
         </div>
         <Link
           href="/admin/promocodes/new"
-          className="btn-primary inline-flex items-center gap-2 !py-2.5 !px-4 !rounded-xl"
+          className="btn-primary inline-flex items-center gap-2 !py-2.5 !px-4 !rounded-full"
         >
           <Plus className="w-4 h-4" />
           Создать промокод
@@ -91,7 +91,7 @@ export default function PromocodesPage() {
           <p className="text-slate-500 mb-4">Промокодов пока нет</p>
           <Link
             href="/admin/promocodes/new"
-            className="btn-primary inline-flex items-center gap-2 !py-2 !px-4 !rounded-lg"
+            className="btn-primary inline-flex items-center gap-2 !py-2 !px-4 !rounded-full"
           >
             <Plus className="w-4 h-4" />
             Создать первый промокод
@@ -166,7 +166,7 @@ export default function PromocodesPage() {
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => handleDelete(promo.id)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors shadow-sm hover:shadow"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium text-red-600 hover:bg-red-50 transition-colors shadow-sm hover:shadow"
                         >
                           <Trash2 className="w-4 h-4" />
                           Удалить

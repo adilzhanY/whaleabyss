@@ -71,7 +71,7 @@ export default function CartModal() {
           </h2>
           <button
             onClick={closeCart}
-            className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-slate-100"
+            className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-slate-100 cursor-pointer"
           >
             <X className="h-5 w-5" style={{ color: "var(--text-secondary)" }} />
           </button>

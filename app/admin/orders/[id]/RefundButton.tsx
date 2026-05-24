@@ -48,7 +48,7 @@ export default function RefundButton({ orderId, orderStatus }: RefundButtonProps
     <>
       <button
         onClick={() => setShowConfirm(true)}
-        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl font-medium transition-colors"
+        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-full font-medium transition-colors"
       >
         <RotateCcw className="w-4 h-4" strokeWidth={2.25} />
         Вернуть средства
@@ -77,14 +77,14 @@ export default function RefundButton({ orderId, orderStatus }: RefundButtonProps
                   setError(null);
                 }}
                 disabled={isRefunding}
-                className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full font-medium transition-colors disabled:opacity-50"
               >
                 Отмена
               </button>
               <button
                 onClick={handleRefund}
                 disabled={isRefunding}
-                className="flex-1 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isRefunding ? (
                   <>

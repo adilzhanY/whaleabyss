@@ -186,7 +186,7 @@ export default function ReviewsPage() {
             {session?.user ? (
               <Link
                 href="/reviews/new"
-                className="btn-primary inline-flex items-center justify-center gap-2 !rounded-xl !px-6 !py-3 !font-bold"
+                className="btn-primary inline-flex items-center justify-center gap-2 !rounded-full !px-6 !py-3 !font-bold"
               >
                 <Plus className="w-5 h-5" />
                 Оставить отзыв
@@ -194,7 +194,7 @@ export default function ReviewsPage() {
             ) : (
               <button
                 onClick={() => setAuthOpen(true)}
-                className="btn-primary inline-flex items-center justify-center gap-2 !rounded-xl !px-6 !py-3 !font-bold"
+                className="btn-primary inline-flex items-center justify-center gap-2 !rounded-full !px-6 !py-3 !font-bold"
               >
                 <Plus className="w-5 h-5" />
                 Оставить отзыв
@@ -329,7 +329,7 @@ export default function ReviewsPage() {
                   <button
                     onClick={loadMore}
                     disabled={loadingMore}
-                    className="btn-secondary !rounded-xl !px-8 !py-3.5 !font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="btn-secondary !rounded-full !px-8 !py-3.5 !font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loadingMore ? 'Загрузка...' : 'Загрузить ещё отзывы'}
                   </button>

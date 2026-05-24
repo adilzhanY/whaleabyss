@@ -31,14 +31,14 @@ export default async function AdminServicesPage() {
         <div className="flex gap-3">
           <Link
             href="/admin/services/categories"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-600 text-white text-sm font-semibold hover:bg-slate-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-600 text-white text-sm font-semibold hover:bg-slate-700 transition-colors"
           >
             <Plus className="w-4 h-4" strokeWidth={2.5} />
             Новая категория
           </Link>
           <Link
             href="/admin/services/new"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors"
           >
             <Plus className="w-4 h-4" strokeWidth={2.5} />
             Новая услуга
@@ -107,7 +107,7 @@ export default async function AdminServicesPage() {
                     <td className="px-6 py-3 text-right">
                       <Link
                         href={`/admin/services/${s.id}`}
-                        className="inline-flex items-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+                        className="inline-flex items-center justify-center w-9 h-9 rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
                         title="Редактировать"
                       >
                         <Pencil className="w-4 h-4" strokeWidth={2.25} />

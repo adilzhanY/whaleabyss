@@ -74,7 +74,7 @@ export default function NewTestServicePage() {
       <div className="flex items-center gap-4">
         <Link
           href="/admin/testing"
-          className="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-slate-100 transition-colors"
+          className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" strokeWidth={2.25} />
         </Link>
@@ -186,14 +186,14 @@ export default function NewTestServicePage() {
           <button
             type="submit"
             disabled={loading || uploading}
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" strokeWidth={2.5} />}
             Создать
           </button>
           <Link
             href="/admin/testing"
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors"
           >
             Отмена
           </Link>

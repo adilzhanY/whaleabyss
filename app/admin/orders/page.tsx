@@ -277,7 +277,7 @@ export default function AdminOrdersPage() {
             {page > 1 && (
               <button
                 onClick={() => setPage((p) => p - 1)}
-                className="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl font-semibold hover:bg-slate-300 transition-colors"
+                className="px-4 py-2 bg-slate-200 text-slate-700 rounded-full font-semibold hover:bg-slate-300 transition-colors"
               >
                 Назад
               </button>
@@ -285,7 +285,7 @@ export default function AdminOrdersPage() {
             {page < totalPages && (
               <button
                 onClick={() => setPage((p) => p + 1)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors"
               >
                 Следующая
               </button>

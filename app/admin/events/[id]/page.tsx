@@ -165,7 +165,7 @@ export default function EditEventPage() {
       <div className="flex items-center gap-4">
         <Link
           href="/admin/events"
-          className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-slate-100 transition-colors"
+          className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 transition-colors"
         >
           <ArrowLeft className="w-5 h-5 text-slate-600" />
         </Link>
@@ -354,13 +354,13 @@ export default function EditEventPage() {
             <button
               type="submit"
               disabled={saving}
-              className="btn-primary flex-1 !py-3 !rounded-xl !shadow-lg hover:!shadow-xl transition-shadow"
+              className="btn-primary flex-1 !py-3 !rounded-full !shadow-lg hover:!shadow-xl transition-shadow"
             >
               {saving ? "Сохранение..." : "Сохранить изменения"}
             </button>
             <Link
               href="/admin/events"
-              className="flex-1 px-6 py-3 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all text-center shadow-sm hover:shadow"
+              className="flex-1 px-6 py-3 rounded-full border-2 border-slate-200 bg-white text-slate-700 font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all text-center shadow-sm hover:shadow"
             >
               Отмена
             </Link>

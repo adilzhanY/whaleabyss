@@ -154,7 +154,7 @@ export default function NewReviewPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="btn-primary !rounded-xl !px-6 !py-3 !font-bold flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn-primary !rounded-full !px-6 !py-3 !font-bold flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? "Отправка..." : "Отправить отзыв"}
                 </button>
@@ -162,7 +162,7 @@ export default function NewReviewPage() {
                   type="button"
                   onClick={() => router.push("/reviews")}
                   disabled={submitting}
-                  className="btn-secondary !rounded-xl !px-6 !py-3 !font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn-secondary !rounded-full !px-6 !py-3 !font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Отмена
                 </button>
@@ -189,7 +189,7 @@ export default function NewReviewPage() {
             </p>
             <button
               onClick={() => router.push("/reviews")}
-              className="btn-primary !rounded-xl !px-6 !py-3 !font-bold w-full"
+              className="btn-primary !rounded-full !px-6 !py-3 !font-bold w-full"
             >
               Вернуться к отзывам
             </button>

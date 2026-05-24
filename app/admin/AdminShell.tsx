@@ -208,7 +208,7 @@ export default function AdminShell({ userName, userEmail, children }: AdminShell
               onClick={() => signOut({ callbackUrl: "/" })}
               title="Выйти"
               className={[
-                "shrink-0 w-9 h-9 rounded-xl flex items-center justify-center",
+                "shrink-0 w-9 h-9 rounded-full flex items-center justify-center",
                 "text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors",
                 collapsed ? "hidden" : "flex",
               ].join(" ")}
@@ -225,7 +225,7 @@ export default function AdminShell({ userName, userEmail, children }: AdminShell
         <header className="h-16 flex items-center gap-3 px-4 lg:px-8 border-b border-slate-200 bg-white">
           <button
             onClick={() => setMobileOpen(true)}
-            className="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center hover:bg-slate-100"
+            className="lg:hidden w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100"
             aria-label="Открыть меню"
           >
             <MenuIcon className="w-5 h-5" strokeWidth={2.25} />
@@ -240,7 +240,7 @@ export default function AdminShell({ userName, userEmail, children }: AdminShell
           </div>
           <button
             onClick={() => router.push("/")}
-            className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+            className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"
             title="Вернуться на сайт"
           >
             ← На сайт

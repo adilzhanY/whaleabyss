@@ -72,7 +72,7 @@ export default function AdminTestingPage({ services: testServices }: { services:
         </div>
         <Link
           href="/admin/testing/new"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors"
         >
           <Plus className="w-4 h-4" strokeWidth={2.5} />
           Новая тестовая услуга
@@ -119,7 +119,7 @@ export default function AdminTestingPage({ services: testServices }: { services:
                 <button
                   onClick={() => handleBuy(service)}
                   disabled={buying === service.id}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {buying === service.id ? 'Загрузка...' : 'Купить'}
                 </button>

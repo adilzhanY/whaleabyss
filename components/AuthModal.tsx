@@ -365,7 +365,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         )}
 
         {step === "success" ? (
-          <div className="flex flex-col items-center justify-center space-y-4 py-6">
+          <div key="step-success" className="flex flex-col items-center justify-center space-y-4 py-6">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 mb-2">
               <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -388,7 +388,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             </button>
           </div>
         ) : tab === "register" && step === "captcha" ? (
-          <div className="space-y-5 text-center">
+          <div key="step-captcha" className="space-y-5 text-center">
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               Подтвердите, что вы не робот, чтобы получить код подтверждения.
             </p>
@@ -409,7 +409,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             </button>
           </div>
         ) : tab === "register" && step === "otp" ? (
-          <div className={`space-y-6 text-center transition-all duration-300 ${isShaking ? "animate-shake" : ""}`}>
+          <div key="step-otp" className={`space-y-6 text-center transition-all duration-300 ${isShaking ? "animate-shake" : ""}`}>
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>Мы отправили код подтверждения на ваш email.</p>
             <div className="flex justify-center gap-2 mt-4">
               {otpValues.map((digit, idx) => (
@@ -459,7 +459,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             </button>
           </div >
         ) : showForgotPassword ? (
-          <div className="space-y-4">
+          <div key="step-forgot" className="space-y-4">
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               Введите ваш email, и мы отправим вам ссылку для сброса пароля.
             </p>
@@ -530,7 +530,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form key="step-form" onSubmit={handleSubmit} className="space-y-4">
             {tab === "register" && (
               <div>
                 <label className="mb-1 block text-xs font-medium" style={{ color: "var(--text-secondary)" }}>

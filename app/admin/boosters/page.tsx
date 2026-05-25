@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Plus, Trash2, Power } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Plus, Trash2, Power, Search } from "lucide-react";
 import Link from "next/link";
 import TelegramIcon from "@/components/TelegramIcon";
+import CustomSelect from "@/components/CustomSelect";
+import Input from "@/components/Input";
 
 interface Booster {
   id: string;
@@ -26,9 +28,20 @@ export default function BoostersPage() {
   const [boosters, setBoosters] = useState<Booster[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Filters
+  const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
   useEffect(() => {
     fetchBoosters();
   }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const fetchBoosters = async () => {
     try {
@@ -75,6 +88,36 @@ export default function BoostersPage() {
     }
   };
 
+  const filteredBoosters = useMemo(() => {
+    let result = [...boosters];
+
+    // Status filter
+    if (statusFilter !== "all") {
+      result = result.filter((b) => b.status === statusFilter);
+    }
+
+    // Search filter
+    if (debouncedSearch.trim()) {
+      const query = debouncedSearch.toLowerCase();
+      result = result.filter(
+        (b) =>
+          b.id.toLowerCase().includes(query) ||
+          `${b.firstName} ${b.lastName}`.toLowerCase().includes(query) ||
+          b.telegramUsername?.toLowerCase().includes(query) ||
+          b.inn?.toLowerCase().includes(query)
+      );
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return sortBy === "newest" ? dateB - dateA : dateA - dateB;
+    });
+
+    return result;
+  }, [boosters, sortBy, statusFilter, debouncedSearch]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -115,20 +158,75 @@ export default function BoostersPage() {
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-100">
-                <tr>
-                  {["ID", "Имя", "Telegram", "Комиссия", "Баланс", "Завершено", "Статус", ""].map((h) => (
-                    <th key={h} className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {boosters.map((b) => (
+        <>
+          {/* Filters */}
+          <div className="bg-white rounded-xl border border-slate-200 p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  Сортировка
+                </label>
+                <CustomSelect
+                  value={sortBy}
+                  onChange={(v) => setSortBy(v as "newest" | "oldest")}
+                  className="w-full"
+                  buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+                  options={[
+                    { value: "newest", label: "Сначала новые" },
+                    { value: "oldest", label: "Сначала старые" },
+                  ]}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  Статус
+                </label>
+                <CustomSelect
+                  value={statusFilter}
+                  onChange={setStatusFilter}
+                  className="w-full"
+                  buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+                  options={[
+                    { value: "all", label: "Все" },
+                    { value: "active", label: "Активен" },
+                    { value: "inactive", label: "Неактивен" },
+                  ]}
+                />
+              </div>
+            </div>
+
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Поиск по ID, имени, Telegram, ИНН..."
+                className="pl-10 text-sm"
+              />
+            </div>
+          </div>
+
+          {filteredBoosters.length === 0 ? (
+            <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-slate-100">
+              <p className="text-slate-500">Качеры не найдены</p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-50 border-b border-slate-100">
+                    <tr>
+                      {["ID", "Имя", "Telegram", "Комиссия", "Баланс", "Завершено", "Статус", ""].map((h) => (
+                        <th key={h} className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredBoosters.map((b) => (
                   <tr key={b.id} className="hover:bg-slate-50/60 transition-colors">
                     <td className="px-6 py-4 font-mono text-xs">
                       <Link href={`/admin/booster/${b.id}`} className="text-indigo-600 hover:underline">
@@ -192,12 +290,14 @@ export default function BoostersPage() {
                         </button>
                       </div>
                     </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

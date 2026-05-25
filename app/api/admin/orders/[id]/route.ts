@@ -98,3 +98,28 @@ export async function PATCH(
 
   return NextResponse.json({ ok: true, order: result[0] });
 }
+
+// Hard-delete an order forever. Irreversible — used by the "Удалить заказ"
+// danger-zone button on the admin order detail page. `order_items` and
+// `promocode_usage` rows cascade-delete (FK onDelete: 'cascade'); an assigned
+// booster's already-credited balance is NOT clawed back (the credit is final).
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const forbid = await requireAdminApi();
+  if (forbid) return forbid;
+
+  const { id } = await params;
+
+  const deleted = await db
+    .delete(orders)
+    .where(eq(orders.id, id))
+    .returning({ id: orders.id });
+
+  if (deleted.length === 0) {
+    return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  }
+
+  return NextResponse.json({ ok: true });
+}

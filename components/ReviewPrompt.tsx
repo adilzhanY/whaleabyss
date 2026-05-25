@@ -10,10 +10,16 @@ import Textarea from "@/components/Textarea";
  * Compact "leave a review" nudge. Shown once the logged-in user has a completed
  * order and hasn't reviewed yet (decided server-side by /api/user/review-prompt).
  * It's a condensed version of /reviews/new and shows the same "on moderation"
- * confirmation. Never appears on /admin. Dismissal is remembered per browser.
+ * confirmation. Never appears on /admin.
+ *
+ * Dismissal only snoozes for the current visit (sessionStorage), so the nudge
+ * returns on the user's next visit — the server stops prompting permanently once
+ * an actual review exists (review_count > 0 in /api/user/review-prompt). A
+ * permanent localStorage flag was previously used here, which muted the prompt
+ * forever after a single (even accidental backdrop) dismissal.
  */
 
-const DISMISS_KEY = "review-prompt-dismissed";
+const SNOOZE_KEY = "review-prompt-snoozed";
 
 export default function ReviewPrompt() {
   const { status } = useSession();
@@ -31,7 +37,7 @@ export default function ReviewPrompt() {
   useEffect(() => {
     if (status !== "authenticated" || onAdmin) return;
     try {
-      if (localStorage.getItem(DISMISS_KEY) === "1") return;
+      if (sessionStorage.getItem(SNOOZE_KEY) === "1") return;
     } catch {}
 
     let cancelled = false;
@@ -50,7 +56,7 @@ export default function ReviewPrompt() {
 
   const remember = () => {
     try {
-      localStorage.setItem(DISMISS_KEY, "1");
+      sessionStorage.setItem(SNOOZE_KEY, "1");
     } catch {}
   };
 

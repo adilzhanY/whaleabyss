@@ -7,6 +7,7 @@ import OrderStatusBadge from "../../_components/OrderStatusBadge";
 import StatusChanger from "./StatusChanger";
 import RefundButton from "./RefundButton";
 import { ArrowLeft, Mail, MessageSquare, Hash, User } from "lucide-react";
+import TelegramIcon from "@/components/TelegramIcon";
 
 export const dynamic = "force-dynamic";
 
@@ -163,7 +164,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
               <Row icon={User} label="Имя" value={order.username ?? "— guest —"} />
               <Row icon={Mail} label="Email" value={order.userEmail ?? order.receiptEmail ?? "—"} />
               <Row
-                icon={MessageSquare}
+                icon={TelegramIcon}
                 label="Telegram"
                 value={order.telegramUsername ?? "—"}
               />

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { ArrowLeft, Mail, User, Calendar, DollarSign, ShoppingBag, Star } from "lucide-react";
 import OrderStatusBadge from "../../_components/OrderStatusBadge";
+import TelegramIcon from "@/components/TelegramIcon";
 
 interface UserDetails {
   id: string;
@@ -198,7 +199,7 @@ export default function UserDetailPage() {
 
               {user.telegramUsername && (
                 <div className="flex items-center gap-3">
-                  <User className="h-5 w-5 text-slate-400" />
+                  <TelegramIcon className="h-5 w-5 text-slate-400" />
                   <div>
                     <p className="text-xs text-slate-500">Telegram</p>
                     <p className="text-sm font-medium text-slate-700">{user.telegramUsername}</p>

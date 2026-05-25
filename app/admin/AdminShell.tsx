@@ -17,6 +17,7 @@ import {
   Calendar,
   Star,
   Users,
+  Swords,
 } from "lucide-react";
 
 interface NavItem {
@@ -31,6 +32,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "Дашборд", icon: LayoutDashboard, matches: ["/admin"] },
   { href: "/admin/orders", label: "Заказы", icon: ShoppingBag, matches: ["/admin/orders"] },
   { href: "/admin/users", label: "Юзеры", icon: Users, matches: ["/admin/users"] },
+  { href: "/admin/boosters", label: "Качеры", icon: Swords, matches: ["/admin/boosters"] },
   { href: "/admin/services", label: "Услуги", icon: Package, matches: ["/admin/services"] },
   { href: "/admin/promocodes", label: "Промокоды", icon: Ticket, matches: ["/admin/promocodes"] },
   { href: "/admin/events", label: "События", icon: Calendar, matches: ["/admin/events"] },

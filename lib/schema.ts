@@ -58,6 +58,13 @@ export const orderStatusEnum = pgEnum('order_status', ['pending', 'paid', 'in_pr
 export const orders = pgTable('orders', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  // Assigned booster (качер). Nullable — set via "Назначить" in /admin/orders.
+  // Forward-ref to `boosters` (defined below) is safe: Drizzle calls the thunk lazily.
+  boosterId: uuid('booster_id').references(() => boosters.id, { onDelete: 'set null' }),
+  // Commission credited to the booster when this order was completed.
+  // NULL = not yet credited; set exactly once (idempotency guard). Independent
+  // of revenue accounting — the dashboard still counts full totalPrice.
+  boosterEarning: decimal('booster_earning', { precision: 10, scale: 2 }),
   status: orderStatusEnum('status').default('pending'),
   totalPrice: decimal('total_price', { precision: 10, scale: 2 }).notNull(),
   paymentId: varchar('payment_id', { length: 255 }),
@@ -134,4 +141,31 @@ export const cartItems = pgTable('cart_items', {
   startDate: timestamp('start_date', { withTimezone: true }),
   endDate: timestamp('end_date', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});
+
+export const boosterStatusEnum = pgEnum('booster_status', ['active', 'inactive']);
+
+// Manually-managed roster of boosters (качеры). No login/registration — admins
+// add and edit these rows directly from /admin/boosters. Payout fields exist
+// because each finished order splits revenue (booster commission vs. house);
+// `balance` accumulates the booster's unpaid earnings, paid out off-platform.
+export const boosters = pgTable('boosters', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  firstName: varchar('first_name', { length: 100 }).notNull(),
+  lastName: varchar('last_name', { length: 100 }).notNull(),
+  birthDate: timestamp('birth_date', { withTimezone: true }),
+  telegramUsername: varchar('telegram_username', { length: 255 }),
+  // Самозанятый: ИНН нужен для легального чека/выплаты через «Мой налог».
+  inn: varchar('inn', { length: 12 }),
+  // Куда платить: номер карты или телефон для СБП (свободная строка).
+  payoutDetails: varchar('payout_details', { length: 255 }),
+  // Доля качера от заказа в процентах (остальное — проекту). По умолчанию 40%.
+  commissionPercent: integer('commission_percent').notNull().default(40),
+  // Накопленный, ещё не выплаченный заработок. Decimal хранится как строка.
+  balance: decimal('balance', { precision: 10, scale: 2 }).notNull().default('0'),
+  status: boosterStatusEnum('status').notNull().default('active'),
+  note: text('note'),
+  startDate: timestamp('start_date', { withTimezone: true }).defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });

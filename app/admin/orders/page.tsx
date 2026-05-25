@@ -9,6 +9,7 @@ import OrderStatusBadge, {
 } from "../_components/OrderStatusBadge";
 import CustomSelect from "@/components/CustomSelect";
 import Input from "@/components/Input";
+import AssignBoosterModal from "./AssignBoosterModal";
 
 interface Order {
   id: string;
@@ -19,6 +20,8 @@ interface Order {
   paymentId: string | null;
   username: string | null;
   email: string | null;
+  boosterId: string | null;
+  boosterFirstName: string | null;
 }
 
 const ORDERS_PER_PAGE = 10;
@@ -27,6 +30,7 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [assigningOrderId, setAssigningOrderId] = useState<string | null>(null);
 
   // Filters
   const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
@@ -209,6 +213,7 @@ export default function AdminOrdersPage() {
                   <th className="text-left font-medium px-4 py-3">ID заказа</th>
                   <th className="text-left font-medium px-4 py-3">ID клиента</th>
                   <th className="text-left font-medium px-4 py-3">Клиент</th>
+                  <th className="text-left font-medium px-4 py-3">Бустер</th>
                   <th className="text-left font-medium px-4 py-3">Статус</th>
                   <th className="text-right font-medium px-4 py-3">Сумма</th>
                   <th className="text-right font-medium px-4 py-3">Дата</th>
@@ -241,6 +246,25 @@ export default function AdminOrdersPage() {
                         <div className="text-xs text-slate-500">
                           {o.email ?? ""}
                         </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        {o.boosterId && o.boosterFirstName ? (
+                          <Link
+                            href={`/admin/booster/${o.boosterId}`}
+                            className="font-medium text-indigo-600 hover:underline"
+                          >
+                            {o.boosterFirstName}
+                          </Link>
+                        ) : o.status === "cancelled" || o.status === "pending" ? (
+                          <span className="text-slate-300">—</span>
+                        ) : (
+                          <button
+                            onClick={() => setAssigningOrderId(o.id)}
+                            className="px-3 py-1.5 rounded-full bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors"
+                          >
+                            Назначить
+                          </button>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <OrderStatusBadge status={o.status ?? "pending"} />
@@ -293,6 +317,22 @@ export default function AdminOrdersPage() {
             )}
           </div>
         </div>
+      )}
+
+      {assigningOrderId && (
+        <AssignBoosterModal
+          orderId={assigningOrderId}
+          onClose={() => setAssigningOrderId(null)}
+          onAssigned={(boosterId, boosterFirstName) => {
+            setOrders((prev) =>
+              prev.map((o) =>
+                o.id === assigningOrderId
+                  ? { ...o, boosterId, boosterFirstName, status: "in_progress" }
+                  : o
+              )
+            );
+          }}
+        />
       )}
     </div>
   );

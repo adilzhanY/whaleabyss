@@ -2,6 +2,7 @@ import { Telegraf } from 'telegraf';
 import { db } from './db';
 import { orders } from './schema';
 import { eq } from 'drizzle-orm';
+import { creditBoosterForCompletedOrder } from './boosterPayout';
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
@@ -100,6 +101,11 @@ if (bot) {
 
       // 1. Update DB.
       await db.update(orders).set({ status, updatedAt: new Date() }).where(eq(orders.id, orderId));
+
+      // 1a. On completion, credit the assigned booster's commission (idempotent).
+      if (status === 'completed') {
+        await creditBoosterForCompletedOrder(orderId);
+      }
 
       // 2. Answer the callback (stops spinner on button, shows toast).
       await ctx.answerCbQuery(STATUS_META[status].ack);

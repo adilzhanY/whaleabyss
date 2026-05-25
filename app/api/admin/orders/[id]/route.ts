@@ -112,14 +112,26 @@ export async function DELETE(
 
   const { id } = await params;
 
-  const deleted = await db
-    .delete(orders)
-    .where(eq(orders.id, id))
-    .returning({ id: orders.id });
+  // Only abandoned/unfinished orders may be deleted. Paid/in-progress/completed/
+  // refunded orders carry financial records (incl. manually-paid ones) and must
+  // be kept.
+  const [existing] = await db
+    .select({ status: orders.status })
+    .from(orders)
+    .where(eq(orders.id, id));
 
-  if (deleted.length === 0) {
+  if (!existing) {
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
+
+  if (existing.status !== "cancelled" && existing.status !== "pending") {
+    return NextResponse.json(
+      { error: "Only cancelled or pending orders can be deleted" },
+      { status: 409 }
+    );
+  }
+
+  await db.delete(orders).where(eq(orders.id, id));
 
   return NextResponse.json({ ok: true });
 }

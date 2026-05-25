@@ -187,16 +187,21 @@ export default async function OrderDetailPage({ params }: PageProps) {
             </div>
           </section>
 
-          <section className="bg-white rounded-3xl border border-rose-200 p-6">
-            <h2 className="text-lg font-semibold mb-1 text-rose-700">
-              Опасная зона
-            </h2>
-            <p className="text-sm text-slate-500 mb-4">
-              Удаление заказа необратимо — запись и все её позиции будут стёрты
-              навсегда.
-            </p>
-            <DeleteOrderButton orderId={order.id} />
-          </section>
+          {(order.status === "cancelled" || order.status === "pending") && (
+            <section className="bg-white rounded-3xl border border-rose-200 p-6">
+              <h2 className="text-lg font-semibold mb-1 text-rose-700">
+                Опасная зона
+              </h2>
+              <p className="text-sm text-slate-500 mb-4">
+                Удаление заказа необратимо — запись и все её позиции будут стёрты
+                навсегда. Доступно только для отменённых и ожидающих заказов.
+              </p>
+              <DeleteOrderButton
+                orderId={order.id}
+                orderStatus={order.status}
+              />
+            </section>
+          )}
         </div>
       </div>
     </div>

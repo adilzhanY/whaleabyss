@@ -6,14 +6,24 @@ import { useRouter } from "next/navigation";
 
 interface DeleteOrderButtonProps {
   orderId: string;
+  orderStatus: string;
 }
 
-export default function DeleteOrderButton({ orderId }: DeleteOrderButtonProps) {
+export default function DeleteOrderButton({
+  orderId,
+  orderStatus,
+}: DeleteOrderButtonProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmText, setConfirmText] = useState("");
+
+  // Only abandoned/unfinished orders may be deleted. Paid orders (incl.
+  // manually-paid) keep their financial record — mirrors the API guard.
+  if (orderStatus !== "cancelled" && orderStatus !== "pending") {
+    return null;
+  }
 
   // Require the admin to type the short order id — a deliberate friction step
   // so a paid/manual order is never deleted by an accidental click.

@@ -480,7 +480,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 			{/* SERVICES GRID */}
 			<section
 				id="services"
-				className="py-20 relative overflow-hidden"
+				className="py-20 relative overflow-hidden rounded-t-[2.5rem] sm:rounded-t-[3.5rem] -mt-8 sm:-mt-14 shadow-[0_-24px_60px_-28px_rgba(15,23,42,0.22)]"
 				style={{
 					background: "linear-gradient(to bottom, #090e17 0%, #111a2e 100%)",
 				}}
@@ -493,35 +493,24 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 							filter: "blur(40px)",
 						}}
 					/>
-					<svg
-						className="absolute inset-0 w-full h-full pointer-events-none"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<defs>
-							<pattern
-								id="tech-grid"
-								width="64"
-								height="64"
-								patternUnits="userSpaceOnUse"
-							>
-								<path
-									d="M 64 0 L 0 0 0 64"
-									fill="none"
-									stroke="#334155"
-									strokeWidth="1"
-									opacity="0.08"
-								/>
-								<path
-									d="M -4 0 L 4 0 M 0 -4 L 0 4"
-									fill="none"
-									stroke="#334155"
-									strokeWidth="2"
-									opacity="0.15"
-								/>
-							</pattern>
-						</defs>
-						<rect width="100%" height="100%" fill="url(#tech-grid)" />
-					</svg>
+					{/* Subtle two-tier graph-paper grid: fine 40px cells + bolder 200px
+					    lines, gently faded toward the left/right edges. */}
+					<div
+						className="absolute inset-0"
+						style={{
+							backgroundImage: `
+								linear-gradient(to right, rgba(51,65,85,0.05) 1px, transparent 1px),
+								linear-gradient(to bottom, rgba(51,65,85,0.05) 1px, transparent 1px),
+								linear-gradient(to right, rgba(51,65,85,0.08) 1px, transparent 1px),
+								linear-gradient(to bottom, rgba(51,65,85,0.08) 1px, transparent 1px)
+							`,
+							backgroundSize: "40px 40px, 40px 40px, 200px 200px, 200px 200px",
+							WebkitMaskImage:
+								"linear-gradient(to right, transparent, #000 12%, #000 88%, transparent)",
+							maskImage:
+								"linear-gradient(to right, transparent, #000 12%, #000 88%, transparent)",
+						}}
+					/>
 				</div>
 
 				<div

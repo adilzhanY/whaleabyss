@@ -72,7 +72,7 @@ export const LEGAL = {
 
   // ---------------- Даты редакций ----------------
   OFFER_VERSION_DATE: "29 апреля 2026 года",
-  PRIVACY_VERSION_DATE: "29 апреля 2026 года",
+  PRIVACY_VERSION_DATE: "25 мая 2026 года",
   PAYMENT_RULES_VERSION_DATE: "29 апреля 2026 года",
 } as const;
 

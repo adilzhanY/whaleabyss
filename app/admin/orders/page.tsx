@@ -9,7 +9,7 @@ import OrderStatusBadge, {
 } from "../_components/OrderStatusBadge";
 import CustomSelect from "@/components/CustomSelect";
 import Input from "@/components/Input";
-import AssignBoosterModal from "./AssignBoosterModal";
+import OrderBoosterCell from "../_components/OrderBoosterCell";
 
 interface Order {
   id: string;
@@ -30,7 +30,6 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [assigningOrderId, setAssigningOrderId] = useState<string | null>(null);
 
   // Filters
   const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
@@ -248,23 +247,26 @@ export default function AdminOrdersPage() {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        {o.boosterId && o.boosterFirstName ? (
-                          <Link
-                            href={`/admin/booster/${o.boosterId}`}
-                            className="font-medium text-indigo-600 hover:underline"
-                          >
-                            {o.boosterFirstName}
-                          </Link>
-                        ) : o.status === "cancelled" || o.status === "pending" ? (
-                          <span className="text-slate-300">—</span>
-                        ) : (
-                          <button
-                            onClick={() => setAssigningOrderId(o.id)}
-                            className="px-3 py-1.5 rounded-full bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors"
-                          >
-                            Назначить
-                          </button>
-                        )}
+                        <OrderBoosterCell
+                          orderId={o.id}
+                          status={o.status}
+                          boosterId={o.boosterId}
+                          boosterFirstName={o.boosterFirstName}
+                          onResult={(boosterId, boosterFirstName, newStatus) =>
+                            setOrders((prev) =>
+                              prev.map((x) =>
+                                x.id === o.id
+                                  ? {
+                                      ...x,
+                                      boosterId,
+                                      boosterFirstName,
+                                      status: newStatus || x.status,
+                                    }
+                                  : x
+                              )
+                            )
+                          }
+                        />
                       </td>
                       <td className="px-4 py-3">
                         <OrderStatusBadge status={o.status ?? "pending"} />
@@ -319,21 +321,6 @@ export default function AdminOrdersPage() {
         </div>
       )}
 
-      {assigningOrderId && (
-        <AssignBoosterModal
-          orderId={assigningOrderId}
-          onClose={() => setAssigningOrderId(null)}
-          onAssigned={(boosterId, boosterFirstName) => {
-            setOrders((prev) =>
-              prev.map((o) =>
-                o.id === assigningOrderId
-                  ? { ...o, boosterId, boosterFirstName, status: "in_progress" }
-                  : o
-              )
-            );
-          }}
-        />
-      )}
     </div>
   );
 }

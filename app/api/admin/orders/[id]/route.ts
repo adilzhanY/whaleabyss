@@ -30,8 +30,9 @@ export async function PATCH(
 
   const updates: Record<string, unknown> = { updatedAt: new Date() };
 
-  // Assign a booster: validate it exists, then set boosterId and move the
-  // order into work. Sent by the "Назначить" modal on /admin/orders.
+  // Assign a booster: validate it exists, then set boosterId. The FIRST
+  // assignment moves the order into work; re-assigning to a different booster
+  // leaves the status untouched (sent by the "Сменить" button).
   if (body.boosterId !== undefined) {
     if (body.boosterId === null) {
       updates.boosterId = null;
@@ -44,8 +45,18 @@ export async function PATCH(
         return NextResponse.json({ error: "Booster not found" }, { status: 404 });
       }
       updates.boosterId = body.boosterId;
-      // Assigning a booster starts the work unless an explicit status is given.
-      if (body.status === undefined) updates.status = "in_progress";
+
+      // Only auto-start work on the initial assignment (order had no booster).
+      if (body.status === undefined) {
+        const [current] = await db
+          .select({ boosterId: orders.boosterId })
+          .from(orders)
+          .where(eq(orders.id, id));
+        if (!current) {
+          return NextResponse.json({ error: "Order not found" }, { status: 404 });
+        }
+        if (!current.boosterId) updates.status = "in_progress";
+      }
     } else {
       return NextResponse.json({ error: "Invalid boosterId" }, { status: 400 });
     }

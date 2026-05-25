@@ -15,19 +15,24 @@ interface BoosterRow {
 
 interface AssignBoosterModalProps {
   orderId: string;
+  /** Currently-assigned booster, if any. When set, this is a re-assignment
+   *  (preselected, status left untouched) rather than a first assignment. */
+  currentBoosterId?: string | null;
   onClose: () => void;
-  /** Called after a successful assignment with the chosen booster. */
-  onAssigned: (boosterId: string, boosterFirstName: string) => void;
+  /** Called after success with the chosen booster and the order's new status. */
+  onAssigned: (boosterId: string, boosterFirstName: string, newStatus: string) => void;
 }
 
 export default function AssignBoosterModal({
   orderId,
+  currentBoosterId,
   onClose,
   onAssigned,
 }: AssignBoosterModalProps) {
+  const isReassign = !!currentBoosterId;
   const [boosters, setBoosters] = useState<BoosterRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(currentBoosterId ?? null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,11 +69,11 @@ export default function AssignBoosterModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ boosterId: selectedId }),
       });
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Не удалось назначить качера");
       }
-      onAssigned(chosen.id, chosen.firstName);
+      onAssigned(chosen.id, chosen.firstName, data.order?.status ?? "");
       onClose();
     } catch (e: any) {
       setError(e.message);
@@ -88,10 +93,11 @@ export default function AssignBoosterModal({
         <div className="flex items-center justify-between p-6 border-b border-slate-100">
           <div>
             <h2 className="text-xl font-black text-blue-950" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
-              Назначить качера
+              {isReassign ? "Сменить качера" : "Назначить качера"}
             </h2>
             <p className="text-sm text-slate-500 mt-0.5">
-              Заказ {orderId.slice(0, 8)}... перейдёт «В работу»
+              Заказ {orderId.slice(0, 8)}...{" "}
+              {isReassign ? "— статус не изменится" : "перейдёт «В работу»"}
             </p>
           </div>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 text-slate-500">
@@ -187,10 +193,16 @@ export default function AssignBoosterModal({
             </button>
             <button
               onClick={handleAssign}
-              disabled={!selectedId || submitting}
+              disabled={!selectedId || submitting || (isReassign && selectedId === currentBoosterId)}
               className="btn-primary !py-2.5 !px-6 !rounded-full disabled:opacity-50"
             >
-              {submitting ? "Назначение..." : "Назначить"}
+              {submitting
+                ? isReassign
+                  ? "Смена..."
+                  : "Назначение..."
+                : isReassign
+                ? "Сменить"
+                : "Назначить"}
             </button>
           </div>
         </div>

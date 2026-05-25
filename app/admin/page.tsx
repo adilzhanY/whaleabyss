@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { orders, orderItems, services, users } from "@/lib/schema";
+import { orders, orderItems, services, users, boosters } from "@/lib/schema";
 import { desc, eq, sql, and, gte, inArray } from "drizzle-orm";
 import {
   ShoppingBag,
@@ -10,6 +10,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import OrderStatusBadge from "./_components/OrderStatusBadge";
+import OrderBoosterCell from "./_components/OrderBoosterCell";
 import TimeRangeSelect from "./_components/TimeRangeSelect";
 import { TIME_RANGE_OPTIONS, type TimeRange } from "./_components/timeRange";
 
@@ -89,9 +90,12 @@ async function getRecentOrders() {
       createdAt: orders.createdAt,
       username: users.username,
       email: users.email,
+      boosterId: orders.boosterId,
+      boosterFirstName: boosters.firstName,
     })
     .from(orders)
     .leftJoin(users, eq(orders.userId, users.id))
+    .leftJoin(boosters, eq(orders.boosterId, boosters.id))
     .orderBy(desc(orders.createdAt))
     .limit(8);
 
@@ -197,6 +201,7 @@ export default async function AdminDashboardPage({
                 <tr className="text-slate-500 text-xs uppercase tracking-wider">
                   <th className="text-left font-medium px-6 py-2">ID</th>
                   <th className="text-left font-medium px-6 py-2">Клиент</th>
+                  <th className="text-left font-medium px-6 py-2">Бустер</th>
                   <th className="text-left font-medium px-6 py-2">Статус</th>
                   <th className="text-right font-medium px-6 py-2">Сумма</th>
                   <th className="text-right font-medium px-6 py-2">Дата</th>
@@ -223,6 +228,14 @@ export default async function AdminDashboardPage({
                       <div className="text-xs text-slate-500">
                         {o.email ?? ""}
                       </div>
+                    </td>
+                    <td className="px-6 py-3">
+                      <OrderBoosterCell
+                        orderId={o.id}
+                        status={o.status ?? "pending"}
+                        boosterId={o.boosterId}
+                        boosterFirstName={o.boosterFirstName}
+                      />
                     </td>
                     <td className="px-6 py-3">
                       <OrderStatusBadge status={o.status ?? "pending"} />

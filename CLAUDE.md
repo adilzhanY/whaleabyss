@@ -102,6 +102,11 @@ const result = await db.select().from(services).where(eq(services.id, id));
 - Cart persists across sessions via `persist` middleware
 
 **Payment Flow:**
+- Public checkout (`/api/checkout`) recomputes every line price and the order
+  total **server-side** from current `services.price` — the client-supplied
+  `total`/`item.price` are ignored entirely (prevents price tampering). Test
+  services and unknown slugs are rejected; promocodes are validated via
+  `validatePromocodeForUser` (same helper as the admin manual-order route).
 - Freekassa SCI form redirect (default checkout method)
 - Webhook at `/api/payment/freekassa/notify` verifies signature and updates order status
 - Signature verification: `md5("{shop_id}:{amount}:{SECRET_2}:{merchant_order_id}")`
@@ -130,6 +135,12 @@ const result = await db.select().from(services).where(eq(services.id, id));
 - Telegram bot sends notifications to admin chat on new paid orders
 - Inline keyboard buttons allow admins to update order status directly from Telegram
 - Bot handles callback queries to update order status in DB
+- **Webhook authenticity:** `/api/telegram/webhook` verifies the
+  `X-Telegram-Bot-Api-Secret-Token` header against `TELEGRAM_WEBHOOK_SECRET`
+  (constant-time) before calling `bot.handleUpdate`. This is the real auth —
+  the `adminChatId` check in `lib/telegramClient.ts` is defense-in-depth only,
+  since `message.chat.id` comes from the (spoofable) request body. Degrades
+  gracefully (warns + proceeds) if the secret isn't configured, for local dev.
 
 **Boosters (качеры) & Commission Payouts:**
 - `boosters` table is a manually-managed roster — **no login/registration**. Admins
@@ -219,6 +230,10 @@ Required in `.env`:
 - `FREEKASSA_*` - Payment gateway credentials (SHOP_ID, SECRET_1, SECRET_2, API_KEY)
 - `TELEGRAM_BOT_TOKEN` - Telegram bot token
 - `TELEGRAM_ADMIN_CHAT_ID` - Admin chat ID for notifications
+- `TELEGRAM_WEBHOOK_SECRET` - Shared secret echoed back by Telegram in the
+  `X-Telegram-Bot-Api-Secret-Token` header; verified by `/api/telegram/webhook`
+  to reject forged updates. Re-run `scripts/telegram/set_telegram_webhook.mjs`
+  after setting/changing it
 - `YANDEX_KEY_ID` & `YANDEX_SECRET_KEY` - S3 credentials
 - `NEXT_PUBLIC_SITE_URL` - Public site URL
 - `CRON_SECRET` - Bearer token for `/api/cron/cleanup-orders` (order lifecycle cleanup)

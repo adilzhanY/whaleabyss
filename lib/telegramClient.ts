@@ -84,7 +84,11 @@ if (bot) {
       const data: string = cq.data ?? '';
       const fromChatId = cq.message?.chat?.id?.toString();
 
-      // Security: only the configured admin can change statuses.
+      // Defense-in-depth: the real authentication now happens at the webhook
+      // level (X-Telegram-Bot-Api-Secret-Token header verified in
+      // app/api/telegram/webhook/route.ts). This chat-id check is kept as an
+      // extra guard, but note that fromChatId comes from the (attacker-spoofable)
+      // update body and must NOT be the sole authorization mechanism.
       if (adminChatId && fromChatId !== adminChatId) {
         console.warn(`[Telegram] Unauthorized user (${fromChatId}) tried to change status.`);
         await ctx.answerCbQuery('Недостаточно прав.');

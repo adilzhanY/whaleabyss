@@ -17,8 +17,23 @@ async function setWebhook() {
   const webhookUrl = `${domain}/api/telegram/webhook`;
   console.log(`Setting telegram webhook to: ${webhookUrl}`);
 
+  // Register a secret_token so Telegram echoes it back in the
+  // X-Telegram-Bot-Api-Secret-Token header on every webhook call. The route
+  // verifies this header to reject forged updates. Only sent if configured.
+  const secretToken = process.env.TELEGRAM_WEBHOOK_SECRET?.replace(/"/g, "");
+
+  const params = new URLSearchParams({ url: webhookUrl });
+  if (secretToken) {
+    params.set("secret_token", secretToken);
+    console.log("Using TELEGRAM_WEBHOOK_SECRET to authenticate the webhook.");
+  } else {
+    console.warn(
+      "⚠️  TELEGRAM_WEBHOOK_SECRET not set — webhook will be UNAUTHENTICATED.",
+    );
+  }
+
   const response = await fetch(
-    `https://api.telegram.org/bot${token}/setWebhook?url=${webhookUrl}`,
+    `https://api.telegram.org/bot${token}/setWebhook?${params.toString()}`,
   );
   const data = await response.json();
 

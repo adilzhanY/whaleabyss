@@ -19,9 +19,13 @@ export default function DeleteOrderButton({
   const [error, setError] = useState<string | null>(null);
   const [confirmText, setConfirmText] = useState("");
 
-  // Only abandoned/unfinished orders may be deleted. Paid orders (incl.
-  // manually-paid) keep their financial record — mirrors the API guard.
-  if (orderStatus !== "cancelled" && orderStatus !== "pending") {
+  // Only abandoned/unfinished/refunded orders may be deleted. Active paid orders
+  // (incl. manually-paid) keep their financial record — mirrors the API guard.
+  if (
+    orderStatus !== "cancelled" &&
+    orderStatus !== "pending" &&
+    orderStatus !== "refunded"
+  ) {
     return null;
   }
 

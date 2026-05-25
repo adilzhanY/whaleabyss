@@ -112,9 +112,11 @@ export async function DELETE(
 
   const { id } = await params;
 
-  // Only abandoned/unfinished orders may be deleted. Paid/in-progress/completed/
-  // refunded orders carry financial records (incl. manually-paid ones) and must
-  // be kept.
+  // Only abandoned/unfinished/refunded orders may be deleted. Paid/in-progress/
+  // completed orders are active financial records (incl. manually-paid ones) and
+  // must be kept; a refunded order's money is already returned, so it's safe to
+  // remove.
+  const DELETABLE_STATUSES = ["cancelled", "pending", "refunded"];
   const [existing] = await db
     .select({ status: orders.status })
     .from(orders)
@@ -124,9 +126,9 @@ export async function DELETE(
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
 
-  if (existing.status !== "cancelled" && existing.status !== "pending") {
+  if (!existing.status || !DELETABLE_STATUSES.includes(existing.status)) {
     return NextResponse.json(
-      { error: "Only cancelled or pending orders can be deleted" },
+      { error: "Only cancelled, pending or refunded orders can be deleted" },
       { status: 409 }
     );
   }

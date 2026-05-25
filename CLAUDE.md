@@ -42,6 +42,21 @@ npm run lint
 npm run bot:dev
 ```
 
+## Deployment
+
+- **Production auto-deploys from `main`.** A GitHub pipeline builds and ships to
+  the prod server (https://whaleabyss.ru) automatically on every push to `main` —
+  there is no manual `git pull`/`npm run build`/restart step on prod.
+- **Implication: pushing to `main` ships to live customers.** Treat a push as a
+  production release. Don't push half-finished or unverified work to `main`;
+  confirm `npm run build` passes locally first.
+- **Env vars are NOT in git** (`.env` is gitignored). New env vars (e.g.
+  `TELEGRAM_WEBHOOK_SECRET`) must be added to the prod environment separately —
+  pushing code that reads a new var does not provision it on prod.
+- **Telegram webhook is registered out-of-band**, not by the deploy. After
+  changing `TELEGRAM_WEBHOOK_SECRET` (or the domain), re-run
+  `node scripts/telegram/set_telegram_webhook.mjs` on prod.
+
 ## Database Management
 
 **See `DB_RULES.md` for comprehensive database guidelines.**

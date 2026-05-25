@@ -3,13 +3,23 @@ import nodemailer from "nodemailer";
 import { db } from "@/lib/db";
 import { otps, users } from "@/lib/schema";
 import { eq } from "drizzle-orm";
+import { verifySmartCaptcha } from "@/lib/smartcaptcha";
 
 export async function POST(req: Request) {
   try {
-    const { email, username } = await req.json();
+    const { email, username, captchaToken } = await req.json();
 
     if (!email || !username) {
       return NextResponse.json({ error: "Отсутствуют email или имя пользователя" }, { status: 400 });
+    }
+
+    // Gate the OTP send behind the captcha — verify before touching the DB or
+    // sending any email, so bots can't probe or spam through this endpoint.
+    const xff = req.headers.get("x-forwarded-for") || "";
+    const clientIp = xff.split(",")[0].trim() || req.headers.get("x-real-ip") || undefined;
+    const captchaOk = await verifySmartCaptcha(captchaToken, clientIp);
+    if (!captchaOk) {
+      return NextResponse.json({ error: "Проверка капчи не пройдена. Попробуйте ещё раз." }, { status: 400 });
     }
 
     // Check if user already exists

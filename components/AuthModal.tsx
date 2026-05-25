@@ -5,7 +5,7 @@ import { X, LogIn, UserPlus, Eye, EyeOff } from "lucide-react";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Checkbox from "@/components/Checkbox";
 import Input from "@/components/Input";
 import { stripNonLatin, passwordSchema, firstError } from "@/lib/validators";
@@ -16,6 +16,33 @@ interface AuthModalProps {
 }
 
 type Tab = "login" | "register";
+
+const SMARTCAPTCHA_SITEKEY = process.env.NEXT_PUBLIC_YANDEX_SMARTCAPTCHA_CLIENT_KEY;
+
+/** Loads the Yandex SmartCaptcha script once and resolves when the global API
+ *  is actually available (the script's load event can fire slightly early). */
+function loadSmartCaptchaScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === "undefined") return;
+    if ((window as any).smartCaptcha) return resolve();
+
+    if (!document.getElementById("ya-smartcaptcha-script")) {
+      const script = document.createElement("script");
+      script.id = "ya-smartcaptcha-script";
+      script.src = "https://smartcaptcha.cloud.yandex.ru/captcha.js";
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+
+    const start = Date.now();
+    const tick = () => {
+      if ((window as any).smartCaptcha) return resolve();
+      if (Date.now() - start > 8000) return reject(new Error("SmartCaptcha load timeout"));
+      setTimeout(tick, 50);
+    };
+    tick();
+  });
+}
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [tab, setTab] = useState<Tab>("login");
@@ -40,9 +67,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false);
 
   // OTP states
-  const [step, setStep] = useState<"form" | "otp" | "success">("form");
+  const [step, setStep] = useState<"form" | "captcha" | "otp" | "success">("form");
   const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(""));
   const [isShaking, setIsShaking] = useState(false);
+
+  // Captcha
+  const captchaRef = useRef<HTMLDivElement>(null);
+  const captchaWidgetId = useRef<number | undefined>(undefined);
+  const sendOtpRef = useRef<(token: string) => void>(() => {});
 
   useEffect(() => {
     if (isOpen) {
@@ -108,24 +140,70 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     }
   };
 
-  const sendOtp = async () => {
+  const sendOtp = async (captchaToken: string) => {
     setIsLoading(true);
     setError("");
     try {
       const res = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, username }),
+        body: JSON.stringify({ email, username, captchaToken }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Ошибка отправки кода");
       setStep("otp");
     } catch (err: any) {
       setError(err.message);
+      // The captcha token is single-use — re-arm the widget so the user can
+      // solve it again (or go back to fix their details).
+      const w = window as any;
+      if (w.smartCaptcha && captchaWidgetId.current !== undefined) {
+        try {
+          w.smartCaptcha.reset(captchaWidgetId.current);
+        } catch {}
+      }
     } finally {
       setIsLoading(false);
     }
   };
+  // Keep the widget callback pointing at the latest sendOtp closure.
+  sendOtpRef.current = sendOtp;
+
+  // Render the SmartCaptcha widget whenever we enter the captcha step. On a
+  // successful solve the callback fires with a token, which sends the OTP.
+  useEffect(() => {
+    if (step !== "captcha" || !SMARTCAPTCHA_SITEKEY) return;
+    let cancelled = false;
+    const container = captchaRef.current;
+    if (!container) return;
+
+    loadSmartCaptchaScript()
+      .then(() => {
+        if (cancelled || !captchaRef.current) return;
+        const w = window as any;
+        container.innerHTML = "";
+        captchaWidgetId.current = w.smartCaptcha.render(container, {
+          sitekey: SMARTCAPTCHA_SITEKEY,
+          hl: "ru",
+          callback: (token: string) => sendOtpRef.current(token),
+        });
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!cancelled) setError("Не удалось загрузить капчу. Обновите страницу.");
+      });
+
+    return () => {
+      cancelled = true;
+      const w = window as any;
+      if (w.smartCaptcha && captchaWidgetId.current !== undefined) {
+        try {
+          w.smartCaptcha.destroy(captchaWidgetId.current);
+        } catch {}
+        captchaWidgetId.current = undefined;
+      }
+    };
+  }, [step]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,7 +224,13 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           setError("Необходимо согласиться на обработку персональных данных");
           return;
         }
-        await sendOtp();
+        // Show the captcha before sending the OTP. Once solved, the widget
+        // callback sends the OTP and advances to the code-entry step.
+        if (SMARTCAPTCHA_SITEKEY) {
+          setStep("captcha");
+        } else {
+          await sendOtp("");
+        }
       } else if (step === "otp") {
         const fullOtp = otpValues.join("");
         if (fullOtp.length < 6) return setError("Введите код полностью");
@@ -239,7 +323,15 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             className="text-xl font-bold"
             style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
           >
-            {step === "success" ? "Успешно" : tab === "login" ? "Вход в аккаунт" : step === "otp" ? "Подтверждение Email" : "Регистрация"}
+            {step === "success"
+              ? "Успешно"
+              : tab === "login"
+                ? "Вход в аккаунт"
+                : step === "otp"
+                  ? "Подтверждение Email"
+                  : step === "captcha"
+                    ? "Проверка"
+                    : "Регистрация"}
           </h2>
           <button
             onClick={onClose}
@@ -295,6 +387,27 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               Продолжить покупки
             </button>
           </div>
+        ) : tab === "register" && step === "captcha" ? (
+          <div className="space-y-5 text-center">
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              Подтвердите, что вы не робот, чтобы получить код подтверждения.
+            </p>
+            <div ref={captchaRef} className="flex justify-center min-h-[100px]" />
+            {isLoading && (
+              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                Отправляем код...
+              </p>
+            )}
+            {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+            <button
+              type="button"
+              onClick={() => setStep("form")}
+              className="text-sm hover:underline mt-2 block mx-auto transition-all"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Вернуться назад
+            </button>
+          </div>
         ) : tab === "register" && step === "otp" ? (
           <div className={`space-y-6 text-center transition-all duration-300 ${isShaking ? "animate-shake" : ""}`}>
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>Мы отправили код подтверждения на ваш email.</p>
@@ -328,7 +441,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <span style={{ color: "var(--text-secondary)" }}>Не получили код? </span>
               <button
                 type="button"
-                onClick={sendOtp}
+                onClick={() => setStep("captcha")}
                 disabled={isLoading}
                 className="font-bold hover:underline transition-all"
                 style={{ color: "var(--accent-primary)" }}

@@ -1,11 +1,21 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { orders, users, boosters } from '@/lib/schema';
-import { desc, eq } from 'drizzle-orm';
+import {
+  orders,
+  orderItems,
+  services,
+  users,
+  boosters,
+  promocodeUsage,
+} from '@/lib/schema';
+import { desc, eq, inArray } from 'drizzle-orm';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { validatePromocodeForUser } from '@/lib/promocodeValidation';
 
 export const dynamic = 'force-dynamic';
+
+const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export async function GET() {
   try {
@@ -36,5 +46,168 @@ export async function GET() {
   } catch (error) {
     console.error('[Admin Orders API Error]', error);
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
+  }
+}
+
+/**
+ * Manually create a PAID order on a customer's behalf — for off-site payments
+ * (user sent money directly). The total is computed entirely server-side from
+ * current DB prices; the client total is never trusted.
+ *
+ * Side effects mirror a normal paid order: promocode usage is recorded and the
+ * admin Telegram notification is sent. paymentId is marked 'MANUAL' so the
+ * order is never confused with an abandoned/auto-cancelled checkout by the
+ * cleanup job (which only touches cancelled orders with a null paymentId).
+ */
+export async function POST(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (session?.user?.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await req.json().catch(() => null);
+    const userId: string | undefined = body?.userId;
+    const rawItems: Array<{ serviceId: string; quantity: number }> = body?.items ?? [];
+    const rawPromocode: string | undefined = body?.promocode?.trim() || undefined;
+
+    if (!userId || typeof userId !== 'string') {
+      return NextResponse.json({ error: 'Не выбран клиент' }, { status: 400 });
+    }
+    if (!Array.isArray(rawItems) || rawItems.length === 0) {
+      return NextResponse.json({ error: 'Добавьте хотя бы одну услугу' }, { status: 400 });
+    }
+
+    // Validate the customer exists, and grab their contact details for notes.
+    const [user] = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        receiptEmail: users.receiptEmail,
+        telegramUsername: users.telegramUsername,
+        gameUsername: users.gameUsername,
+      })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+    if (!user) {
+      return NextResponse.json({ error: 'Клиент не найден' }, { status: 404 });
+    }
+
+    // Normalise + validate line items.
+    const qtyById = new Map<string, number>();
+    for (const it of rawItems) {
+      const qty = Math.floor(Number(it?.quantity));
+      if (!it?.serviceId || !Number.isFinite(qty) || qty < 1) {
+        return NextResponse.json({ error: 'Некорректная позиция заказа' }, { status: 400 });
+      }
+      qtyById.set(it.serviceId, (qtyById.get(it.serviceId) ?? 0) + qty);
+    }
+
+    // Fetch the chosen services (real services only — test services excluded).
+    const ids = [...qtyById.keys()];
+    const dbServices = await db
+      .select({
+        id: services.id,
+        title: services.title,
+        price: services.price,
+        isTestService: services.isTestService,
+      })
+      .from(services)
+      .where(inArray(services.id, ids));
+
+    if (dbServices.length !== ids.length || dbServices.some((s) => s.isTestService)) {
+      return NextResponse.json({ error: 'Одна из услуг не найдена' }, { status: 400 });
+    }
+
+    // Compute the subtotal from current DB prices.
+    let subtotal = 0;
+    const itemRows = dbServices.map((s) => {
+      const quantity = qtyById.get(s.id)!;
+      const unit = Number(s.price);
+      subtotal += unit * quantity;
+      return { service: s, quantity, unit };
+    });
+    subtotal = round2(subtotal);
+
+    // Apply a promocode if provided (validated against the chosen customer).
+    let discountPercent = 0;
+    let promocodeId: string | null = null;
+    let promocodeCode: string | null = null;
+    if (rawPromocode) {
+      const promo = await validatePromocodeForUser(rawPromocode, userId);
+      if (!promo.ok) {
+        return NextResponse.json({ error: promo.error }, { status: 400 });
+      }
+      discountPercent = promo.discountPercent;
+      promocodeId = promo.promocodeId;
+      promocodeCode = promo.code;
+    }
+
+    const total = round2(subtotal * (1 - discountPercent / 100));
+
+    const userNotes =
+      `Email: ${user.receiptEmail || user.email}\n` +
+      `Telegram: ${user.telegramUsername ?? '—'}\n` +
+      `In-Game Name: ${user.gameUsername ?? '—'}\n` +
+      `[Создано вручную администратором]` +
+      (promocodeCode ? `\nPromocode: ${promocodeCode}` : '');
+
+    // 1. Create the paid order.
+    const [created] = await db
+      .insert(orders)
+      .values({
+        userId,
+        status: 'paid',
+        paymentId: 'MANUAL',
+        totalPrice: total.toFixed(2),
+        userNotes,
+        promocode: promocodeCode,
+      })
+      .returning({ id: orders.id, createdAt: orders.createdAt });
+
+    // 2. Line items (priceAtPurchase = current unit price).
+    await db.insert(orderItems).values(
+      itemRows.map((r) => ({
+        orderId: created.id,
+        serviceId: r.service.id,
+        quantity: r.quantity,
+        priceAtPurchase: r.unit.toFixed(2),
+      }))
+    );
+
+    // 3. Record promocode usage (paid immediately).
+    if (promocodeId) {
+      try {
+        await db.insert(promocodeUsage).values({
+          promocodeId,
+          userId,
+          orderId: created.id,
+        });
+      } catch (e) {
+        console.error('[Manual Order] Failed to record promocode usage:', e);
+      }
+    }
+
+    // 4. Notify admin via Telegram (best effort — never fail the request).
+    try {
+      const { notifyAdminAboutOrder } = await import('@/lib/telegramClient');
+      const itemsDescription = itemRows
+        .map((r) => `- ${r.service.title} (x${r.quantity}) - ${r.unit.toFixed(2)} руб.`)
+        .join('\n');
+      await notifyAdminAboutOrder({
+        id: created.id,
+        totalAmount: total.toFixed(2),
+        itemsDescription,
+        userNotes,
+      });
+    } catch (tgError) {
+      console.error('[Manual Order] Telegram notification failed:', tgError);
+    }
+
+    return NextResponse.json({ ok: true, orderId: created.id, total });
+  } catch (error) {
+    console.error('[Manual Order Create Error]', error);
+    return NextResponse.json({ error: 'Не удалось создать заказ' }, { status: 500 });
   }
 }

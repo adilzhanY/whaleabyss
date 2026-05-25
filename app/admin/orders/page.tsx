@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import OrderStatusBadge, {
   ORDER_STATUSES,
   orderStatusLabel,
@@ -113,9 +113,18 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6" style={{ fontFamily: "Onest, sans-serif" }}>
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Заказы</h1>
-        <p className="text-sm text-slate-600 mt-1">Всего заказов: {orders.length}</p>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Заказы</h1>
+          <p className="text-sm text-slate-600 mt-1">Всего заказов: {orders.length}</p>
+        </div>
+        <Link
+          href="/admin/orders/new"
+          className="btn-primary inline-flex items-center gap-2 !py-2.5 !px-4 !rounded-full shrink-0"
+        >
+          <Plus className="w-4 h-4" />
+          Добавить вручную
+        </Link>
       </div>
 
       {/* Filters */}

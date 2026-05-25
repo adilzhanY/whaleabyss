@@ -6,7 +6,8 @@ import { eq } from "drizzle-orm";
 import OrderStatusBadge from "../../_components/OrderStatusBadge";
 import StatusChanger from "./StatusChanger";
 import RefundButton from "./RefundButton";
-import { ArrowLeft, Mail, MessageSquare, Hash, User } from "lucide-react";
+import CustomerNotesSection from "./CustomerNotesSection";
+import { ArrowLeft, Mail, Hash, User } from "lucide-react";
 import TelegramIcon from "@/components/TelegramIcon";
 
 export const dynamic = "force-dynamic";
@@ -128,15 +129,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
           </section>
 
           {order.userNotes && (
-            <section className="bg-white rounded-3xl border border-slate-200 p-6">
-              <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                <MessageSquare className="w-4 h-4" strokeWidth={2.25} />
-                Заметки покупателя
-              </h2>
-              <pre className="text-sm whitespace-pre-wrap font-sans text-slate-700 bg-slate-50 p-4 rounded-2xl">
-                {order.userNotes}
-              </pre>
-            </section>
+            <CustomerNotesSection orderId={order.id} notes={order.userNotes} />
           )}
         </div>
 

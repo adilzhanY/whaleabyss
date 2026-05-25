@@ -20,8 +20,8 @@
 
 - **36,000+** lines of TypeScript/TSX code
 - **80+** components and pages
-- **30+** API endpoints
-- **12** database tables with complex relationships
+- **35+** API endpoints
+- **13** database tables with complex relationships
 - **500+** active users capacity
 - **100%** type-safe with TypeScript
 - **Solo developed** from concept to production
@@ -41,6 +41,9 @@ Whale Abyss is a **full-stack e-commerce platform** built from scratch to handle
 - ✅ **Email System** - Automated transactional emails with Nodemailer
 - ✅ **Authentication System** - NextAuth.js with OTP verification and password reset
 - ✅ **Cloud Storage** - Yandex S3 integration for image uploads
+- ✅ **Bot-Resistant Signup** - Yandex SmartCaptcha gating OTP delivery (server-verified)
+- ✅ **Booster Operations** - Roster management + automatic commission payouts on order completion
+- ✅ **Privacy Compliance** - Opt-out cookie consent with consent-gated Yandex.Metrika analytics
 - ✅ **State Management** - Zustand with persistence and DB synchronization
 - ✅ **Responsive Design** - Mobile-first approach with Tailwind CSS
 - ✅ **Type Safety** - 100% TypeScript with strict mode enabled
@@ -75,6 +78,7 @@ Whale Abyss is a **full-stack e-commerce platform** built from scratch to handle
 
 #### **User Account Management**
 - User registration with email OTP verification
+- Yandex SmartCaptcha step before OTP is sent (server-side token verification)
 - Secure authentication with NextAuth.js
 - Password reset flow with token-based verification
 - Profile management (avatar upload, game username, Telegram)
@@ -93,6 +97,11 @@ Whale Abyss is a **full-stack e-commerce platform** built from scratch to handle
 - Event banners with custom backgrounds
 - Automatic event activation/deactivation
 
+#### **Privacy & Cookie Consent**
+- Opt-out cookie consent banner (bottom-left on desktop, modal on mobile/tablet)
+- Choice persisted per browser; analytics (Yandex.Metrika) gated on consent
+- Privacy policy discloses Yandex.Metrika + Webvisor and opt-out methods
+
 ### 🎛️ Admin Panel Features
 
 #### **Dashboard**
@@ -108,6 +117,8 @@ Whale Abyss is a **full-stack e-commerce platform** built from scratch to handle
 - Search and filter by status, date, user
 - Detailed order views with customer information
 - Order notes and internal comments
+- **Manual order creation** for off-site payments (server-computed totals, promocode validation)
+- **Booster assignment** per order with assign/re-assign flow (from the orders table and dashboard)
 
 #### **User Management**
 - User list with search and filters
@@ -116,6 +127,13 @@ Whale Abyss is a **full-stack e-commerce platform** built from scratch to handle
 - Review history per user
 - Statistics: total spent, order count, top 3 services
 - Role management (user/admin/booster)
+
+#### **Booster Management**
+- Admin-managed booster (качер) roster — no login required for boosters
+- Create / edit / activate / deactivate, with filter + search
+- Booster detail page: profile, assigned orders, completed count, and balance
+- Configurable commission percent (default 40%) and payout details (ИНН/реквизиты for самозанятые)
+- **Automatic commission payout**: completing an order credits the booster's share to their balance (idempotent, independent of revenue accounting)
 
 #### **Service Management**
 - CRUD operations for services
@@ -154,10 +172,11 @@ Whale Abyss is a **full-stack e-commerce platform** built from scratch to handle
 ### 🤖 Automation & Integrations
 
 #### **Telegram Bot**
-- Real-time order notifications to admin
+- Real-time order notifications to admin (including manually-created orders)
 - Inline keyboard for quick status updates
 - Order status changes directly from Telegram
 - Follow-up action buttons (complete/cancel)
+- Completing an order from Telegram also triggers the booster commission payout
 - Webhook mode for production
 - Polling mode for development
 
@@ -201,6 +220,8 @@ Whale Abyss is a **full-stack e-commerce platform** built from scratch to handle
 - **Telegraf** - Telegram bot framework
 - **Nodemailer** - Email sending
 - **AWS SDK** - Yandex S3 storage
+- **Yandex SmartCaptcha** - Bot protection on registration
+- **Yandex.Metrika** - Web analytics (consent-gated, Webvisor)
 - **bcrypt** - Password hashing
 
 ### **DevOps & Tools**
@@ -217,7 +238,7 @@ Whale Abyss is a **full-stack e-commerce platform** built from scratch to handle
 
 ```
 users (authentication, profiles, roles)
-  ├── orders (order management)
+  ├── orders (order management; booster_id, booster_earning)
   │   └── order_items (line items with services)
   ├── reviews (user feedback)
   ├── cart_items (persistent shopping cart)
@@ -227,13 +248,14 @@ services (product catalog)
   ├── categories (service grouping)
   └── event_services (promotional links)
 
+boosters (admin-managed roster; commission %, balance, payout details)
 events (time-limited promotions)
 promocodes (discount codes)
 otps (email verification)
 password_reset_tokens (password recovery)
 ```
 
-**12 tables** with foreign key relationships, cascading deletes, and proper indexing.
+**13 tables** with foreign key relationships, cascading deletes, and proper indexing.
 
 ### **API Architecture**
 
@@ -243,7 +265,7 @@ password_reset_tokens (password recovery)
 /api
 ├── auth/
 │   ├── register (POST)
-│   ├── send-otp (POST)
+│   ├── send-otp (POST - SmartCaptcha-gated)
 │   ├── forgot-password (POST)
 │   ├── reset-password (POST)
 │   └── [...nextauth] (NextAuth handlers)
@@ -267,7 +289,8 @@ password_reset_tokens (password recovery)
 ├── promocode/validate (POST)
 ├── telegram/webhook (POST)
 └── admin/
-    ├── orders/ (CRUD + refund)
+    ├── orders/ (CRUD + refund + manual create + validate-promocode)
+    ├── boosters/ (CRUD + detail with stats)
     ├── users/ (Read + detail)
     ├── services/ (CRUD + upload)
     ├── promocodes/ (CRUD)

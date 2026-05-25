@@ -51,9 +51,12 @@ Key points:
 - Connection: `./lib/db.ts`
 - ORM: Drizzle with node-postgres Pool
 - Migrations: Create `.mjs` scripts in root, run with `node script.mjs`, then delete
+- Record applied schema changes (the SQL) in `migrations.sql` for history
 - After schema changes: Always run `npm run build` to refresh TypeScript types
 - Use `IF NOT EXISTS` in migrations for idempotency
 - Strip quotes from `DATABASE_URL`: `.replace(/"/g, '')`
+- The remote DB connection can be flaky from the dev machine (transient `ECONNRESET`);
+  retry a failed migration or `npm run build` (build-time queries prerender pages like `/`)
 
 **Common query pattern:**
 ```typescript
@@ -128,6 +131,58 @@ const result = await db.select().from(services).where(eq(services.id, id));
 - Inline keyboard buttons allow admins to update order status directly from Telegram
 - Bot handles callback queries to update order status in DB
 
+**Boosters (качеры) & Commission Payouts:**
+- `boosters` table is a manually-managed roster — **no login/registration**. Admins
+  add/edit boosters at `/admin/boosters` (list with filter+search), `/admin/boosters/new`,
+  and `/admin/booster/[boosterId]` (detail + edit modal). The existing `booster` user role
+  is unrelated and unused by this registry.
+- Orders link to a booster via `orders.boosterId` (nullable FK). Assigned from the **"Бустер"**
+  column on `/admin/orders` and the dashboard recent-orders table, via the shared
+  `app/admin/_components/OrderBoosterCell.tsx`:
+  - unassigned + status `paid`/`in_progress` → "Назначить" button (opens `AssignBoosterModal`);
+    first assignment also flips the order to `in_progress`.
+  - already assigned → name links to the booster + "Сменить" pencil (re-assign **without**
+    changing status).
+  - status `cancelled`/`pending` → shows "—" (no assignment offered).
+- **40/60 split:** on completion, `lib/boosterPayout.ts` → `creditBoosterForCompletedOrder()`
+  credits `totalPrice * commissionPercent / 100` (default 40%) to `booster.balance`. The
+  amount is written to `orders.boosterEarning` which doubles as an **idempotency guard**
+  (credit happens exactly once). Called from both the admin order PATCH and the Telegram
+  completion callback. **Does not touch revenue** — the dashboard sums `orders.totalPrice`.
+- Assignment status logic lives in `PATCH /api/admin/orders/[id]` (accepts `status` and/or
+  `boosterId`); re-assignment leaves status untouched.
+
+**Manual Orders (off-site payments):**
+- `/admin/orders/new` ("Добавить вручную" button) lets an admin create a **paid** order for a
+  customer who paid directly. `POST /api/admin/orders` computes the total **server-side** from
+  current prices (never trusts the client), sets `paymentId='MANUAL'` (so cleanup never treats
+  it as abandoned), records promocode usage, and sends the Telegram admin notification. No
+  customer email is sent.
+- Promocodes are validated against the **chosen customer** via `lib/promocodeValidation.ts`
+  (`validatePromocodeForUser`), used by both the create route and the live-preview endpoint
+  `/api/admin/orders/validate-promocode`.
+
+**Registration Captcha (Yandex SmartCaptcha):**
+- Registration in `components/AuthModal.tsx` has a `captcha` step between the form and the OTP
+  step. The OTP is only sent after a successful solve; the token is verified **server-side** in
+  `/api/auth/send-otp` via `lib/smartcaptcha.ts` before any DB work or email.
+- Tokens are single-use, so "Отправить снова" routes back through the captcha. Degrades
+  gracefully (skips captcha) if the keys aren't configured.
+- Chosen for reliability in Russia (Cloudflare is throttled there). Free up to 250k checks/mo.
+
+**Cookie Consent & Analytics (Yandex.Metrika):**
+- Yandex.Metrika (counter `109309287`, **Webvisor enabled**) is a real `<script>` in the
+  `app/layout.tsx` `<head>` (so the tag is verifiable by Yandex and auto-sends its hit — use
+  the **standard** init params, do NOT add `ssr:true`/manual `referrer`/`url`).
+- **Opt-out model:** the head script loads Metrika for everyone **except** visitors who declined
+  (`localStorage['wa-cookie-consent'] === 'declined:1'`). `components/CookieConsent.tsx` renders
+  the consent banner (brand style; bottom-left on desktop, centered modal on mobile/tablet),
+  persists the choice (per-browser, versioned, shown once), and clears `_ym_*` cookies on
+  decline. The literal `declined:1` is duplicated in the layout guard — keep in sync if the
+  consent version changes.
+- Privacy policy (`/privacy`, dates in `lib/legal.ts`) discloses Metrika + Webvisor (§9) and
+  names Yandex as a recipient (§7).
+
 **Image Uploads:**
 - Yandex Cloud S3 via `@aws-sdk/client-s3`
 - Images stored in `whaleabyss-bucket`
@@ -139,8 +194,9 @@ const result = await db.select().from(services).where(eq(services.id, id));
 - `users` - User accounts with role-based access
 - `services` - Boosting services with `isTestService` flag
 - `categories` - Service categories
-- `orders` - Orders with status enum: `pending`, `paid`, `in_progress`, `completed`, `cancelled`, `refunded`
+- `orders` - Orders with status enum: `pending`, `paid`, `in_progress`, `completed`, `cancelled`, `refunded`. Also `boosterId` (assigned качер, nullable FK) and `boosterEarning` (commission credited on completion; NULL = not yet credited, used as idempotency guard)
 - `order_items` - Line items with `startDate`/`endDate` for subscription services
+- `boosters` - Admin-managed booster (качер) roster (no login). `commissionPercent` (default 40), `balance` (accrued unpaid earnings), `status` (active/inactive), `inn`/`payoutDetails` for самозанятый payouts
 - `cart_items` - Persisted cart for authenticated users
 - `promocodes` & `promocode_usage` - Discount code system
 - `reviews` - Service reviews with `isFake` flag for seeding
@@ -166,6 +222,8 @@ Required in `.env`:
 - `YANDEX_KEY_ID` & `YANDEX_SECRET_KEY` - S3 credentials
 - `NEXT_PUBLIC_SITE_URL` - Public site URL
 - `CRON_SECRET` - Bearer token for `/api/cron/cleanup-orders` (order lifecycle cleanup)
+- `NEXT_PUBLIC_YANDEX_SMARTCAPTCHA_CLIENT_KEY` - SmartCaptcha client/site key (browser widget)
+- `YANDEX_SMARTCAPTCHA_SERVER_KEY` - SmartCaptcha server/secret key (token verification)
 
 ## Testing & Development
 
@@ -209,5 +267,7 @@ TypeScript paths configured in `tsconfig.json`:
 
 - Prices are stored as strings in the database - always convert to numbers for calculations
 - The site uses Russian language for user-facing content
-- Admin panel is fully functional for managing services, orders, promocodes, reviews, and events
+- Admin panel is fully functional for managing services, orders, promocodes, reviews, events, and boosters
 - Fuzzy search was removed - search is now handled server-side without Fuse.js
+- Reusable form primitives: `components/Input.tsx`, `components/Textarea.tsx` (branded, rounded). Use the `components/TelegramIcon.tsx` brand glyph for any Telegram icon (tints via `currentColor`) — don't use the lucide `Send` icon for Telegram
+- Admin list pages (`/admin/users`, `/admin/boosters`) share a filter+search pattern: `CustomSelect` dropdowns + a debounced `Input` with a `Search` icon

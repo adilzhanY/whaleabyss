@@ -47,9 +47,24 @@ npm run bot:dev
 - **Production auto-deploys from `main`.** A GitHub pipeline builds and ships to
   the prod server (https://whaleabyss.ru) automatically on every push to `main` —
   there is no manual `git pull`/`npm run build`/restart step on prod.
-- **Implication: pushing to `main` ships to live customers.** Treat a push as a
-  production release. Don't push half-finished or unverified work to `main`;
-  confirm `npm run build` passes locally first.
+- **CI gate (`.github/workflows/deploy.yml`):** two jobs — `verify` then `deploy`
+  (`deploy` `needs: verify`). `verify` runs on GitHub's runners: `npx tsc --noEmit`
+  is the **hard gate** (blocks deploy on failure; needs no DB/secrets), and
+  `npm run lint` runs **non-blocking** (`continue-on-error`) because there are ~85
+  pre-existing lint errors. If `verify` fails, `deploy` is skipped and prod is untouched.
+  - The full `next build` is **NOT** run in CI — it does build-time DB queries a runner
+    can't reach. The build still runs on the VM in the `deploy` job (`git pull && npm
+    install && npm run build && pm2 restart`), so a build that only fails on the VM can
+    still leave prod half-broken (atomic deploy + rollback is a known TODO).
+  - `tsc --noEmit` passes on a cold checkout even though `next-env.d.ts` imports the
+    not-yet-generated `.next/types/routes.d.ts` (TypeScript tolerates it).
+- **Implication: pushing to `main` ships to live customers** once `verify` passes.
+  Treat a push as a production release. Don't push half-finished or unverified work to
+  `main`; confirm `npm run build` passes locally first.
+- **Dependencies:** do **NOT** run `npm audit fix --force` — it tries to *downgrade*
+  Next.js to 9.x and next-auth to 1.x (breaking). Bump versions explicitly instead.
+  Remaining `npm audit` moderates (next/postcss bundled, uuid via next-auth) have no
+  clean forward fix yet.
 - **Env vars are NOT in git** (`.env` is gitignored). New env vars (e.g.
   `TELEGRAM_WEBHOOK_SECRET`) must be added to the prod environment separately —
   pushing code that reads a new var does not provision it on prod.
@@ -90,6 +105,9 @@ const result = await db.select().from(services).where(eq(services.id, id));
   - `/api` - API routes (auth, admin, cart, checkout, payment webhooks, reviews, etc.)
   - `/admin` - Admin dashboard (protected by middleware)
   - `/service/[slug]` - Dynamic service detail pages
+  - `not-found.tsx` - Branded 404 page (sad Valle chibi, big brand-blue "404",
+    "back home" button, shared Header/Footer); App Router renders it for any
+    unmatched route.
   - Client components use `"use client"` directive
 - `/lib` - Shared utilities and core logic
   - `schema.ts` - Drizzle ORM schema definitions
@@ -97,6 +115,7 @@ const result = await db.select().from(services).where(eq(services.id, id));
   - `freekassa.ts` - Payment gateway integration
   - `telegramClient.ts` - Telegram bot setup and handlers
   - `email.ts` - Nodemailer email sending
+  - `rateLimit.ts` - In-memory auth rate limiter (see Auth Rate Limiting below)
   - `auth/` - NextAuth configuration
 - `/components` - Reusable React components
 - `/store` - Zustand stores (e.g., `useCart.ts`)
@@ -213,6 +232,46 @@ const result = await db.select().from(services).where(eq(services.id, id));
 - Yandex Cloud S3 via `@aws-sdk/client-s3`
 - Images stored in `whaleabyss-bucket`
 - Remote pattern configured in `next.config.ts`
+
+**Auth Rate Limiting (brute-force / email-bombing protection):**
+- `lib/rateLimit.ts` — in-memory sliding-window limiter. Exports `checkRateLimit`
+  (peek, no record), `recordRateLimitHit`, `resetRateLimit`, and `getClientIp`
+  (reads `X-Forwarded-For`/`X-Real-IP`; accepts a `Headers` object **or** the plain
+  header map NextAuth passes to `authorize`).
+- **Single-instance assumption:** state lives in the Node process heap, sized for the
+  current pm2 **fork-mode** (one process, one VM) deployment. It resets on every
+  deploy/restart and is per-process. **If the app is ever scaled to pm2 cluster mode
+  or multiple VMs, this MUST move to a shared store (Redis/Postgres)** — the API hides
+  the storage so only this file changes.
+- Applied at three entry points (limits per 15-min window):
+  - `send-otp`: 5/email + 20/IP, checked **after** the captcha so the budget only counts
+    real sends (not unsolved probes).
+  - `forgot-password`: 3/email + 15/IP.
+  - login (`authorize` in `[...nextauth]`): 8/(IP+account) + 30/IP, counting **only failed
+    attempts** and clearing them on success (a user who fumbles their password isn't locked out).
+    Throws the stable code `"RATE_LIMITED"`; `components/AuthModal.tsx` maps it to a distinct
+    Russian message while keeping the generic "Неверный email или пароль" for normal failures
+    (no account enumeration).
+- Per-email/account keys are the real protection (IPs are spoofable via `X-Forwarded-For`);
+  per-IP is defense-in-depth.
+
+**Security Headers & CSP (`next.config.ts`):**
+- `poweredByHeader: false`. Enforced headers on all routes: HSTS (`max-age=63072000`,
+  **no** `includeSubDomains`/`preload` — intentional, to avoid bricking a non-HTTPS subdomain),
+  `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy:
+  strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`.
+- **CSP is currently `Content-Security-Policy-Report-Only`** (production only) — it reports
+  violations to the browser console but does **not** block. To enforce, rename the header key to
+  `Content-Security-Policy` after confirming the console is clean on: homepage (Metrika),
+  registration captcha, checkout, and avatar upload.
+- **⚠️ When adding any new external script/origin, inline script, or third-party widget, you MUST
+  update `cspDirectives`** or it will be reported (and blocked once enforced). Currently whitelisted:
+  Metrika (`mc.yandex.ru`/`.com`), SmartCaptcha (`smartcaptcha.cloud.yandex.ru` + `*.yandex.ru`
+  frames), S3 images (`storage.yandexcloud.net`), `data:`/`blob:` (avatar/canvas). `script-src`
+  uses `'unsafe-inline'` because the Metrika tag + Next hydration are inline (no nonces yet —
+  nonce-based CSP is the documented next hardening step).
+- The standalone `public/banner.html` (loads GSAP/Tailwind/Google-Fonts **CDNs**) is **excluded**
+  from the CSP via a negative-lookahead source — don't remove that exclusion or the banner breaks.
 
 ### Database Schema Highlights
 

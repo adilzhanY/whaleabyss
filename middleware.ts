@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { getAuthSecret } from '@/lib/auth/secret';
 
 /**
  * Edge middleware — first line of defense for `/admin/*` and
@@ -14,7 +15,7 @@ export async function middleware(req: NextRequest) {
 
   const token = await getToken({
     req,
-    secret: process.env.NEXTAUTH_SECRET || 'default_development_secret_change_me',
+    secret: getAuthSecret(),
   });
 
   const isApi = pathname.startsWith('/api/admin');

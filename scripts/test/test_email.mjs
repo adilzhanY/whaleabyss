@@ -22,11 +22,16 @@ async function test() {
   });
 
   try {
+    const recipient = process.env.TEST_EMAIL_TO || process.env.EMAIL_FROM;
+    if (!recipient) {
+      console.error("Set TEST_EMAIL_TO (or EMAIL_FROM) to a recipient address.");
+      return;
+    }
     await transporter.sendMail({
       from: process.env.EMAIL_FROM,
-      to: "mayagurova1405@gmail.com",
-      subject: "Test",
-      text: "хай боссссссс, я админ так то ща, а не раб",
+      to: recipient,
+      subject: "SMTP test",
+      text: "This is a test email confirming the SMTP configuration works.",
     });
     console.log(
       "Success! Your Zoho email setup is working perfectly. Email was sent!",

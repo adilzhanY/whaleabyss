@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { AuthOptions } from "next-auth";
+import { getAuthSecret } from "@/lib/auth/secret";
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -84,7 +85,7 @@ export const authOptions: AuthOptions = {
       return session;
     }
   },
-  secret: process.env.NEXTAUTH_SECRET || "default_development_secret_change_me",
+  secret: getAuthSecret(),
 };
 
 const handler = NextAuth(authOptions);

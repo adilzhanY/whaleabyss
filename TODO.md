@@ -39,11 +39,16 @@ Operational/security hardening backlog (not new features). Ranked by impact.
 
 ## 🟠 Stability & reliability
 
-- [ ] **4. Add a CI safety gate before deploy.**
-  `deploy.yml` runs `git pull && npm install && npm run build && pm2 restart`
-  directly on the prod VM — no lint/typecheck/test gate, not atomic, no
-  rollback. Run lint + typecheck + build in CI first; only deploy on pass.
-  Consider building an artifact + atomic swap with rollback.
+- [x] **4. Add a CI safety gate before deploy.** _(done 2026-05-26)_
+  Split `deploy.yml` into `verify` + `deploy` jobs; deploy `needs: verify`.
+  `verify` runs `npx tsc --noEmit` (hard gate — clean, no DB/secrets needed;
+  confirmed it passes on a cold checkout despite the `.next/types` import) and
+  `npm run lint` (non-blocking via `continue-on-error`, given the 85 pre-existing
+  errors). Full `next build` deliberately stays on the VM — it does build-time DB
+  queries a CI runner can't reach. **Follow-ups (not done):** atomic deploy +
+  rollback (currently `git pull && build && pm2 restart` in place on the VM, so a
+  failed build can still leave prod half-broken); clean up the 85 lint errors so
+  lint can become a hard gate.
 
 - [ ] **5. Set up automated database backups.**
   No backups detected for orders/users/payment data. Add scheduled `pg_dump`

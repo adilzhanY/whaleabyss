@@ -5,7 +5,35 @@ on:
     branches: [ main ]
 
 jobs:
+  # Gate: runs on GitHub's runners before anything touches the prod VM.
+  # Typecheck is the hard gate (no DB or secrets needed). A full `next build`
+  # is intentionally NOT run here — it does build-time DB queries that a CI
+  # runner can't reach; the build still runs on the VM in the deploy job.
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck (blocks deploy on failure)
+        run: npx tsc --noEmit
+
+      - name: Lint (informational, non-blocking)
+        run: npm run lint
+        continue-on-error: true
+
   deploy:
+    # Only deploy if the gate passed.
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to Yandex Cloud VM

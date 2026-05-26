@@ -25,10 +25,17 @@ Operational/security hardening backlog (not new features). Ranked by impact.
   Note: assumes pm2 fork mode (single process); move to a shared store if scaled
   to cluster/multi-VM.
 
-- [ ] **3. Add security headers in `next.config.ts`.**
-  No `headers()` config and `poweredByHeader` still on (leaks Next.js).
-  Add HSTS, `X-Content-Type-Options`, `X-Frame-Options` / `frame-ancestors`
-  (clickjacking), `Referrer-Policy`, and a CSP. Disable `poweredByHeader`.
+- [x] **3. Add security headers in `next.config.ts`.** _(done 2026-05-26)_
+  Disabled `poweredByHeader`; enforced HSTS (max-age 2y, no includeSubDomains
+  yet), `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`,
+  `Referrer-Policy`, `Permissions-Policy` (camera/mic/geo off). CSP shipped in
+  **Report-Only** mode (allows Metrika, SmartCaptcha, S3; excludes the CDN-based
+  `/banner.html`) so live flows can be validated before enforcing. Verified all
+  headers emit correctly via a local prod server. **Follow-ups:** (a) flip CSP
+  Report-Only → enforce after confirming the console is clean on registration
+  captcha / checkout / avatar / Metrika; (b) consider nonce-based `script-src`
+  to drop `'unsafe-inline'`; (c) add HSTS `includeSubDomains`+preload once all
+  subdomains are HTTPS.
 
 ## 🟠 Stability & reliability
 

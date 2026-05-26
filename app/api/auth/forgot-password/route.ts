@@ -4,6 +4,14 @@ import { users, passwordResetTokens } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
+import { checkRateLimit, recordRateLimitHit, getClientIp } from '@/lib/rateLimit';
+
+// Throttle reset emails by source IP and target email to prevent inbox-bombing
+// and email-quota abuse. (The route already returns a uniform response to avoid
+// account enumeration.)
+const RESET_WINDOW_MS = 15 * 60_000;
+const RESET_PER_EMAIL = 3;
+const RESET_PER_IP = 15;
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,6 +20,21 @@ export async function POST(req: NextRequest) {
     if (!email || typeof email !== 'string') {
       return NextResponse.json({ error: 'Email обязателен' }, { status: 400 });
     }
+
+    const clientIp = getClientIp(req.headers);
+    const ipKey = `reset:ip:${clientIp}`;
+    const emailKey = `reset:email:${email.toLowerCase().trim()}`;
+    const ipCheck = checkRateLimit(ipKey, RESET_PER_IP, RESET_WINDOW_MS);
+    const emailCheck = checkRateLimit(emailKey, RESET_PER_EMAIL, RESET_WINDOW_MS);
+    if (!ipCheck.success || !emailCheck.success) {
+      const retryAfter = Math.max(ipCheck.retryAfterSec, emailCheck.retryAfterSec);
+      return NextResponse.json(
+        { error: 'Слишком много запросов. Попробуйте позже.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } },
+      );
+    }
+    recordRateLimitHit(ipKey, RESET_WINDOW_MS);
+    recordRateLimitHit(emailKey, RESET_WINDOW_MS);
 
     // Check if user exists
     const [user] = await db

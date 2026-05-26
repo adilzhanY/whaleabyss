@@ -277,7 +277,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           redirect: false,
         });
         if (res?.error) {
-          throw new Error("Неверный email или пароль");
+          throw new Error(
+            res.error.includes("RATE_LIMITED")
+              ? "Слишком много попыток входа. Попробуйте позже."
+              : "Неверный email или пароль",
+          );
         }
         // Wait until the session cookie is actually committed & readable
         // server-side before letting the user navigate — otherwise the first

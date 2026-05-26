@@ -16,10 +16,14 @@ Operational/security hardening backlog (not new features). Ranked by impact.
   Note: `nodemailer` 7.0.13 still has a real moderate SMTP-injection advisory
   fixable via a major bump — deferred (needs `lib/email.ts` retest).
 
-- [ ] **2. Add rate limiting / brute-force protection on auth routes.**
-  `send-otp`, `forgot-password`, and `[...nextauth]` currently have none.
-  Risks: OTP/email bombing (abuses SMTP quota + cost), login brute-forcing.
-  Add per-IP + per-email throttling (in-memory or Postgres-backed, no new infra).
+- [x] **2. Add rate limiting / brute-force protection on auth routes.** _(done 2026-05-26)_
+  New `lib/rateLimit.ts` (in-memory sliding window, single-instance pm2 fork).
+  Applied per-IP + per-email: `send-otp` (5/email, 20/IP per 15min, after captcha),
+  `forgot-password` (3/email, 15/IP), and login `authorize` (8/account, 30/IP,
+  counts failures only + clears on success). Login form shows a distinct
+  "too many attempts" message. Typecheck + build green.
+  Note: assumes pm2 fork mode (single process); move to a shared store if scaled
+  to cluster/multi-VM.
 
 - [ ] **3. Add security headers in `next.config.ts`.**
   No `headers()` config and `poweredByHeader` still on (leaks Next.js).

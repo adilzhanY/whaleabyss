@@ -4,6 +4,14 @@ import { db } from "@/lib/db";
 import { otps, users } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { verifySmartCaptcha } from "@/lib/smartcaptcha";
+import { checkRateLimit, recordRateLimitHit, getClientIp } from "@/lib/rateLimit";
+
+// Email sends are the expensive, abusable resource here, so limit by both the
+// source IP and the target email. Checked AFTER the captcha so the budget only
+// counts real (human-solved) send attempts, not unsolved probes.
+const OTP_WINDOW_MS = 15 * 60_000;
+const OTP_PER_EMAIL = 5;
+const OTP_PER_IP = 20;
 
 export async function POST(req: Request) {
   try {
@@ -15,12 +23,26 @@ export async function POST(req: Request) {
 
     // Gate the OTP send behind the captcha — verify before touching the DB or
     // sending any email, so bots can't probe or spam through this endpoint.
-    const xff = req.headers.get("x-forwarded-for") || "";
-    const clientIp = xff.split(",")[0].trim() || req.headers.get("x-real-ip") || undefined;
-    const captchaOk = await verifySmartCaptcha(captchaToken, clientIp);
+    const clientIp = getClientIp(req.headers);
+    const captchaOk = await verifySmartCaptcha(captchaToken, clientIp === "unknown" ? undefined : clientIp);
     if (!captchaOk) {
       return NextResponse.json({ error: "Проверка капчи не пройдена. Попробуйте ещё раз." }, { status: 400 });
     }
+
+    // Throttle actual sends per IP and per target email.
+    const ipKey = `otp:ip:${clientIp}`;
+    const emailKey = `otp:email:${String(email).toLowerCase().trim()}`;
+    const ipCheck = checkRateLimit(ipKey, OTP_PER_IP, OTP_WINDOW_MS);
+    const emailCheck = checkRateLimit(emailKey, OTP_PER_EMAIL, OTP_WINDOW_MS);
+    if (!ipCheck.success || !emailCheck.success) {
+      const retryAfter = Math.max(ipCheck.retryAfterSec, emailCheck.retryAfterSec);
+      return NextResponse.json(
+        { error: "Слишком много запросов на отправку кода. Попробуйте позже." },
+        { status: 429, headers: { "Retry-After": String(retryAfter) } },
+      );
+    }
+    recordRateLimitHit(ipKey, OTP_WINDOW_MS);
+    recordRateLimitHit(emailKey, OTP_WINDOW_MS);
 
     // Check if user already exists
     const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);

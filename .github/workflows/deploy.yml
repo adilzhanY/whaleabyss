@@ -43,8 +43,15 @@ jobs:
           username: qantr
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            # Fail loudly: any failed step aborts the deploy (instead of silently
+            # continuing to `pm2 restart` and reporting success on stale code).
+            set -euo pipefail
             cd /var/www/whaleabyss
-            git pull origin main
+            # Force the VM to exactly match origin/main. A plain `git pull` is
+            # blocked by any stray local edit on the VM (this once froze prod 3
+            # commits back); reset --hard is immune to that.
+            git fetch origin main
+            git reset --hard origin/main
             npm install
             npm run build
             pm2 restart whaleabyss

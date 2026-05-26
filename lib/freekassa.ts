@@ -72,6 +72,9 @@ function getEnv(): {
 export const FREEKASSA_METHODS = {
   /** СБП — Система быстрых платежей */
   SBP: 44,
+  /** Банковские карты РФ (Card RUB API). Currently only offered in the admin
+   *  testing flow; the public checkout still uses SBP only. */
+  CARD_RUB: 36,
 } as const;
 
 export type FreekassaMethodId =

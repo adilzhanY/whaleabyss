@@ -68,6 +68,10 @@ export const orders = pgTable('orders', {
   status: orderStatusEnum('status').default('pending'),
   totalPrice: decimal('total_price', { precision: 10, scale: 2 }).notNull(),
   paymentId: varchar('payment_id', { length: 255 }),
+  // Acquiring channel chosen at checkout: 'sbp' | 'card' (nullable for legacy rows).
+  paymentMethod: varchar('payment_method', { length: 20 }),
+  // True for orders created via the admin testing flow (new SBP/card payment test).
+  isTestPayment: boolean('is_test_payment').default(false),
   userNotes: text('user_notes'),
   promocode: varchar('promocode', { length: 10 }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),

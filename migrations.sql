@@ -49,3 +49,8 @@ UPDATE boosters bo
 SET balance = bo.balance + s.total, updated_at = now()
 FROM sums s
 WHERE bo.id = s.booster_id;
+
+-- 2026-05-26: Record payment method + flag test-flow orders (admin testing of
+-- the new SBP/card FreeKassa flow). Additive, nullable — safe/backward-compatible.
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method varchar(20);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_test_payment boolean DEFAULT false;

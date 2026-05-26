@@ -18,10 +18,19 @@ interface Order {
   totalPrice: string;
   createdAt: string;
   paymentId: string | null;
+  paymentMethod: string | null;
+  isTestPayment: boolean | null;
   username: string | null;
   email: string | null;
   boosterId: string | null;
   boosterFirstName: string | null;
+}
+
+/** Human label for the acquiring channel recorded on the order. */
+function paymentMethodLabel(method: string | null): string | null {
+  if (method === "sbp") return "СБП";
+  if (method === "card") return "Карта РФ";
+  return null;
 }
 
 const ORDERS_PER_PAGE = 10;
@@ -243,6 +252,18 @@ export default function AdminOrdersPage() {
                         >
                           {o.id.slice(0, 8)}...
                         </Link>
+                        <div className="mt-1 flex flex-wrap items-center gap-1">
+                          {o.isTestPayment && (
+                            <span className="inline-flex items-center rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide font-sans">
+                              Тест
+                            </span>
+                          )}
+                          {paymentMethodLabel(o.paymentMethod) && (
+                            <span className="inline-flex items-center rounded-full bg-slate-100 text-slate-600 px-2 py-0.5 text-[10px] font-semibold font-sans">
+                              {paymentMethodLabel(o.paymentMethod)}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3 font-mono text-xs text-slate-500">
                         {o.userId ? `${o.userId.slice(0, 8)}...` : "—"}

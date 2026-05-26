@@ -32,6 +32,8 @@ export async function GET() {
         totalPrice: orders.totalPrice,
         createdAt: orders.createdAt,
         paymentId: orders.paymentId,
+        paymentMethod: orders.paymentMethod,
+        isTestPayment: orders.isTestPayment,
         username: users.username,
         email: users.email,
         boosterId: orders.boosterId,

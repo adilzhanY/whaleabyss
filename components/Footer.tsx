@@ -149,6 +149,21 @@ export default function Footer() {
         </div>
       </div>
 
+      {/* Bug report */}
+      <div className="mx-auto flex max-w-300 mt-4 text-xs text-slate-500">
+        <span>
+          Нашли ошибку? Сообщите нам:{" "}
+          <a
+            href="https://t.me/whaleabyss_official"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-[#0B5191] hover:underline whitespace-nowrap"
+          >
+            @whaleabyss_official
+          </a>
+        </span>
+      </div>
+
       {/* Payment methods (neutral, no aggregator branding) */}
       <div className="mx-auto flex justify-center sm:justify-start max-w-300 mt-6">
         <div className="flex items-center gap-2 text-xs text-slate-500">

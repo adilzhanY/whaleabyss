@@ -3,6 +3,8 @@ import HomeClient from "@/app/HomeClient";
 import { Suspense } from "react";
 import { generateMetadata as genMeta, generateLocalBusinessSchema, StructuredData } from "@/lib/seo";
 
+export const revalidate = 0;
+
 export const metadata = genMeta({
   title: "Whale Abyss — Профессиональная прокачка аккаунтов Genshin Impact",
   description: "Безопасная и качественная прокачка аккаунтов Genshin Impact. Прохождение Спиральной Бездны, фарм ресурсов, выполнение квестов. Опытные бустеры, доступные цены, гарантия безопасности.",

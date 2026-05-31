@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { orders, orderItems, services, users } from "@/lib/schema";
+import { orders, orderItems, services, users, boosters } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import OrderStatusBadge from "../../_components/OrderStatusBadge";
+import OrderBoosterCell from "../../_components/OrderBoosterCell";
 import StatusChanger from "./StatusChanger";
 import RefundButton from "./RefundButton";
 import DeleteOrderButton from "./DeleteOrderButton";
@@ -35,9 +36,12 @@ export default async function OrderDetailPage({ params }: PageProps) {
       telegramUsername: users.telegramUsername,
       gameUsername: users.gameUsername,
       receiptEmail: users.receiptEmail,
+      boosterId: orders.boosterId,
+      boosterFirstName: boosters.firstName,
     })
     .from(orders)
     .leftJoin(users, eq(orders.userId, users.id))
+    .leftJoin(boosters, eq(orders.boosterId, boosters.id))
     .where(eq(orders.id, id))
     .limit(1);
 
@@ -151,6 +155,16 @@ export default async function OrderDetailPage({ params }: PageProps) {
             <StatusChanger
               orderId={order.id}
               initialStatus={order.status ?? "pending"}
+            />
+          </section>
+
+          <section className="bg-white rounded-3xl border border-slate-200 p-6">
+            <h2 className="text-lg font-semibold mb-4">Бустер</h2>
+            <OrderBoosterCell
+              orderId={order.id}
+              status={order.status ?? "pending"}
+              boosterId={order.boosterId}
+              boosterFirstName={order.boosterFirstName}
             />
           </section>
 

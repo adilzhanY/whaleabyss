@@ -49,6 +49,8 @@ export default async function OrderDetailPage({ params }: PageProps) {
       id: orderItems.id,
       quantity: orderItems.quantity,
       priceAtPurchase: orderItems.priceAtPurchase,
+      startDate: orderItems.startDate,
+      endDate: orderItems.endDate,
       serviceTitle: services.title,
       serviceSlug: services.slug,
     })
@@ -111,6 +113,14 @@ export default async function OrderDetailPage({ params }: PageProps) {
                       {it.quantity} ×{" "}
                       {Number(it.priceAtPurchase).toLocaleString("ru-RU")} ₽
                     </div>
+                    {it.startDate && it.endDate && (
+                      <div className="text-xs text-slate-500 mt-0.5">
+                        Период:{" "}
+                        {new Date(it.startDate).toLocaleDateString("ru-RU")}
+                        {" — "}
+                        {new Date(it.endDate).toLocaleDateString("ru-RU")}
+                      </div>
+                    )}
                   </div>
                   <div className="text-sm font-semibold whitespace-nowrap">
                     {(

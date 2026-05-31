@@ -45,7 +45,41 @@ export async function GET() {
       .leftJoin(boosters, eq(orders.boosterId, boosters.id))
       .orderBy(desc(orders.createdAt));
 
-    return NextResponse.json({ orders: ordersData });
+    // Attach line items (compact: title + qty/period) for the Позиции column.
+    const orderIds = ordersData.map((o) => o.id);
+    const itemRows = orderIds.length
+      ? await db
+          .select({
+            orderId: orderItems.orderId,
+            title: services.title,
+            quantity: orderItems.quantity,
+            startDate: orderItems.startDate,
+            endDate: orderItems.endDate,
+          })
+          .from(orderItems)
+          .leftJoin(services, eq(orderItems.serviceId, services.id))
+          .where(inArray(orderItems.orderId, orderIds))
+      : [];
+
+    const itemsByOrder = new Map<string, typeof itemRows>();
+    for (const it of itemRows) {
+      if (!it.orderId) continue;
+      const arr = itemsByOrder.get(it.orderId) ?? [];
+      arr.push(it);
+      itemsByOrder.set(it.orderId, arr);
+    }
+
+    const ordersWithItems = ordersData.map((o) => ({
+      ...o,
+      items: (itemsByOrder.get(o.id) ?? []).map((it) => ({
+        title: it.title,
+        quantity: it.quantity,
+        startDate: it.startDate,
+        endDate: it.endDate,
+      })),
+    }));
+
+    return NextResponse.json({ orders: ordersWithItems });
   } catch (error) {
     console.error('[Admin Orders API Error]', error);
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });

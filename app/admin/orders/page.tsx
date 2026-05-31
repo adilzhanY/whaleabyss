@@ -2,15 +2,19 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Search, Plus } from "lucide-react";
-import OrderStatusBadge, {
+import { Search, Plus, ExternalLink } from "lucide-react";
+import {
   ORDER_STATUSES,
   orderStatusLabel,
 } from "../_components/OrderStatusBadge";
+import OrderStatusCell from "../_components/OrderStatusCell";
 import CustomSelect from "@/components/CustomSelect";
 import Input from "@/components/Input";
 import OrderBoosterCell from "../_components/OrderBoosterCell";
 import CopyableTelegram from "../_components/CopyableTelegram";
+import OrderItemsCell, {
+  type OrderItemSummary,
+} from "../_components/OrderItemsCell";
 
 interface Order {
   id: string;
@@ -26,6 +30,7 @@ interface Order {
   telegramUsername: string | null;
   boosterId: string | null;
   boosterFirstName: string | null;
+  items: OrderItemSummary[];
 }
 
 /** Human label for the acquiring channel recorded on the order. */
@@ -230,7 +235,7 @@ export default function AdminOrdersPage() {
                 <tr className="text-slate-500 text-xs uppercase tracking-wider bg-slate-50">
                   <th className="text-left font-medium px-4 py-3 w-12">№</th>
                   <th className="text-left font-medium px-4 py-3">ID заказа</th>
-                  <th className="text-left font-medium px-4 py-3">ID клиента</th>
+                  <th className="text-left font-medium px-4 py-3">Позиции</th>
                   <th className="text-left font-medium px-4 py-3">Клиент</th>
                   <th className="text-left font-medium px-4 py-3">Бустер</th>
                   <th className="text-left font-medium px-4 py-3">Статус</th>
@@ -267,12 +272,23 @@ export default function AdminOrdersPage() {
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3 font-mono text-xs text-slate-500">
-                        {o.userId ? `${o.userId.slice(0, 8)}...` : "—"}
+                      <td className="px-4 py-3 align-top">
+                        <OrderItemsCell items={o.items} />
                       </td>
                       <td className="px-4 py-3">
-                        <div className="font-medium">
-                          {o.username ?? "— guest —"}
+                        <div className="font-medium flex items-center gap-1.5">
+                          <span className="truncate">
+                            {o.username ?? "— guest —"}
+                          </span>
+                          {o.userId && (
+                            <Link
+                              href={`/admin/users/${o.userId}`}
+                              title="Открыть профиль клиента"
+                              className="text-slate-400 hover:text-indigo-600 transition-colors shrink-0"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </Link>
+                          )}
                         </div>
                         <CopyableTelegram username={o.telegramUsername} />
                       </td>
@@ -299,7 +315,19 @@ export default function AdminOrdersPage() {
                         />
                       </td>
                       <td className="px-4 py-3">
-                        <OrderStatusBadge status={o.status ?? "pending"} />
+                        <OrderStatusCell
+                          orderId={o.id}
+                          status={o.status ?? "pending"}
+                          onResult={(newStatus) =>
+                            setOrders((prev) =>
+                              prev.map((x) =>
+                                x.id === o.id
+                                  ? { ...x, status: newStatus }
+                                  : x
+                              )
+                            )
+                          }
+                        />
                       </td>
                       <td className="px-4 py-3 text-right font-medium">
                         {Number(o.totalPrice).toLocaleString("ru-RU")} ₽

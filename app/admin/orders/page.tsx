@@ -10,6 +10,7 @@ import OrderStatusBadge, {
 import CustomSelect from "@/components/CustomSelect";
 import Input from "@/components/Input";
 import OrderBoosterCell from "../_components/OrderBoosterCell";
+import CopyableTelegram from "../_components/CopyableTelegram";
 
 interface Order {
   id: string;
@@ -22,6 +23,7 @@ interface Order {
   isTestPayment: boolean | null;
   username: string | null;
   email: string | null;
+  telegramUsername: string | null;
   boosterId: string | null;
   boosterFirstName: string | null;
 }
@@ -272,9 +274,7 @@ export default function AdminOrdersPage() {
                         <div className="font-medium">
                           {o.username ?? "— guest —"}
                         </div>
-                        <div className="text-xs text-slate-500">
-                          {o.email ?? ""}
-                        </div>
+                        <CopyableTelegram username={o.telegramUsername} />
                       </td>
                       <td className="px-4 py-3">
                         <OrderBoosterCell

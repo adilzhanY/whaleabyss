@@ -36,6 +36,7 @@ export async function GET() {
         isTestPayment: orders.isTestPayment,
         username: users.username,
         email: users.email,
+        telegramUsername: users.telegramUsername,
         boosterId: orders.boosterId,
         boosterFirstName: boosters.firstName,
       })

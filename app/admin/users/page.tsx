@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Search } from "lucide-react";
 import CustomSelect from "@/components/CustomSelect";
 import Input from "@/components/Input";
+import DataTable, { type Column } from "../_components/DataTable";
 
 interface User {
   id: string;
@@ -37,6 +38,10 @@ export default function AdminUsersPage() {
     }, 500);
     return () => clearTimeout(timer);
   }, [searchQuery]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [sortBy, roleFilter, debouncedSearch]);
 
   const fetchUsers = async () => {
     try {
@@ -81,13 +86,6 @@ export default function AdminUsersPage() {
     return result;
   }, [users, sortBy, roleFilter, debouncedSearch]);
 
-  const paginatedUsers = useMemo(() => {
-    const start = (page - 1) * USERS_PER_PAGE;
-    return filteredUsers.slice(start, start + USERS_PER_PAGE);
-  }, [filteredUsers, page]);
-
-  const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
-
   const getRoleBadge = (role: string) => {
     const styles = {
       user: "bg-blue-100 text-blue-700 border-blue-200",
@@ -110,6 +108,67 @@ export default function AdminUsersPage() {
       </span>
     );
   };
+
+  const columns: Column<User>[] = [
+    {
+      key: "index",
+      header: "№",
+      width: "w-12",
+      hideOnMobile: true,
+      render: (_u, index) => <span className="text-slate-600">{index + 1}</span>,
+    },
+    {
+      key: "id",
+      header: "ID",
+      width: "w-32",
+      render: (u) => (
+        <span className="text-xs text-slate-500 font-mono">
+          {u.id.slice(0, 8)}...
+        </span>
+      ),
+    },
+    {
+      key: "username",
+      header: "Имя пользователя",
+      render: (u) => (
+        <span className="text-slate-700 font-medium">{u.username}</span>
+      ),
+    },
+    {
+      key: "email",
+      header: "Email",
+      render: (u) => <span className="text-slate-600 break-all">{u.email}</span>,
+    },
+    {
+      key: "telegram",
+      header: "Telegram",
+      render: (u) => (
+        <span className="text-slate-600">{u.telegramUsername || "—"}</span>
+      ),
+    },
+    {
+      key: "createdAt",
+      header: "Дата регистрации",
+      width: "w-32",
+      render: (u) => (
+        <span className="text-xs text-slate-500">
+          {new Date(u.createdAt).toLocaleString("ru-RU", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </span>
+      ),
+    },
+    {
+      key: "role",
+      header: "Роль",
+      width: "w-32",
+      render: (u) => getRoleBadge(u.role),
+    },
+  ];
 
   return (
     <div className="p-6" style={{ fontFamily: "Onest, sans-serif" }}>
@@ -169,99 +228,19 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Users Table */}
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      ) : filteredUsers.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
-          <p className="text-slate-500">Пользователи не найдены</p>
-        </div>
-      ) : (
-        <>
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden mb-6">
-            <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-200">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 w-12">№</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 w-32">ID</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Имя пользователя</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Email</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Telegram</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 w-32">Дата регистрации</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 w-32">Роль</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedUsers.map((user, index) => {
-                  const globalIndex = (page - 1) * USERS_PER_PAGE + index + 1;
-
-                  return (
-                    <tr
-                      key={user.id}
-                      className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer"
-                      onClick={() => window.location.href = `/admin/users/${user.id}`}
-                    >
-                      <td className="px-4 py-3 text-sm text-slate-600">{globalIndex}</td>
-                      <td className="px-4 py-3 text-xs text-slate-500 font-mono">
-                        {user.id.slice(0, 8)}...
-                      </td>
-                      <td className="px-4 py-3 text-sm text-slate-700 font-medium">
-                        {user.username}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-slate-600">
-                        {user.email}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-slate-600">
-                        {user.telegramUsername || "—"}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-slate-500">
-                        {new Date(user.createdAt).toLocaleString("ru-RU", {
-                          year: "numeric",
-                          month: "2-digit",
-                          day: "2-digit",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </td>
-                      <td className="px-4 py-3">
-                        {getRoleBadge(user.role)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">
-                Страница {page} из {totalPages}
-              </span>
-              <div className="flex gap-2">
-                {page > 1 && (
-                  <button
-                    onClick={() => setPage((p) => p - 1)}
-                    className="px-4 py-2 bg-slate-200 text-slate-700 rounded-full font-semibold hover:bg-slate-300 transition-colors"
-                  >
-                    Назад
-                  </button>
-                )}
-                {page < totalPages && (
-                  <button
-                    onClick={() => setPage((p) => p + 1)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors"
-                  >
-                    Следующая
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-        </>
-      )}
+      <DataTable
+        columns={columns}
+        data={filteredUsers}
+        getRowKey={(u) => u.id}
+        loading={loading}
+        emptyMessage="Пользователи не найдены"
+        onRowClick={(u) => {
+          window.location.href = `/admin/users/${u.id}`;
+        }}
+        page={page}
+        pageSize={USERS_PER_PAGE}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from "react";
 import { Trash2, Search, Star } from "lucide-react";
 import CustomSelect from "@/components/CustomSelect";
 import Input from "@/components/Input";
+import DataTable, { type Column } from "../_components/DataTable";
+import ReviewStatusCell from "../_components/ReviewStatusCell";
 
 interface Review {
   id: string;
@@ -53,6 +55,10 @@ export default function AdminReviewsPage() {
     }, 500);
     return () => clearTimeout(timer);
   }, [searchQuery]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [sortBy, startDate, endDate, ratingFilter, statusFilter, debouncedSearch]);
 
   const fetchReviews = async () => {
     try {
@@ -158,13 +164,6 @@ export default function AdminReviewsPage() {
     return result;
   }, [reviews, sortBy, startDate, endDate, ratingFilter, statusFilter, debouncedSearch]);
 
-  const paginatedReviews = useMemo(() => {
-    const start = (page - 1) * REVIEWS_PER_PAGE;
-    return filteredReviews.slice(start, start + REVIEWS_PER_PAGE);
-  }, [filteredReviews, page]);
-
-  const totalPages = Math.ceil(filteredReviews.length / REVIEWS_PER_PAGE);
-
   const stats: Stats = useMemo(() => {
     const counts: Stats = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     reviews.forEach((r) => {
@@ -184,57 +183,122 @@ export default function AdminReviewsPage() {
     return sum / reviews.length;
   }, [reviews]);
 
-  const getStatusBadge = (status: string, reviewId: string) => {
-    const styles = {
-      pending: "bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-200",
-      approved: "bg-green-100 text-green-700 border-green-200 hover:bg-green-200",
-      rejected: "bg-red-100 text-red-700 border-red-200 hover:bg-red-200",
-    };
-    const labels = {
-      pending: "На модерации",
-      approved: "Одобрен",
-      rejected: "Отклонён",
-    };
-
-    return (
-      <div className="relative group">
+  const columns: Column<Review>[] = [
+    {
+      key: "index",
+      header: "№",
+      width: "w-10",
+      hideOnMobile: true,
+      render: (_r, index) => <span className="text-slate-600">{index + 1}</span>,
+    },
+    {
+      key: "reviewId",
+      header: "ID отзыва",
+      width: "w-24",
+      render: (r) => (
+        <span className="text-xs text-slate-500 font-mono">
+          {r.id.slice(0, 8)}...
+        </span>
+      ),
+    },
+    {
+      key: "userId",
+      header: "ID юзера",
+      width: "w-24",
+      render: (r) => (
+        <span className="text-xs text-slate-500 font-mono">
+          {r.userId ? `${r.userId.slice(0, 8)}...` : "—"}
+        </span>
+      ),
+    },
+    {
+      key: "userName",
+      header: "Имя",
+      width: "w-28",
+      render: (r) => (
+        <span className="text-xs text-slate-700">{r.userName || "Аноним"}</span>
+      ),
+    },
+    {
+      key: "rating",
+      header: "Рейтинг",
+      width: "w-16",
+      render: (r) => (
+        <span className="text-sm font-semibold text-slate-700 whitespace-nowrap">
+          {parseFloat(r.rating).toFixed(1)}★
+        </span>
+      ),
+    },
+    {
+      key: "description",
+      header: "Описание",
+      mobileFullWidth: true,
+      mobileLabel: "Описание",
+      render: (r) => {
+        const isExpanded = expandedId === r.id;
+        return (
+          <div
+            onClick={() => setExpandedId(isExpanded ? null : r.id)}
+            className="cursor-pointer"
+          >
+            <p
+              className={`text-sm text-slate-700 transition-all duration-300 ${
+                isExpanded ? "" : "line-clamp-2"
+              }`}
+            >
+              {r.description}
+            </p>
+          </div>
+        );
+      },
+    },
+    {
+      key: "status",
+      header: "Статус",
+      width: "w-28",
+      render: (r) => (
+        <ReviewStatusCell
+          status={r.status}
+          onChange={(newStatus) => handleStatusChange(r.id, newStatus)}
+        />
+      ),
+    },
+    {
+      key: "date",
+      header: "Дата",
+      width: "w-32",
+      render: (r) => (
+        <span className="text-xs text-slate-500 whitespace-nowrap">
+          {new Date(r.createdAt).toLocaleString("ru-RU", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      header: "",
+      align: "center",
+      width: "w-12",
+      mobileLabel: "Действия",
+      render: (r) => (
         <button
-          className={`px-2 py-1 rounded-full text-xs font-semibold border transition-colors ${styles[status as keyof typeof styles]}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            setDeleteId(r.id);
+          }}
+          className="p-1.5 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+          title="Удалить отзыв"
         >
-          {labels[status as keyof typeof labels]}
+          <Trash2 className="h-4 w-4" />
         </button>
-        <div className="absolute top-full left-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 whitespace-nowrap">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleStatusChange(reviewId, "approved");
-            }}
-            className="block w-full px-3 py-1.5 text-left text-xs hover:bg-green-50 text-green-700"
-          >
-            Одобрить
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleStatusChange(reviewId, "pending");
-            }}
-            className="block w-full px-3 py-1.5 text-left text-xs hover:bg-yellow-50 text-yellow-700"
-          >
-            На модерацию
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleStatusChange(reviewId, "rejected");
-            }}
-            className="block w-full px-3 py-1.5 text-left text-xs hover:bg-red-50 text-red-700"
-          >
-            Отклонить
-          </button>
-        </div>
-      </div>
-    );
-  };
+      ),
+    },
+  ];
 
   return (
     <div className="p-6" style={{ fontFamily: "Onest, sans-serif" }}>
@@ -432,114 +496,16 @@ export default function AdminReviewsPage() {
       </div>
 
       {/* Reviews Table */}
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      ) : filteredReviews.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
-          <p className="text-slate-500">Отзывы не найдены</p>
-        </div>
-      ) : (
-        <>
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden mb-6">
-            <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-200">
-                <tr>
-                  <th className="px-2 py-3 text-left text-xs font-semibold text-slate-600 w-10">№</th>
-                  <th className="px-2 py-3 text-left text-xs font-semibold text-slate-600 w-24">ID отзыва</th>
-                  <th className="px-2 py-3 text-left text-xs font-semibold text-slate-600 w-24">ID юзера</th>
-                  <th className="px-2 py-3 text-left text-xs font-semibold text-slate-600 w-28">Имя</th>
-                  <th className="px-2 py-3 text-left text-xs font-semibold text-slate-600 w-16">Рейтинг</th>
-                  <th className="px-2 py-3 text-left text-xs font-semibold text-slate-600">Описание</th>
-                  <th className="px-2 py-3 text-left text-xs font-semibold text-slate-600 w-28">Статус</th>
-                  <th className="px-2 py-3 text-left text-xs font-semibold text-slate-600 w-32">Дата</th>
-                  <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 w-12"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedReviews.map((review, index) => {
-                  const rating = parseFloat(review.rating);
-                  const globalIndex = (page - 1) * REVIEWS_PER_PAGE + index + 1;
-                  const isExpanded = expandedId === review.id;
-
-                  return (
-                    <tr key={review.id} className="border-b border-slate-100 hover:bg-slate-50">
-                      <td className="px-2 py-3 text-sm text-slate-600">{globalIndex}</td>
-                      <td className="px-2 py-3 text-xs text-slate-500 font-mono">{review.id.slice(0, 8)}...</td>
-                      <td className="px-2 py-3 text-xs text-slate-500 font-mono">
-                        {review.userId ? `${review.userId.slice(0, 8)}...` : "—"}
-                      </td>
-                      <td className="px-2 py-3 text-xs text-slate-700">
-                        {review.userName || "Аноним"}
-                      </td>
-                      <td className="px-2 py-3 text-sm font-semibold text-slate-700">{rating.toFixed(1)}★</td>
-                      <td className="px-2 py-3">
-                        <div
-                          onClick={() => setExpandedId(isExpanded ? null : review.id)}
-                          className="cursor-pointer"
-                        >
-                          <p className={`text-sm text-slate-700 transition-all duration-300 ${isExpanded ? '' : 'line-clamp-2'}`}>
-                            {review.description}
-                          </p>
-                        </div>
-                      </td>
-                      <td className="px-2 py-3">
-                        {getStatusBadge(review.status, review.id)}
-                      </td>
-                      <td className="px-2 py-3 text-xs text-slate-500">
-                        {new Date(review.createdAt).toLocaleString("ru-RU", {
-                          year: "numeric",
-                          month: "2-digit",
-                          day: "2-digit",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </td>
-                      <td className="px-2 py-3 text-center">
-                        <button
-                          onClick={() => setDeleteId(review.id)}
-                          className="p-1.5 text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                          title="Удалить отзыв"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">
-                Страница {page} из {totalPages}
-              </span>
-              <div className="flex gap-2">
-                {page > 1 && (
-                  <button
-                    onClick={() => setPage((p) => p - 1)}
-                    className="px-4 py-2 bg-slate-200 text-slate-700 rounded-full font-semibold hover:bg-slate-300 transition-colors"
-                  >
-                    Назад
-                  </button>
-                )}
-                {page < totalPages && (
-                  <button
-                    onClick={() => setPage((p) => p + 1)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors"
-                  >
-                    Следующая
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-        </>
-      )}
+      <DataTable
+        columns={columns}
+        data={filteredReviews}
+        getRowKey={(r) => r.id}
+        loading={loading}
+        emptyMessage="Отзывы не найдены"
+        page={page}
+        pageSize={REVIEWS_PER_PAGE}
+        onPageChange={setPage}
+      />
 
       {/* Delete Confirmation Modal */}
       {deleteId && (

@@ -9,8 +9,8 @@ import {
   Users as UsersIcon,
   ArrowRight,
 } from "lucide-react";
-import OrderStatusBadge from "./_components/OrderStatusBadge";
-import OrderBoosterCell from "./_components/OrderBoosterCell";
+import RecentOrdersTable from "./_components/RecentOrdersTable";
+import type { OrderRow } from "./_components/orderColumns";
 import TimeRangeSelect from "./_components/TimeRangeSelect";
 import { TIME_RANGE_OPTIONS, type TimeRange } from "./_components/timeRange";
 
@@ -81,15 +81,20 @@ async function getStats(cutoff: Date | null) {
   };
 }
 
-async function getRecentOrders() {
+async function getRecentOrders(): Promise<OrderRow[]> {
   const rows = await db
     .select({
       id: orders.id,
+      userId: orders.userId,
       status: orders.status,
       totalPrice: orders.totalPrice,
       createdAt: orders.createdAt,
+      paymentId: orders.paymentId,
+      paymentMethod: orders.paymentMethod,
+      isTestPayment: orders.isTestPayment,
       username: users.username,
       email: users.email,
+      telegramUsername: users.telegramUsername,
       boosterId: orders.boosterId,
       boosterFirstName: boosters.firstName,
     })
@@ -99,7 +104,41 @@ async function getRecentOrders() {
     .orderBy(desc(orders.createdAt))
     .limit(8);
 
-  return rows;
+  // Attach line items (compact: title + qty/period) for the Позиции column,
+  // mirroring the Orders API so both tables render identically.
+  const orderIds = rows.map((o) => o.id);
+  const itemRows = orderIds.length
+    ? await db
+        .select({
+          orderId: orderItems.orderId,
+          title: services.title,
+          quantity: orderItems.quantity,
+          startDate: orderItems.startDate,
+          endDate: orderItems.endDate,
+        })
+        .from(orderItems)
+        .leftJoin(services, eq(orderItems.serviceId, services.id))
+        .where(inArray(orderItems.orderId, orderIds))
+    : [];
+
+  const itemsByOrder = new Map<string, OrderRow["items"]>();
+  for (const it of itemRows) {
+    if (!it.orderId) continue;
+    const arr = itemsByOrder.get(it.orderId) ?? [];
+    arr.push({
+      title: it.title,
+      quantity: it.quantity,
+      startDate: it.startDate ? String(it.startDate) : null,
+      endDate: it.endDate ? String(it.endDate) : null,
+    });
+    itemsByOrder.set(it.orderId, arr);
+  }
+
+  return rows.map((o) => ({
+    ...o,
+    createdAt: o.createdAt ? new Date(o.createdAt).toISOString() : "",
+    items: itemsByOrder.get(o.id) ?? [],
+  }));
 }
 
 async function getTopServices() {
@@ -177,9 +216,9 @@ export default async function AdminDashboardPage({
         />
       </div>
 
-      {/* Recent orders */}
-      <section className="bg-white rounded-3xl border border-slate-200 p-6">
-        <div className="flex items-center justify-between mb-5">
+      {/* Recent orders — same table component as /admin/orders */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Последние заказы</h2>
           <Link
             href="/admin/orders"
@@ -190,75 +229,7 @@ export default async function AdminDashboardPage({
           </Link>
         </div>
 
-        {recent.length === 0 ? (
-          <div className="text-sm text-slate-500 py-8 text-center">
-            Пока нет заказов.
-          </div>
-        ) : (
-          <div className="overflow-x-auto -mx-6">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-slate-500 text-xs uppercase tracking-wider">
-                  <th className="text-left font-medium px-6 py-2">ID</th>
-                  <th className="text-left font-medium px-6 py-2">Клиент</th>
-                  <th className="text-left font-medium px-6 py-2">Бустер</th>
-                  <th className="text-left font-medium px-6 py-2">Статус</th>
-                  <th className="text-right font-medium px-6 py-2">Сумма</th>
-                  <th className="text-right font-medium px-6 py-2">Дата</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recent.map((o) => (
-                  <tr
-                    key={o.id}
-                    className="border-t border-slate-100 hover:bg-slate-50 transition-colors"
-                  >
-                    <td className="px-6 py-3 font-mono text-xs text-slate-500">
-                      <Link
-                        href={`/admin/orders/${o.id}`}
-                        className="hover:text-indigo-600"
-                      >
-                        {o.id.slice(0, 8)}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-3">
-                      <div className="font-medium">
-                        {o.username ?? "— guest —"}
-                      </div>
-                      <div className="text-xs text-slate-500">
-                        {o.email ?? ""}
-                      </div>
-                    </td>
-                    <td className="px-6 py-3">
-                      <OrderBoosterCell
-                        orderId={o.id}
-                        status={o.status ?? "pending"}
-                        boosterId={o.boosterId}
-                        boosterFirstName={o.boosterFirstName}
-                      />
-                    </td>
-                    <td className="px-6 py-3">
-                      <OrderStatusBadge status={o.status ?? "pending"} />
-                    </td>
-                    <td className="px-6 py-3 text-right font-medium">
-                      {Number(o.totalPrice).toLocaleString("ru-RU")} ₽
-                    </td>
-                    <td className="px-6 py-3 text-right text-slate-500">
-                      {o.createdAt
-                        ? new Date(o.createdAt).toLocaleDateString("ru-RU", {
-                            day: "2-digit",
-                            month: "short",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <RecentOrdersTable initialOrders={recent} />
       </section>
 
       {/* Top services */}

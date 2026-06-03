@@ -2,43 +2,17 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Search, Plus, ExternalLink } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import {
   ORDER_STATUSES,
   orderStatusLabel,
 } from "../_components/OrderStatusBadge";
-import OrderStatusCell from "../_components/OrderStatusCell";
 import CustomSelect from "@/components/CustomSelect";
 import Input from "@/components/Input";
-import OrderBoosterCell from "../_components/OrderBoosterCell";
-import CopyableTelegram from "../_components/CopyableTelegram";
-import OrderItemsCell, {
-  type OrderItemSummary,
-} from "../_components/OrderItemsCell";
+import DataTable from "../_components/DataTable";
+import { buildOrderColumns, type OrderRow } from "../_components/orderColumns";
 
-interface Order {
-  id: string;
-  userId: string | null;
-  status: string;
-  totalPrice: string;
-  createdAt: string;
-  paymentId: string | null;
-  paymentMethod: string | null;
-  isTestPayment: boolean | null;
-  username: string | null;
-  email: string | null;
-  telegramUsername: string | null;
-  boosterId: string | null;
-  boosterFirstName: string | null;
-  items: OrderItemSummary[];
-}
-
-/** Human label for the acquiring channel recorded on the order. */
-function paymentMethodLabel(method: string | null): string | null {
-  if (method === "sbp") return "СБП";
-  if (method === "card") return "Карта РФ";
-  return null;
-}
+type Order = OrderRow;
 
 const ORDERS_PER_PAGE = 10;
 
@@ -65,6 +39,17 @@ export default function AdminOrdersPage() {
     }, 500);
     return () => clearTimeout(timer);
   }, [searchQuery]);
+
+  // Reset to the first page whenever the filtered result set changes, so you
+  // never land on a now-empty page.
+  useEffect(() => {
+    setPage(1);
+  }, [sortBy, startDate, endDate, statusFilter, debouncedSearch]);
+
+  const onOrderChange = (id: string, patch: Partial<Order>) =>
+    setOrders((prev) =>
+      prev.map((o) => (o.id === id ? { ...o, ...patch } : o))
+    );
 
   const fetchOrders = async () => {
     try {
@@ -120,12 +105,10 @@ export default function AdminOrdersPage() {
     return result;
   }, [orders, sortBy, startDate, endDate, statusFilter, debouncedSearch]);
 
-  const paginatedOrders = useMemo(() => {
-    const start = (page - 1) * ORDERS_PER_PAGE;
-    return filteredOrders.slice(start, start + ORDERS_PER_PAGE);
-  }, [filteredOrders, page]);
-
-  const totalPages = Math.ceil(filteredOrders.length / ORDERS_PER_PAGE);
+  const columns = useMemo(
+    () => buildOrderColumns({ onOrderChange, showIndex: true }),
+    []
+  );
 
   return (
     <div className="max-w-6xl mx-auto space-y-6" style={{ fontFamily: "Onest, sans-serif" }}>
@@ -219,166 +202,16 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* Orders Table */}
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      ) : filteredOrders.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
-          <p className="text-slate-500">Заказы не найдены</p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-slate-500 text-xs uppercase tracking-wider bg-slate-50">
-                  <th className="text-left font-medium px-4 py-3 w-12">№</th>
-                  <th className="text-left font-medium px-4 py-3">ID заказа</th>
-                  <th className="text-left font-medium px-4 py-3">Позиции</th>
-                  <th className="text-left font-medium px-4 py-3">Клиент</th>
-                  <th className="text-left font-medium px-4 py-3">Бустер</th>
-                  <th className="text-left font-medium px-4 py-3">Статус</th>
-                  <th className="text-right font-medium px-4 py-3">Сумма</th>
-                  <th className="text-right font-medium px-4 py-3">Дата</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedOrders.map((o, index) => {
-                  const globalIndex = (page - 1) * ORDERS_PER_PAGE + index + 1;
-                  return (
-                    <tr
-                      key={o.id}
-                      className="border-t border-slate-100 hover:bg-slate-50 transition-colors"
-                    >
-                      <td className="px-4 py-3 text-sm text-slate-600">{globalIndex}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-slate-500">
-                        <Link
-                          href={`/admin/orders/${o.id}`}
-                          className="hover:text-indigo-600"
-                        >
-                          {o.id.slice(0, 8)}...
-                        </Link>
-                        <div className="mt-1 flex flex-wrap items-center gap-1">
-                          {o.isTestPayment && (
-                            <span className="inline-flex items-center rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide font-sans">
-                              Тест
-                            </span>
-                          )}
-                          {paymentMethodLabel(o.paymentMethod) && (
-                            <span className="inline-flex items-center rounded-full bg-slate-100 text-slate-600 px-2 py-0.5 text-[10px] font-semibold font-sans">
-                              {paymentMethodLabel(o.paymentMethod)}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 align-top">
-                        <OrderItemsCell items={o.items} />
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="font-medium flex items-center gap-1.5">
-                          <span className="truncate">
-                            {o.username ?? "— guest —"}
-                          </span>
-                          {o.userId && (
-                            <Link
-                              href={`/admin/users/${o.userId}`}
-                              title="Открыть профиль клиента"
-                              className="text-slate-400 hover:text-indigo-600 transition-colors shrink-0"
-                            >
-                              <ExternalLink className="w-3.5 h-3.5" />
-                            </Link>
-                          )}
-                        </div>
-                        <CopyableTelegram username={o.telegramUsername} />
-                      </td>
-                      <td className="px-4 py-3">
-                        <OrderBoosterCell
-                          orderId={o.id}
-                          status={o.status}
-                          boosterId={o.boosterId}
-                          boosterFirstName={o.boosterFirstName}
-                          onResult={(boosterId, boosterFirstName, newStatus) =>
-                            setOrders((prev) =>
-                              prev.map((x) =>
-                                x.id === o.id
-                                  ? {
-                                      ...x,
-                                      boosterId,
-                                      boosterFirstName,
-                                      status: newStatus || x.status,
-                                    }
-                                  : x
-                              )
-                            )
-                          }
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        <OrderStatusCell
-                          orderId={o.id}
-                          status={o.status ?? "pending"}
-                          onResult={(newStatus) =>
-                            setOrders((prev) =>
-                              prev.map((x) =>
-                                x.id === o.id
-                                  ? { ...x, status: newStatus }
-                                  : x
-                              )
-                            )
-                          }
-                        />
-                      </td>
-                      <td className="px-4 py-3 text-right font-medium">
-                        {Number(o.totalPrice).toLocaleString("ru-RU")} ₽
-                      </td>
-                      <td className="px-4 py-3 text-right text-slate-500 whitespace-nowrap">
-                        {o.createdAt
-                          ? new Date(o.createdAt).toLocaleString("ru-RU", {
-                              year: "numeric",
-                              month: "2-digit",
-                              day: "2-digit",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : "—"}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Pagination */}
-      {!loading && totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-600">
-            Страница {page} из {totalPages}
-          </span>
-          <div className="flex gap-2">
-            {page > 1 && (
-              <button
-                onClick={() => setPage((p) => p - 1)}
-                className="px-4 py-2 bg-slate-200 text-slate-700 rounded-full font-semibold hover:bg-slate-300 transition-colors"
-              >
-                Назад
-              </button>
-            )}
-            {page < totalPages && (
-              <button
-                onClick={() => setPage((p) => p + 1)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors"
-              >
-                Следующая
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
+      <DataTable
+        columns={columns}
+        data={filteredOrders}
+        getRowKey={(o) => o.id}
+        loading={loading}
+        emptyMessage="Заказы не найдены"
+        page={page}
+        pageSize={ORDERS_PER_PAGE}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
-import { Trash2, Upload, Sparkles, X, ImageIcon } from "lucide-react";
+import { Trash2, Upload, Sparkles, X, ImageIcon, Check, Map } from "lucide-react";
 import { generateSlug } from "@/lib/slug";
 import CustomSelect from "@/components/CustomSelect";
 import Input from "@/components/Input";
@@ -24,14 +24,29 @@ export interface ServiceInitial {
   categoryId?: string | null;
 }
 
+/** Exploration service offered as a parent region in the quest-addon picker. */
+export interface RegionOption {
+  id: string;
+  label: string;
+}
+
 export default function ServiceForm({
   initial,
   categories,
   mode,
+  missionsCategoryId = null,
+  regionOptions = [],
+  initialParentIds = [],
 }: {
   initial: ServiceInitial;
   categories: Category[];
   mode: "create" | "edit";
+  /** id of the «Задания» category — the region picker shows only for it. */
+  missionsCategoryId?: string | null;
+  /** Exploration services available as parent regions (service_addons). */
+  regionOptions?: RegionOption[];
+  /** Currently linked parent region service ids. */
+  initialParentIds?: string[];
 }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,6 +59,19 @@ export default function ServiceForm({
     price: initial.price?.toString() ?? "",
     categoryId: initial.categoryId ?? "",
   });
+
+  // Parent regions this quest is an addon of (only for «Задания» services).
+  const [parentIds, setParentIds] = useState<string[]>(initialParentIds);
+  const isMissionService =
+    Boolean(missionsCategoryId) && form.categoryId === missionsCategoryId;
+  const showRegionPicker =
+    mode === "edit" && isMissionService && regionOptions.length > 0;
+
+  function toggleParent(pid: string) {
+    setParentIds((prev) =>
+      prev.includes(pid) ? prev.filter((x) => x !== pid) : [...prev, pid]
+    );
+  }
 
   // Image state — separated from the main form.
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(
@@ -152,6 +180,10 @@ export default function ServiceForm({
       // Only send imageUrl if it actually changed (so untouched edits don't overwrite).
       if (mode === "create") payload.imageUrl = imageUrl;
       else if (changed) payload.imageUrl = imageUrl;
+
+      // Region links (service_addons) — send only while the service is in
+      // «Задания», so editing other services never touches the links.
+      if (showRegionPicker) payload.parentServiceIds = parentIds;
 
       const url =
         mode === "create"
@@ -288,6 +320,58 @@ export default function ServiceForm({
           />
         </Field>
       </div>
+
+      {/* Region links — only for «Задания»: in which exploration services'
+          quest-addon modal this task is offered. */}
+      {showRegionPicker && (
+        <div>
+          <div className="text-sm font-medium mb-1.5 flex items-center gap-1.5">
+            <Map className="w-4 h-4 text-slate-400" strokeWidth={2} />
+            Регионы
+          </div>
+          <div className="text-xs text-slate-500 mb-3">
+            Задание будет предложено в модалке при добавлении этих услуг
+            исследования в корзину.
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {regionOptions.map((r) => {
+              const checked = parentIds.includes(r.id);
+              return (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => toggleParent(r.id)}
+                  className={[
+                    "flex items-center gap-2.5 rounded-xl border px-3.5 py-2.5 text-left text-sm transition-colors cursor-pointer",
+                    checked
+                      ? "border-indigo-500 bg-indigo-50/60 text-slate-900"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-indigo-300",
+                  ].join(" ")}
+                >
+                  <span
+                    className={[
+                      "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-colors",
+                      checked
+                        ? "bg-indigo-600 border-indigo-600"
+                        : "border-slate-300 bg-white",
+                    ].join(" ")}
+                  >
+                    {checked && (
+                      <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                    )}
+                  </span>
+                  <span className="min-w-0 truncate">{r.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          {parentIds.length > 0 && (
+            <div className="text-xs text-slate-500 mt-2">
+              Выбрано: {parentIds.length}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Image picker */}
       <Field

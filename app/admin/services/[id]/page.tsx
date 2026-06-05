@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { services, categories } from "@/lib/schema";
+import { services, categories, serviceAddons } from "@/lib/schema";
 import { asc, eq } from "drizzle-orm";
 import { ArrowLeft } from "lucide-react";
 import ServiceForm from "../ServiceForm";
@@ -24,9 +24,34 @@ export default async function EditServicePage({ params }: PageProps) {
   if (!service) notFound();
 
   const cats = await db
-    .select({ id: categories.id, title: categories.title })
+    .select({ id: categories.id, title: categories.title, slug: categories.slug })
     .from(categories)
     .orderBy(asc(categories.title));
+
+  // Quest-addon management (service_addons, addon side): services in
+  // «Задания» can be linked to exploration services («Исследование регионов»)
+  // so they show up in the quest upsell modal of those regions.
+  const missionsCategoryId =
+    cats.find((c) => c.slug === "missions")?.id ?? null;
+  const locationsCategoryId =
+    cats.find((c) => c.slug === "locations")?.id ?? null;
+
+  const regionOptions = locationsCategoryId
+    ? await db
+        .select({
+          id: services.id,
+          title: services.title,
+          subtitle: services.subtitle,
+        })
+        .from(services)
+        .where(eq(services.categoryId, locationsCategoryId))
+        .orderBy(asc(services.createdAt))
+    : [];
+
+  const parentLinks = await db
+    .select({ parentServiceId: serviceAddons.parentServiceId })
+    .from(serviceAddons)
+    .where(eq(serviceAddons.addonServiceId, id));
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -51,6 +76,12 @@ export default async function EditServicePage({ params }: PageProps) {
         <ServiceForm
           mode="edit"
           categories={cats}
+          missionsCategoryId={missionsCategoryId}
+          regionOptions={regionOptions.map((r) => ({
+            id: r.id,
+            label: r.subtitle || r.title,
+          }))}
+          initialParentIds={parentLinks.map((l) => l.parentServiceId)}
           initial={{
             id: service.id,
             slug: service.slug,

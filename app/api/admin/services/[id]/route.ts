@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { services } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+import { services, serviceAddons } from "@/lib/schema";
+import { and, eq, inArray, max } from "drizzle-orm";
 import { requireAdminApi } from "@/lib/auth/requireAdmin";
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
@@ -61,7 +61,26 @@ export async function PATCH(
     }
   }
 
-  if (Object.keys(update).length === 0) {
+  // Optional: replace the set of parent (exploration) services this service
+  // is offered as a quest addon of (service_addons, addon side). Quest
+  // services in «Задания» manage their regions through this field.
+  let parentServiceIds: string[] | null = null;
+  if ("parentServiceIds" in body) {
+    if (
+      !Array.isArray(body.parentServiceIds) ||
+      body.parentServiceIds.some((x: unknown) => typeof x !== "string")
+    ) {
+      return NextResponse.json(
+        { error: "parentServiceIds must be an array of service ids" },
+        { status: 400 }
+      );
+    }
+    parentServiceIds = [...new Set(body.parentServiceIds as string[])].filter(
+      (pid) => pid !== id // a service can't be its own addon
+    );
+  }
+
+  if (Object.keys(update).length === 0 && parentServiceIds === null) {
     return NextResponse.json({ error: "No fields to update" }, { status: 400 });
   }
 
@@ -80,16 +99,59 @@ export async function PATCH(
     }
   }
 
-  update.updatedAt = new Date();
-
-  const [updated] = await db
-    .update(services)
-    .set(update as any)
-    .where(eq(services.id, id))
-    .returning();
+  let updated;
+  if (Object.keys(update).length > 0) {
+    update.updatedAt = new Date();
+    [updated] = await db
+      .update(services)
+      .set(update as any)
+      .where(eq(services.id, id))
+      .returning();
+  } else {
+    [updated] = await db.select().from(services).where(eq(services.id, id)).limit(1);
+  }
 
   if (!updated) {
     return NextResponse.json({ error: "Service not found" }, { status: 404 });
+  }
+
+  // Diff-replace the addon links: removed parents are unlinked, new parents
+  // get the link appended to the end of their modal list (max sortOrder + 1).
+  if (parentServiceIds !== null) {
+    const existing = await db
+      .select({ parentServiceId: serviceAddons.parentServiceId })
+      .from(serviceAddons)
+      .where(eq(serviceAddons.addonServiceId, id));
+    const existingSet = new Set(existing.map((e) => e.parentServiceId));
+    const nextSet = new Set(parentServiceIds);
+
+    const toRemove = [...existingSet].filter((p) => !nextSet.has(p));
+    const toAdd = [...nextSet].filter((p) => !existingSet.has(p));
+
+    if (toRemove.length > 0) {
+      await db
+        .delete(serviceAddons)
+        .where(
+          and(
+            eq(serviceAddons.addonServiceId, id),
+            inArray(serviceAddons.parentServiceId, toRemove)
+          )
+        );
+    }
+    for (const pid of toAdd) {
+      const [row] = await db
+        .select({ mx: max(serviceAddons.sortOrder) })
+        .from(serviceAddons)
+        .where(eq(serviceAddons.parentServiceId, pid));
+      await db
+        .insert(serviceAddons)
+        .values({
+          parentServiceId: pid,
+          addonServiceId: id,
+          sortOrder: (row?.mx ?? -1) + 1,
+        })
+        .onConflictDoNothing();
+    }
   }
 
   return NextResponse.json({ ok: true, service: updated });

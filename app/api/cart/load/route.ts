@@ -31,6 +31,7 @@ export async function GET() {
         quantity: cartItems.quantity,
         startDate: cartItems.startDate,
         endDate: cartItems.endDate,
+        addonChoice: cartItems.addonChoice,
       })
       .from(cartItems)
       .leftJoin(services, eq(cartItems.serviceId, services.id))
@@ -46,6 +47,7 @@ export async function GET() {
       image: item.imageUrl || '/images/genshin_background.jpg',
       ...(item.startDate ? { startDate: item.startDate.toISOString() } : {}),
       ...(item.endDate ? { endDate: item.endDate.toISOString() } : {}),
+      ...(item.addonChoice ? { addonChoice: item.addonChoice } : {}),
     }));
 
     return NextResponse.json({ items: cartData });

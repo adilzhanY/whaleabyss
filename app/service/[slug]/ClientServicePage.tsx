@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import CartModal from "@/components/CartModal";
 import AuthModal from "@/components/AuthModal";
 import { ServiceItem } from "@/lib/services";
-import { useCart } from "@/store/useCart";
+import { useAddToCartWithAddons } from "@/components/QuestAddonModal";
 import { UserCircle, Tag, Layers, CheckCircle, Info, ShoppingCart, Gauge, Shield, MonitorPlay } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -42,7 +42,7 @@ function escapeRegex(string: string) {
 
 export default function ClientServicePage({ service }: ClientServicePageProps) {
   const [authOpen, setAuthOpen] = useState(false);
-  const { addToCart, openCart } = useCart();
+  const addToCartWithAddons = useAddToCartWithAddons();
 
   // Get today and tomorrow as default dates
   const todayDate = new Date();
@@ -66,7 +66,9 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
   const totalPrice = pricePerItem * activeDays;
 
   const handleAdd = () => {
-    addToCart({
+    // Opens the quest-addon modal when the service has linked quests,
+    // otherwise adds to the cart directly and opens it.
+    addToCartWithAddons({
       id: service.id,
       title: service.title,
       subtitle: service.subtitle,
@@ -74,7 +76,6 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
       image: service.background || "/images/genshin_background.jpg",
       ...(service.isPerDay ? { startDate, endDate } : {}),
     }, activeDays);
-    openCart();
   };
 
   const currentStartDate = startDate;

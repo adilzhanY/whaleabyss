@@ -63,12 +63,19 @@ export async function POST(req: NextRequest) {
             quantity: item.quantity || 1,
             ...(item.startDate ? { startDate: new Date(item.startDate) } : {}),
             ...(item.endDate ? { endDate: new Date(item.endDate) } : {}),
+            // Quest-addon declaration ('completed' | 'self') — see schema.
+            ...(item.addonChoice === 'completed' || item.addonChoice === 'self'
+              ? { addonChoice: item.addonChoice }
+              : {}),
           };
         })
         .filter((item): item is NonNullable<typeof item> => item !== null);
 
       if (insertData.length > 0) {
-        await db.insert(cartItems).values(insertData);
+        // onConflictDoNothing + the unique (user_id, service_id) index guard
+        // against concurrent syncs interleaving their delete+insert cycles
+        // and duplicating rows (caused duplicate React keys in the cart).
+        await db.insert(cartItems).values(insertData).onConflictDoNothing();
       }
     }
 

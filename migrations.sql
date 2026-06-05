@@ -54,3 +54,26 @@ WHERE bo.id = s.booster_id;
 -- the new SBP/card FreeKassa flow). Additive, nullable — safe/backward-compatible.
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method varchar(20);
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_test_payment boolean DEFAULT false;
+
+-- 2026-06-05: Quest-addon upsell system (SERVICE_ADDONS.md). New link table
+-- parent (exploration) service -> addon (quest) service, plus the client's
+-- declaration from the upsell modal ('completed' | 'self') on cart/order items.
+CREATE TABLE IF NOT EXISTS service_addons (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  parent_service_id uuid NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+  addon_service_id uuid NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+  sort_order integer DEFAULT 0,
+  created_at timestamptz DEFAULT now(),
+  CONSTRAINT service_addons_parent_addon_unique UNIQUE (parent_service_id, addon_service_id)
+);
+CREATE INDEX IF NOT EXISTS service_addons_parent_idx ON service_addons (parent_service_id);
+ALTER TABLE cart_items ADD COLUMN IF NOT EXISTS addon_choice varchar(20);
+ALTER TABLE order_items ADD COLUMN IF NOT EXISTS addon_choice varchar(20);
+
+-- 2026-06-05: Cart dedupe guard. Concurrent /api/cart/sync requests interleaved
+-- their delete+insert cycles and duplicated rows (duplicate React keys in the
+-- cart UI). One line per service per user, insert with ON CONFLICT DO NOTHING.
+DELETE FROM cart_items a USING cart_items b
+WHERE a.user_id = b.user_id AND a.service_id = b.service_id AND a.ctid > b.ctid;
+CREATE UNIQUE INDEX IF NOT EXISTS cart_items_user_service_unique
+ON cart_items (user_id, service_id);

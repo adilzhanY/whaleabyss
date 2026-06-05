@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
     // Per-slug quantities are summed so a duplicated slug can't sneak past checks.
     const qtyBySlug = new Map<string, number>();
     const dateBySlug = new Map<string, { startDate?: string; endDate?: string }>();
+    const addonChoiceBySlug = new Map<string, string>();
     for (const item of items as any[]) {
       const slug = item?.id;
       const qty = Math.floor(Number(item?.quantity));
@@ -63,6 +64,11 @@ export async function POST(req: NextRequest) {
       // Keep subscription dates (first occurrence wins).
       if (!dateBySlug.has(slug)) {
         dateBySlug.set(slug, { startDate: item?.startDate, endDate: item?.endDate });
+      }
+      // Quest-addon declaration ('completed' | 'self') from the upsell modal.
+      // Whitelisted so a tampered client can't write arbitrary strings.
+      if (item?.addonChoice === 'completed' || item?.addonChoice === 'self') {
+        addonChoiceBySlug.set(slug, item.addonChoice);
       }
     }
 
@@ -90,7 +96,8 @@ export async function POST(req: NextRequest) {
       const unit = Number(s.price);
       subtotal += unit * quantity;
       const dates = dateBySlug.get(s.slug) ?? {};
-      return { service: s, quantity, unit, dates };
+      const addonChoice = addonChoiceBySlug.get(s.slug) ?? null;
+      return { service: s, quantity, unit, dates, addonChoice };
     });
     subtotal = round2(subtotal);
 
@@ -158,6 +165,7 @@ export async function POST(req: NextRequest) {
       priceAtPurchase: r.unit.toFixed(2),
       ...(r.dates.startDate ? { startDate: new Date(r.dates.startDate) } : {}),
       ...(r.dates.endDate ? { endDate: new Date(r.dates.endDate) } : {}),
+      ...(r.addonChoice ? { addonChoice: r.addonChoice } : {}),
     }));
     await db.insert(orderItems).values(insertItems);
 

@@ -200,6 +200,7 @@ async function handle(req: NextRequest) {
           price: orderItems.priceAtPurchase,
           startDate: orderItems.startDate,
           endDate: orderItems.endDate,
+          addonChoice: orderItems.addonChoice,
         })
         .from(orderItems)
         .leftJoin(services, eqInner(orderItems.serviceId, services.id))
@@ -219,6 +220,14 @@ async function handle(req: NextRequest) {
           }
 
           desc += ` - ${i.price} руб.`;
+
+          // Quest-addon declaration from the upsell modal — the booster must
+          // know whether the gating quests are on the client.
+          if (i.addonChoice === 'completed') {
+            desc += '\n  ⚠️ Клиент: задания региона уже выполнены';
+          } else if (i.addonChoice === 'self') {
+            desc += '\n  ⚠️ Клиент: пройдёт задания сам';
+          }
           return desc;
         })
         .join('\n');

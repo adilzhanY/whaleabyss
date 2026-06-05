@@ -10,12 +10,32 @@ export interface CartItem {
   image?: string;
   startDate?: string;
   endDate?: string;
+  // Quest-addon modal declaration for exploration services:
+  // 'completed' — клиент заявил, что гейт-квесты региона уже пройдены;
+  // 'self' — пройдёт их сам. undefined — выбора не было (выбрал квесты
+  // или у услуги нет аддонов). Travels cart → checkout → order_items.
+  addonChoice?: "completed" | "self";
 }
+
+// Collapse accidental duplicate lines (same service id) into one entry,
+// keeping the first occurrence. Guards against race-condition duplicates
+// historically persisted in localStorage or cart_items (parallel syncToDb
+// calls used to interleave their delete+insert cycles).
+const dedupeById = (items: CartItem[]): CartItem[] => {
+  const seen = new Map<string, CartItem>();
+  for (const it of items) {
+    if (!seen.has(it.id)) seen.set(it.id, it);
+  }
+  return [...seen.values()];
+};
 
 interface CartState {
   items: CartItem[];
   isOpen: boolean;
   addToCart: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
+  addManyToCart: (
+    entries: { item: Omit<CartItem, "quantity">; quantity?: number }[]
+  ) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
@@ -46,6 +66,28 @@ export const useCart = create<CartState>()(
           return { items: [...state.items, { ...item, quantity }] };
         });
         // Sync to DB after adding (fire and forget)
+        get().syncToDb().catch(err => console.error('Failed to sync cart:', err));
+      },
+
+      // Add several lines in ONE state update + ONE db sync. Used by the
+      // quest-addon modal: calling addToCart in a loop fired N concurrent
+      // syncToDb requests whose delete+insert cycles interleaved and
+      // duplicated cart_items rows.
+      addManyToCart: (entries) => {
+        set((state) => {
+          let items = [...state.items];
+          for (const { item, quantity = 1 } of entries) {
+            const existing = items.find((i) => i.id === item.id);
+            if (existing) {
+              items = items.map((i) =>
+                i.id === item.id ? { ...i, ...item, quantity: i.quantity + quantity } : i
+              );
+            } else {
+              items = [...items, { ...item, quantity }];
+            }
+          }
+          return { items };
+        });
         get().syncToDb().catch(err => console.error('Failed to sync cart:', err));
       },
 
@@ -147,7 +189,7 @@ export const useCart = create<CartState>()(
 
           // Replace strategy: DB is the source of truth for logged-in users
           // This ensures deletions are respected
-          set({ items: dbItems });
+          set({ items: dedupeById(dbItems) });
         } catch (error) {
           console.error('Failed to load cart from DB:', error);
         }
@@ -157,6 +199,14 @@ export const useCart = create<CartState>()(
       name: 'cart-storage',
       // only persist items to avoid opening the cart automatically on refresh
       partialize: (state) => ({ items: state.items }),
+      // Dedupe on rehydrate — cleans up duplicate lines a browser may have
+      // persisted before the parallel-sync race was fixed.
+      merge: (persisted, current) => ({
+        ...current,
+        items: dedupeById(
+          ((persisted as { items?: CartItem[] } | undefined)?.items) ?? []
+        ),
+      }),
     }
   )
 );

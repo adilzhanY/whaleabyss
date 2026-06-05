@@ -53,6 +53,16 @@ export const services = pgTable('services', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
+// Upsell links: quest services offered in a modal when the parent (exploration)
+// service is added to the cart. Mapping source: SERVICE_ADDONS.md.
+export const serviceAddons = pgTable('service_addons', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  parentServiceId: uuid('parent_service_id').references(() => services.id, { onDelete: 'cascade' }).notNull(),
+  addonServiceId: uuid('addon_service_id').references(() => services.id, { onDelete: 'cascade' }).notNull(),
+  sortOrder: integer('sort_order').default(0),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});
+
 export const orderStatusEnum = pgEnum('order_status', ['pending', 'paid', 'in_progress', 'completed', 'cancelled', 'refunded']);
 
 export const orders = pgTable('orders', {
@@ -86,6 +96,10 @@ export const orderItems = pgTable('order_items', {
   priceAtPurchase: decimal('price_at_purchase', { precision: 10, scale: 2 }).notNull(),
   startDate: timestamp('start_date', { withTimezone: true }),
   endDate: timestamp('end_date', { withTimezone: true }),
+  // 'completed' | 'self' — what the client declared in the quest-addon modal
+  // for an exploration service: gating quests already done / will do them
+  // themselves. NULL = no declaration (chose quests or no addons exist).
+  addonChoice: varchar('addon_choice', { length: 20 }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 
@@ -137,6 +151,8 @@ export const reviews = pgTable('reviews', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 
+// NB: cart_items has a unique index on (user_id, service_id) — one line per
+// service per user; the sync route inserts with onConflictDoNothing.
 export const cartItems = pgTable('cart_items', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
@@ -144,6 +160,8 @@ export const cartItems = pgTable('cart_items', {
   quantity: integer('quantity').notNull().default(1),
   startDate: timestamp('start_date', { withTimezone: true }),
   endDate: timestamp('end_date', { withTimezone: true }),
+  // See orderItems.addonChoice — the declaration travels cart → order.
+  addonChoice: varchar('addon_choice', { length: 20 }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 

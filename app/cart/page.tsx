@@ -245,6 +245,11 @@ export default function CartPage() {
                           {new Date(item.startDate).toLocaleDateString("ru-RU")} - {new Date(item.endDate).toLocaleDateString("ru-RU")}
                         </p>
                       )}
+                      {item.addonChoice && (
+                        <p className={`text-xs font-semibold mt-1 ${item.addonChoice === "completed" ? "text-green-600" : "text-amber-600"}`}>
+                          {item.addonChoice === "completed" ? "Задания уже выполнены" : "Задания пройду сам"}
+                        </p>
+                      )}
                       {/* Trash lives in the title column only on desktop — mobile
                           gets a dedicated bottom row alongside qty + price. */}
                       <div className="hidden sm:flex items-center gap-3 mt-3">

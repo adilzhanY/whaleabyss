@@ -1,7 +1,7 @@
 "use client";
 
 import { ShoppingBag } from "lucide-react";
-import { useCart } from "@/store/useCart";
+import { useAddToCartWithAddons } from "@/components/QuestAddonModal";
 import Link from "next/link";
 import { ServiceItem } from "@/lib/services";
 import { isCategoryOnDiscount, calculateDiscountedPrice, getActiveEvent } from "@/lib/events";
@@ -12,7 +12,7 @@ interface ServiceCardProps {
 }
 
 export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
-  const { addToCart, openCart } = useCart();
+  const addToCartWithAddons = useAddToCartWithAddons();
 
   // Check if this category is on discount
   const isOnDiscount = categorySlug ? isCategoryOnDiscount(categorySlug) : false;
@@ -25,14 +25,15 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart({
+    // Opens the quest-addon modal when the service has linked quests,
+    // otherwise adds to the cart directly and opens it.
+    addToCartWithAddons({
       id: item.id,
       title: item.title,
       subtitle: item.subtitle,
       price: finalPrice,
       image: item.background || "/images/genshin_background.jpg",
     });
-    openCart();
   };
 
   return (

@@ -25,6 +25,7 @@ const displayFont = Space_Grotesk({
 
 import { Providers } from "./Providers";
 import CookieConsent from "@/components/CookieConsent";
+import QuestAddonModal from "@/components/QuestAddonModal";
 
 export const metadata: Metadata = {
   title: "Whale Abyss — Экспертное сопровождение аккаунтов",
@@ -69,6 +70,8 @@ export default function RootLayout({
         <Providers>{children}</Providers>
         {/* Banner UI + consent persistence; Metrika itself is loaded above. */}
         <CookieConsent />
+        {/* Quest-addon upsell modal — global so every "add to cart" point can open it. */}
+        <QuestAddonModal />
       </body>
     </html>
   );

@@ -123,6 +123,11 @@ export default function CartModal() {
                           {new Date(item.startDate).toLocaleDateString("ru-RU")} - {new Date(item.endDate).toLocaleDateString("ru-RU")}
                         </p>
                       )}
+                      {item.addonChoice && (
+                        <p className={`text-xs font-semibold mt-1 ${item.addonChoice === "completed" ? "text-green-600" : "text-amber-600"}`}>
+                          {item.addonChoice === "completed" ? "Задания уже выполнены" : "Задания пройду сам"}
+                        </p>
+                      )}
                     </div>
                   </div>
 

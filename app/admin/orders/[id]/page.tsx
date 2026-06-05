@@ -55,6 +55,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
       priceAtPurchase: orderItems.priceAtPurchase,
       startDate: orderItems.startDate,
       endDate: orderItems.endDate,
+      addonChoice: orderItems.addonChoice,
       serviceTitle: services.title,
       serviceSlug: services.slug,
     })
@@ -123,6 +124,19 @@ export default async function OrderDetailPage({ params }: PageProps) {
                         {new Date(it.startDate).toLocaleDateString("ru-RU")}
                         {" — "}
                         {new Date(it.endDate).toLocaleDateString("ru-RU")}
+                      </div>
+                    )}
+                    {it.addonChoice && (
+                      <div
+                        className={`text-xs font-medium mt-0.5 ${
+                          it.addonChoice === "completed"
+                            ? "text-green-600"
+                            : "text-amber-600"
+                        }`}
+                      >
+                        {it.addonChoice === "completed"
+                          ? "Клиент: задания региона уже выполнены"
+                          : "Клиент: пройдёт задания сам"}
                       </div>
                     )}
                   </div>

@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
         email: users.email,
         receiptEmail: users.receiptEmail,
         telegramUsername: users.telegramUsername,
-        gameUsername: users.gameUsername,
+        adventureRank: users.adventureRank,
       })
       .from(users)
       .where(eq(users.id, userId))
@@ -186,7 +186,7 @@ export async function POST(req: NextRequest) {
     const userNotes =
       `Email: ${user.receiptEmail || user.email}\n` +
       `Telegram: ${user.telegramUsername ?? '—'}\n` +
-      `In-Game Name: ${user.gameUsername ?? '—'}\n` +
+      `Adventure Rank: ${user.adventureRank ?? '—'}\n` +
       `[Создано вручную администратором]` +
       (promocodeCode ? `\nPromocode: ${promocodeCode}` : '');
 

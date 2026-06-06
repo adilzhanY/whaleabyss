@@ -12,6 +12,7 @@ interface User {
   email: string;
   role: string;
   telegramUsername: string | null;
+  adventureRank: number | null;
   createdAt: string;
 }
 
@@ -144,6 +145,15 @@ export default function AdminUsersPage() {
       header: "Telegram",
       render: (u) => (
         <span className="text-slate-600">{u.telegramUsername || "—"}</span>
+      ),
+    },
+    {
+      key: "adventureRank",
+      header: "Ранг прикл.",
+      width: "w-24",
+      hideOnMobile: true,
+      render: (u) => (
+        <span className="text-slate-600">{u.adventureRank ?? "—"}</span>
       ),
     },
     {

@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     const userId: string | null = session?.user?.id || null;
 
     const body = await req.json();
-    const { items, email, telegram, inGameName, method } = body ?? {};
+    const { items, email, telegram, adventureRank, method } = body ?? {};
 
     if (!Array.isArray(items) || items.length === 0) {
       return new NextResponse('Invalid request data', { status: 400 });
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
     });
     total = round2(total);
 
-    const userNotes = `[ТЕСТ ОПЛАТЫ] Email: ${email}\nTelegram: ${telegram}\nIn-Game Name: ${inGameName}\nМетод: ${paymentMethodLabel}`;
+    const userNotes = `[ТЕСТ ОПЛАТЫ] Email: ${email}\nTelegram: ${telegram}\nAdventure Rank: ${adventureRank ?? '—'}\nМетод: ${paymentMethodLabel}`;
 
     // 1. Create the pending test order.
     const newOrderRaw = await db

@@ -39,7 +39,7 @@ export default function AdminTestingPage({ services: testServices }: { services:
           total: Number(service.price),
           email: 'admin@test.com',
           telegram: '@admin',
-          inGameName: 'TestAccount',
+          adventureRank: 60,
           method: 44, // SBP
         }),
       });

@@ -14,7 +14,8 @@ interface UserDetails {
   role: string;
   avatarUrl: string | null;
   telegramUsername: string | null;
-  gameUsername: string | null;
+  gameUsername: string | null; // legacy nickname (pre-AR customers)
+  adventureRank: number | null;
   receiptEmail: string | null;
   createdAt: string;
   updatedAt: string;
@@ -207,11 +208,22 @@ export default function UserDetailPage() {
                 </div>
               )}
 
-              {user.gameUsername && (
+              {user.adventureRank != null && (
                 <div className="flex items-center gap-3">
                   <User className="h-5 w-5 text-slate-400" />
                   <div>
-                    <p className="text-xs text-slate-500">Игровой ник</p>
+                    <p className="text-xs text-slate-500">Ранг приключений</p>
+                    <p className="text-sm font-medium text-slate-700">{user.adventureRank}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Legacy nickname — only for old customers who never set an AR */}
+              {user.adventureRank == null && user.gameUsername && (
+                <div className="flex items-center gap-3">
+                  <User className="h-5 w-5 text-slate-400" />
+                  <div>
+                    <p className="text-xs text-slate-500">Игровой ник (устар.)</p>
                     <p className="text-sm font-medium text-slate-700">{user.gameUsername}</p>
                   </div>
                 </div>

@@ -77,3 +77,9 @@ DELETE FROM cart_items a USING cart_items b
 WHERE a.user_id = b.user_id AND a.service_id = b.service_id AND a.ctid > b.ctid;
 CREATE UNIQUE INDEX IF NOT EXISTS cart_items_user_service_unique
 ON cart_items (user_id, service_id);
+
+-- 2026-06-06: Adventure Rank (Ранг приключений) replaces the in-game nickname
+-- at checkout/profile. users.game_username is kept as a legacy column (old
+-- data stays readable) but no active flow writes it anymore. AR will later
+-- gate services that require a minimum rank.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS adventure_rank integer;

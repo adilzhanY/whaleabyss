@@ -18,7 +18,7 @@ export async function GET() {
         email: users.email,
         receiptEmail: users.receiptEmail,
         telegramUsername: users.telegramUsername,
-        gameUsername: users.gameUsername,
+        adventureRank: users.adventureRank,
       })
       .from(users)
       .where(eq(users.email, session.user.email));
@@ -46,7 +46,7 @@ export async function PUT(req: Request) {
     }
 
     const body = await req.json();
-    const { name, receiptEmail, telegramUsername, gameUsername } = body;
+    const { name, receiptEmail, telegramUsername, adventureRank } = body;
 
     if (!name || typeof name !== "string") {
       return NextResponse.json({ error: "Invalid name" }, { status: 400 });
@@ -56,12 +56,26 @@ export async function PUT(req: Request) {
       username: string;
       receiptEmail: string | null;
       telegramUsername: string | null;
-      gameUsername: string | null;
+      adventureRank: number | null;
     }> = { username: name };
 
     if (receiptEmail !== undefined) updateData.receiptEmail = receiptEmail;
     if (telegramUsername !== undefined) updateData.telegramUsername = telegramUsername;
-    if (gameUsername !== undefined) updateData.gameUsername = gameUsername;
+    if (adventureRank !== undefined) {
+      // Ранг приключений: integer 1–60, or null/empty to clear.
+      if (adventureRank === null || adventureRank === "") {
+        updateData.adventureRank = null;
+      } else {
+        const ar = Math.floor(Number(adventureRank));
+        if (!Number.isFinite(ar) || ar < 1 || ar > 60) {
+          return NextResponse.json(
+            { error: "Ранг приключений должен быть числом от 1 до 60" },
+            { status: 400 }
+          );
+        }
+        updateData.adventureRank = ar;
+      }
+    }
 
     // Update the user details in the database
     await db
@@ -69,7 +83,7 @@ export async function PUT(req: Request) {
       .set(updateData)
       .where(eq(users.email, session.user.email));
 
-    return NextResponse.json({ success: true, name, receiptEmail, telegramUsername, gameUsername });
+    return NextResponse.json({ success: true, name, receiptEmail, telegramUsername, adventureRank: updateData.adventureRank });
   } catch (error) {
     console.error("Profile update error:", error);
     return NextResponse.json(

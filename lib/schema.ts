@@ -10,7 +10,12 @@ export const users = pgTable('users', {
   role: userRoleEnum('role').default('user'),
   avatarUrl: varchar('avatar_url', { length: 255 }),
   telegramUsername: varchar('telegram_username', { length: 255 }),
+  // LEGACY: replaced by adventureRank at checkout/profile. Kept so old users'
+  // data stays readable in admin views; no active flow writes it anymore.
   gameUsername: varchar('game_username', { length: 255 }),
+  // Ранг приключений (Adventure Rank), 1–60. Will later gate services that
+  // require a minimum AR.
+  adventureRank: integer('adventure_rank'),
   receiptEmail: varchar('receipt_email', { length: 255 }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),

@@ -96,7 +96,7 @@ export default function CustomerNotesSection({
           </div>
 
           <p className="text-xs text-slate-400">
-            Меняются только Email и Telegram. Ник в игре и промокод не затрагиваются.
+            Меняются только Email и Telegram. Ранг приключений и промокод не затрагиваются.
           </p>
 
           {error && <p className="text-sm font-medium text-red-600">{error}</p>}

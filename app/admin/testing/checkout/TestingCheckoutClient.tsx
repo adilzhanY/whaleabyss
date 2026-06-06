@@ -25,7 +25,7 @@ const PAYMENT_METHODS = [
 const COMMISSION_PERCENT = 5;
 
 export default function TestingCheckoutClient({ service }: { service: TestService }) {
-  const [inGameName, setInGameName] = useState("");
+  const [adventureRank, setAdventureRank] = useState("");
   const [email, setEmail] = useState("");
   const [telegram, setTelegram] = useState("@");
   const [paymentMethod, setPaymentMethod] = useState<number>(44);
@@ -42,8 +42,13 @@ export default function TestingCheckoutClient({ service }: { service: TestServic
   };
 
   const handlePay = async () => {
-    if (!inGameName || !email || telegram.replace("@", "").trim().length === 0) {
-      setError("Заполните все поля (Ник, Email, Telegram)");
+    const ar = Number(adventureRank);
+    if (!adventureRank || !email || telegram.replace("@", "").trim().length === 0) {
+      setError("Заполните все поля (Ранг приключений, Email, Telegram)");
+      return;
+    }
+    if (!Number.isInteger(ar) || ar < 1 || ar > 60) {
+      setError("Ранг приключений должен быть числом от 1 до 60");
       return;
     }
     try {
@@ -56,7 +61,7 @@ export default function TestingCheckoutClient({ service }: { service: TestServic
           items: [{ id: service.slug, quantity: 1 }],
           email,
           telegram,
-          inGameName,
+          adventureRank: ar,
           method: paymentMethod,
         }),
       });
@@ -118,8 +123,8 @@ export default function TestingCheckoutClient({ service }: { service: TestServic
         <div className="lg:col-span-5 bg-slate-50/80 rounded-3xl p-6 border border-slate-100 flex flex-col gap-6 shadow-sm">
           <div className="grid grid-cols-1 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Ник в игре:</label>
-              <Input type="text" value={inGameName} onChange={(e) => setInGameName(e.target.value)} placeholder="Ник в игре" className="text-sm font-medium" />
+              <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Ранг приключений:</label>
+              <Input type="text" inputMode="numeric" value={adventureRank} onChange={(e) => setAdventureRank(e.target.value.replace(/\D/g, "").slice(0, 2))} placeholder="Например, 45" className="text-sm font-medium" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Username в Telegram:</label>

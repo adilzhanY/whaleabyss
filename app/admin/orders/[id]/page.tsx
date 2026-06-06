@@ -34,7 +34,8 @@ export default async function OrderDetailPage({ params }: PageProps) {
       username: users.username,
       userEmail: users.email,
       telegramUsername: users.telegramUsername,
-      gameUsername: users.gameUsername,
+      adventureRank: users.adventureRank,
+      gameUsername: users.gameUsername, // legacy — shown for old orders without AR
       receiptEmail: users.receiptEmail,
       boosterId: orders.boosterId,
       boosterFirstName: boosters.firstName,
@@ -200,7 +201,15 @@ export default async function OrderDetailPage({ params }: PageProps) {
                 label="Telegram"
                 value={order.telegramUsername ?? "—"}
               />
-              <Row icon={User} label="Ник в игре" value={order.gameUsername ?? "—"} />
+              <Row
+                icon={User}
+                label="Ранг приключений"
+                value={order.adventureRank != null ? String(order.adventureRank) : "—"}
+              />
+              {/* Legacy nickname — only for old customers who never set an AR */}
+              {order.adventureRank == null && order.gameUsername && (
+                <Row icon={User} label="Ник в игре (устар.)" value={order.gameUsername} />
+              )}
             </div>
           </section>
 

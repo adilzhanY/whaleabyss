@@ -18,7 +18,7 @@ export default function ProfilePage() {
   const [email, setEmail] = useState("");
   const [receiptEmail, setReceiptEmail] = useState("");
   const [telegramUsername, setTelegramUsername] = useState("");
-  const [gameUsername, setGameUsername] = useState("");
+  const [adventureRank, setAdventureRank] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -43,7 +43,7 @@ export default function ProfilePage() {
           if (data && !data.error) {
             if (data.receiptEmail) setReceiptEmail(data.receiptEmail);
             if (data.telegramUsername) setTelegramUsername(data.telegramUsername);
-            if (data.gameUsername) setGameUsername(data.gameUsername);
+            if (data.adventureRank) setAdventureRank(String(data.adventureRank));
           }
         })
         .catch(err => console.error("Failed to load profile details", err));
@@ -67,7 +67,7 @@ export default function ProfilePage() {
       const res = await fetch("/api/user/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, receiptEmail, telegramUsername, gameUsername }),
+        body: JSON.stringify({ name, receiptEmail, telegramUsername, adventureRank: adventureRank || null }),
       });
 
       if (res.ok) {
@@ -179,12 +179,13 @@ export default function ProfilePage() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>Ник в игре</label>
+                  <label className="mb-2 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>Ранг приключений</label>
                   <Input
                     type="text"
-                    value={gameUsername}
-                    onChange={(e) => setGameUsername(e.target.value)}
-                    placeholder="Ваш игровой ник"
+                    inputMode="numeric"
+                    value={adventureRank}
+                    onChange={(e) => setAdventureRank(e.target.value.replace(/\D/g, "").slice(0, 2))}
+                    placeholder="Например, 45"
                   />
                 </div>
 

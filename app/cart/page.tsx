@@ -38,11 +38,11 @@ export default function CartPage() {
   const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
 
   // Form Fields
-  const [inGameName, setInGameName] = useState("");
+  const [adventureRank, setAdventureRank] = useState("");
   const [email, setEmail] = useState("");
   const [telegram, setTelegram] = useState("@");
 
-  const [isEditingInGameName, setIsEditingInGameName] = useState(true);
+  const [isEditingAdventureRank, setIsEditingAdventureRank] = useState(true);
   const [isEditingEmail, setIsEditingEmail] = useState(true);
   const [isEditingTelegram, setIsEditingTelegram] = useState(true);
 
@@ -52,9 +52,9 @@ export default function CartPage() {
         .then(res => res.json())
         .then(data => {
           if (data && !data.error) {
-            if (data.gameUsername) {
-              setInGameName(data.gameUsername);
-              setIsEditingInGameName(false);
+            if (data.adventureRank) {
+              setAdventureRank(String(data.adventureRank));
+              setIsEditingAdventureRank(false);
             }
             if (data.receiptEmail || data.email) {
               setEmail(data.receiptEmail || data.email);
@@ -74,6 +74,11 @@ export default function CartPage() {
         .catch(err => console.error("Failed to load profile", err));
     }
   }, [session]);
+
+  // Adventure Rank: digits only, max 2 characters (valid range is 1–60).
+  const handleAdventureRankChange = (raw: string) => {
+    setAdventureRank(raw.replace(/\D/g, "").slice(0, 2));
+  };
 
   // Keep a single leading "@" and allow only ASCII (blocks Cyrillic / other
   // scripts) while still permitting digits and special symbols for the username.
@@ -157,8 +162,13 @@ export default function CartPage() {
       setError("Необходимо согласиться на обработку персональных данных");
       return;
     }
-    if (!inGameName || !email || telegram.replace("@", "").trim().length === 0) {
-      setError("Пожалуйста, заполните все поля (Ник, Email, Telegram)");
+    const ar = Number(adventureRank);
+    if (!adventureRank || !email || telegram.replace("@", "").trim().length === 0) {
+      setError("Пожалуйста, заполните все поля (Ранг приключений, Email, Telegram)");
+      return;
+    }
+    if (!Number.isInteger(ar) || ar < 1 || ar > 60) {
+      setError("Ранг приключений должен быть числом от 1 до 60");
       return;
     }
 
@@ -174,7 +184,7 @@ export default function CartPage() {
           total: afterDiscount,
           email,
           telegram,
-          inGameName,
+          adventureRank: ar,
           method: paymentMethod,
           promocode: appliedPromocode?.code || null,
         })
@@ -295,13 +305,13 @@ export default function CartPage() {
               </p>
               <div className="grid grid-cols-2 gap-4 pt-1">
                 <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Ник в игре:</label>
-                  {isEditingInGameName ? (
-                    <Input type="text" value={inGameName} onChange={e => setInGameName(e.target.value)} placeholder="Ник в игре" className="text-sm font-medium" />
+                  <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Ранг приключений:</label>
+                  {isEditingAdventureRank ? (
+                    <Input type="text" inputMode="numeric" value={adventureRank} onChange={e => handleAdventureRankChange(e.target.value)} placeholder="Например, 45" className="text-sm font-medium" />
                   ) : (
                     <div className="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-transparent bg-slate-100/50 text-sm font-semibold text-slate-700">
-                      <span className="truncate">{inGameName}</span>
-                      <button onClick={() => setIsEditingInGameName(true)} className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer ml-2 shrink-0">
+                      <span className="truncate">{adventureRank}</span>
+                      <button onClick={() => setIsEditingAdventureRank(true)} className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer ml-2 shrink-0">
                         <Edit2 className="w-4 h-4" />
                       </button>
                     </div>

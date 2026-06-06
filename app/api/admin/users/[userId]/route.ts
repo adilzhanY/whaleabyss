@@ -106,7 +106,8 @@ export async function GET(
         role: user.role,
         avatarUrl: user.avatarUrl,
         telegramUsername: user.telegramUsername,
-        gameUsername: user.gameUsername,
+        gameUsername: user.gameUsername, // legacy — kept for old customers
+        adventureRank: user.adventureRank,
         receiptEmail: user.receiptEmail,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,

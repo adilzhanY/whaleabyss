@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     const userId: string | null = session?.user?.id || null;
 
     const body = await req.json();
-    const { items, email, telegram, inGameName, method, promocode } = body ?? {};
+    const { items, email, telegram, adventureRank, method, promocode } = body ?? {};
 
     if (!Array.isArray(items) || items.length === 0) {
       console.error('[Checkout] Validation failed: items empty');
@@ -37,6 +37,13 @@ export async function POST(req: NextRequest) {
 
     if (!email) {
       return new NextResponse('Email is required for receipts', { status: 400 });
+    }
+
+    // Adventure Rank (Ранг приключений) is required: integer 1–60. Will later
+    // gate services that need a minimum AR.
+    const ar = Math.floor(Number(adventureRank));
+    if (!Number.isFinite(ar) || ar < 1 || ar > 60) {
+      return new NextResponse('Valid Adventure Rank (1-60) is required', { status: 400 });
     }
 
     // Validate `method` (payment method id) if supplied. Note: all payments are
@@ -118,7 +125,7 @@ export async function POST(req: NextRequest) {
 
     const total = round2(subtotal * (1 - discountPercent / 100));
 
-    const userNotes = `Email: ${email}\nTelegram: ${telegram}\nIn-Game Name: ${inGameName}${promocodeCode ? `\nPromocode: ${promocodeCode}` : ''}`;
+    const userNotes = `Email: ${email}\nTelegram: ${telegram}\nAdventure Rank: ${ar}${promocodeCode ? `\nPromocode: ${promocodeCode}` : ''}`;
 
     // Persist latest contact info for logged-in users and prefer their saved receipt email.
     let receiptEmail = email as string;
@@ -127,7 +134,7 @@ export async function POST(req: NextRequest) {
         .update(users)
         .set({
           telegramUsername: telegram,
-          gameUsername: inGameName,
+          adventureRank: ar,
           receiptEmail: email,
         })
         .where(eq(users.id, userId));

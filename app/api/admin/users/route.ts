@@ -11,6 +11,7 @@ export async function GET() {
       role: users.role,
       avatarUrl: users.avatarUrl,
       telegramUsername: users.telegramUsername,
+      adventureRank: users.adventureRank,
       createdAt: users.createdAt,
     }).from(users);
 

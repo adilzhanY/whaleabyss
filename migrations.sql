@@ -83,3 +83,24 @@ ON cart_items (user_id, service_id);
 -- data stays readable) but no active flow writes it anymore. AR will later
 -- gate services that require a minimum rank.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS adventure_rank integer;
+
+-- 2026-06-07: Booster documents (договор + скан паспорта). Files live in the
+-- PRIVATE bucket whaleabyss-private (the main bucket is public-read — even
+-- object ACL 'private' is overridden there, verified). Access only by
+-- streaming through the admin-guarded API route; no public URLs ever exist.
+DO $$ BEGIN
+  CREATE TYPE booster_doc_type AS ENUM ('agreement', 'passport');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+CREATE TABLE IF NOT EXISTS booster_documents (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  booster_id uuid NOT NULL REFERENCES boosters(id) ON DELETE CASCADE,
+  doc_type booster_doc_type NOT NULL,
+  s3_key varchar(512) NOT NULL,
+  file_name varchar(255) NOT NULL,
+  mime_type varchar(100) NOT NULL,
+  size_bytes integer NOT NULL,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now(),
+  CONSTRAINT booster_documents_booster_doc_type_unique UNIQUE (booster_id, doc_type)
+);

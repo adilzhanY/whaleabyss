@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { boosters, orders, users } from '@/lib/schema';
+import { boosters, boosterDocuments, orders, users } from '@/lib/schema';
 import { desc, eq } from 'drizzle-orm';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
@@ -40,8 +40,22 @@ export async function GET(
     const completedCount = assignedOrders.filter((o) => o.status === 'completed').length;
     const activeCount = assignedOrders.filter((o) => o.status === 'in_progress').length;
 
+    // Metadata only — the files themselves are streamed via the documents route.
+    const documents = await db
+      .select({
+        id: boosterDocuments.id,
+        docType: boosterDocuments.docType,
+        fileName: boosterDocuments.fileName,
+        mimeType: boosterDocuments.mimeType,
+        sizeBytes: boosterDocuments.sizeBytes,
+        updatedAt: boosterDocuments.updatedAt,
+      })
+      .from(boosterDocuments)
+      .where(eq(boosterDocuments.boosterId, id));
+
     return NextResponse.json({
       booster,
+      documents,
       orders: assignedOrders,
       stats: {
         totalOrders: assignedOrders.length,

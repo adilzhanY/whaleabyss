@@ -14,7 +14,9 @@ import {
   Pencil,
 } from "lucide-react";
 import OrderStatusBadge from "../../_components/OrderStatusBadge";
+import CopyableText, { CopyButton } from "../../_components/CopyableText";
 import EditBoosterModal from "./EditBoosterModal";
+import DocumentsCard, { type BoosterDocument } from "./DocumentsCard";
 import TelegramIcon from "@/components/TelegramIcon";
 
 interface Booster {
@@ -44,6 +46,7 @@ interface AssignedOrder {
 
 interface Payload {
   booster: Booster;
+  documents: BoosterDocument[];
   orders: AssignedOrder[];
   stats: { totalOrders: number; completedOrders: number; activeOrders: number };
 }
@@ -100,7 +103,7 @@ export default function BoosterDetailPage({
     );
   }
 
-  const { booster: b, orders, stats } = data;
+  const { booster: b, documents, orders, stats } = data;
 
   const infoRows: { icon: React.ElementType; label: string; value: React.ReactNode }[] = [
     { icon: Hash, label: "ID", value: <span className="font-mono text-xs">{b.id}</span> },
@@ -108,13 +111,24 @@ export default function BoosterDetailPage({
       icon: TelegramIcon,
       label: "Telegram",
       value: b.telegramUsername ? (
-        <a href={`https://t.me/${b.telegramUsername.replace(/^@/, "")}`} target="_blank" rel="noreferrer" className="text-sky-600 hover:underline">
-          {b.telegramUsername}
-        </a>
+        <span className="inline-flex items-center gap-1.5 max-w-full">
+          <a href={`https://t.me/${b.telegramUsername.replace(/^@/, "")}`} target="_blank" rel="noreferrer" className="text-sky-600 hover:underline truncate">
+            {b.telegramUsername}
+          </a>
+          <CopyButton value={b.telegramUsername} />
+        </span>
       ) : "—",
     },
-    { icon: Hash, label: "ИНН", value: <span className="font-mono">{b.inn || "—"}</span> },
-    { icon: CreditCard, label: "Реквизиты", value: b.payoutDetails || "—" },
+    {
+      icon: Hash,
+      label: "ИНН",
+      value: b.inn ? <CopyableText value={b.inn} className="font-mono" /> : "—",
+    },
+    {
+      icon: CreditCard,
+      label: "Реквизиты",
+      value: b.payoutDetails ? <CopyableText value={b.payoutDetails} /> : "—",
+    },
     { icon: Percent, label: "Комиссия", value: `${b.commissionPercent}%` },
     { icon: Wallet, label: "Баланс", value: `${Number(b.balance).toLocaleString("ru-RU")} ₽` },
     { icon: Cake, label: "Дата рождения", value: fmtDate(b.birthDate) },
@@ -193,6 +207,9 @@ export default function BoosterDetailPage({
           </div>
         )}
       </div>
+
+      {/* Documents (agreement + passport scan, private bucket) */}
+      <DocumentsCard key={b.id} boosterId={b.id} initialDocuments={documents ?? []} />
 
       {/* Orders */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">

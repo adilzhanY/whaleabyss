@@ -37,7 +37,8 @@ const cspDirectives = [
   "img-src 'self' data: blob: https://storage.yandexcloud.net https://mc.yandex.ru",
   "font-src 'self' data:",
   "connect-src 'self' https://mc.yandex.ru https://mc.yandex.com https://smartcaptcha.cloud.yandex.ru",
-  "frame-src https://smartcaptcha.cloud.yandex.ru https://*.yandex.ru",
+  // 'self' — admin booster-document viewer renders PDFs in a same-origin iframe.
+  "frame-src 'self' https://smartcaptcha.cloud.yandex.ru https://*.yandex.ru",
   "worker-src 'self' blob:",
   "upgrade-insecure-requests",
 ].join("; ");

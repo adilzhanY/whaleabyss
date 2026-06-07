@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, timestamp, pgEnum, decimal, text, integer, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, pgEnum, decimal, text, integer, boolean, unique } from 'drizzle-orm/pg-core';
 
 export const userRoleEnum = pgEnum('user_role', ['user', 'admin', 'booster']);
 
@@ -196,3 +196,25 @@ export const boosters = pgTable('boosters', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
+
+export const boosterDocTypeEnum = pgEnum('booster_doc_type', ['agreement', 'passport']);
+
+// Personal documents (договор + скан паспорта) for each booster. The files
+// themselves live in the PRIVATE bucket (`whaleabyss-private`) — never in the
+// public one — and are only reachable by streaming through the admin-guarded
+// API route. One document of each type per booster; re-upload replaces.
+export const boosterDocuments = pgTable('booster_documents', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  boosterId: uuid('booster_id').notNull().references(() => boosters.id, { onDelete: 'cascade' }),
+  docType: boosterDocTypeEnum('doc_type').notNull(),
+  // Key inside the private bucket — random suffix, no PII in the key itself.
+  s3Key: varchar('s3_key', { length: 512 }).notNull(),
+  // Original filename, kept only for the download dialog.
+  fileName: varchar('file_name', { length: 255 }).notNull(),
+  mimeType: varchar('mime_type', { length: 100 }).notNull(),
+  sizeBytes: integer('size_bytes').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+}, (t) => [
+  unique('booster_documents_booster_doc_type_unique').on(t.boosterId, t.docType),
+]);

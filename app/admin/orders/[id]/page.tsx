@@ -5,6 +5,7 @@ import { orders, orderItems, services, users, boosters } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import OrderStatusBadge from "../../_components/OrderStatusBadge";
 import OrderBoosterCell from "../../_components/OrderBoosterCell";
+import OrderOnlineToggle from "../../_components/OrderOnlineToggle";
 import StatusChanger from "./StatusChanger";
 import RefundButton from "./RefundButton";
 import DeleteOrderButton from "./DeleteOrderButton";
@@ -39,6 +40,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
       receiptEmail: users.receiptEmail,
       boosterId: orders.boosterId,
       boosterFirstName: boosters.firstName,
+      boosterOnline: orders.boosterOnline,
     })
     .from(orders)
     .leftJoin(users, eq(orders.userId, users.id))
@@ -181,6 +183,19 @@ export default async function OrderDetailPage({ params }: PageProps) {
               boosterId={order.boosterId}
               boosterFirstName={order.boosterFirstName}
             />
+            {order.status === "in_progress" && order.boosterId && (
+              <div className="mt-4 pt-4 border-t border-slate-100">
+                <div className="text-xs text-slate-400 mb-2">
+                  На аккаунте клиента (видно клиенту в заказе)
+                </div>
+                <OrderOnlineToggle
+                  orderId={order.id}
+                  status={order.status ?? "pending"}
+                  boosterId={order.boosterId}
+                  online={order.boosterOnline}
+                />
+              </div>
+            )}
           </section>
 
           <section className="bg-white rounded-3xl border border-slate-200 p-6">

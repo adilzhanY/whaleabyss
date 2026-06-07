@@ -5,6 +5,7 @@ import { ExternalLink } from "lucide-react";
 import type { Column } from "./DataTable";
 import OrderStatusCell from "./OrderStatusCell";
 import OrderBoosterCell from "./OrderBoosterCell";
+import OrderOnlineToggle from "./OrderOnlineToggle";
 import CopyableTelegram from "./CopyableTelegram";
 import OrderItemsCell, { type OrderItemSummary } from "./OrderItemsCell";
 
@@ -23,6 +24,7 @@ export interface OrderRow {
   telegramUsername: string | null;
   boosterId: string | null;
   boosterFirstName: string | null;
+  boosterOnline: boolean;
   items: OrderItemSummary[];
 }
 
@@ -148,6 +150,22 @@ export function buildOrderColumns({
                 ...(newStatus ? { status: newStatus } : {}),
               })
             }
+          />
+        </div>
+      ),
+    },
+    {
+      key: "online",
+      header: "На аккаунте",
+      mobileLabel: "На аккаунте",
+      render: (o) => (
+        <div className="md:block flex justify-end">
+          <OrderOnlineToggle
+            orderId={o.id}
+            status={o.status ?? "pending"}
+            boosterId={o.boosterId}
+            online={o.boosterOnline}
+            onResult={(online) => onOrderChange(o.id, { boosterOnline: online })}
           />
         </div>
       ),

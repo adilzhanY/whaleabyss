@@ -71,11 +71,42 @@ export async function PATCH(
       );
     }
     updates.status = status;
+    // Leaving "in work" makes «на аккаунте» meaningless — clear it.
+    if (status !== "in_progress" && body.boosterOnline === undefined) {
+      updates.boosterOnline = false;
+    }
   }
 
-  if (body.status === undefined && body.boosterId === undefined) {
+  // «На аккаунте» toggle (admin override of the booster's portal toggle).
+  // Only meaningful while the order is in work.
+  if (body.boosterOnline !== undefined) {
+    if (typeof body.boosterOnline !== "boolean") {
+      return NextResponse.json({ error: "Invalid boosterOnline" }, { status: 400 });
+    }
+    const effectiveStatus =
+      (updates.status as string | undefined) ??
+      (
+        await db
+          .select({ status: orders.status })
+          .from(orders)
+          .where(eq(orders.id, id))
+      )[0]?.status;
+    if (effectiveStatus !== "in_progress") {
+      return NextResponse.json(
+        { error: "Статус «на аккаунте» доступен только для заказов в работе" },
+        { status: 400 }
+      );
+    }
+    updates.boosterOnline = body.boosterOnline;
+  }
+
+  if (
+    body.status === undefined &&
+    body.boosterId === undefined &&
+    body.boosterOnline === undefined
+  ) {
     return NextResponse.json(
-      { error: "Body must include status and/or boosterId" },
+      { error: "Body must include status, boosterId and/or boosterOnline" },
       { status: 400 }
     );
   }
@@ -84,7 +115,12 @@ export async function PATCH(
     .update(orders)
     .set(updates)
     .where(eq(orders.id, id))
-    .returning({ id: orders.id, status: orders.status, boosterId: orders.boosterId });
+    .returning({
+      id: orders.id,
+      status: orders.status,
+      boosterId: orders.boosterId,
+      boosterOnline: orders.boosterOnline,
+    });
 
   if (result.length === 0) {
     return NextResponse.json({ error: "Order not found" }, { status: 404 });

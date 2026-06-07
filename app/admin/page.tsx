@@ -339,6 +339,7 @@ async function getRecentOrders(): Promise<OrderRow[]> {
       telegramUsername: users.telegramUsername,
       boosterId: orders.boosterId,
       boosterFirstName: boosters.firstName,
+      boosterOnline: orders.boosterOnline,
     })
     .from(orders)
     .leftJoin(users, eq(orders.userId, users.id))

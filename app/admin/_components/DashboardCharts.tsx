@@ -7,7 +7,6 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
-  Label,
   LabelList,
   Line,
   LineChart,
@@ -18,8 +17,6 @@ import {
 } from "recharts";
 import {
   ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
@@ -72,8 +69,11 @@ const labelFormatter = (unit: TimeUnit) => (_label: unknown, payload: readonly {
   return d.toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" });
 };
 
+// NBSP-joined so recharts' <Text> never wraps the tick onto two lines.
 const compactRub = (v: number) =>
-  `${new Intl.NumberFormat("ru-RU", { notation: "compact", maximumFractionDigits: 1 }).format(v)} ₽`;
+  `${new Intl.NumberFormat("ru-RU", { notation: "compact", maximumFractionDigits: 1 })
+    .format(v)
+    .replace(/\s/g, " ")} ₽`;
 
 const fullRub = (v: number) => `${v.toLocaleString("ru-RU")} ₽`;
 
@@ -85,7 +85,9 @@ const revenueConfig = {
 
 export function RevenueAreaChart({ data, unit }: { data: SeriesPoint[]; unit: TimeUnit }) {
   return (
-    <ChartContainer config={revenueConfig} className="h-[180px] w-full">
+    // h-full: the hero card stretches to match the stacked column beside it —
+    // fill whatever height the card gives us instead of a fixed 180px strip.
+    <ChartContainer config={revenueConfig} className="h-full min-h-[180px] w-full">
       <AreaChart accessibilityLayer data={data} margin={{ left: 4, right: 4 }}>
         <defs>
           <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -106,7 +108,7 @@ export function RevenueAreaChart({ data, unit }: { data: SeriesPoint[]; unit: Ti
           tickLine={false}
           axisLine={false}
           tickMargin={4}
-          width={64}
+          width={72}
           tickFormatter={(v: number) => compactRub(v)}
         />
         <ChartTooltip
@@ -292,45 +294,51 @@ const statusConfig = {
 export function OrderStatusDonut({ data }: { data: StatusPoint[] }) {
   const total = data.reduce((sum, d) => sum + d.count, 0);
   return (
-    <ChartContainer config={statusConfig} className="mx-auto aspect-square max-h-[240px]">
-      <PieChart accessibilityLayer>
-        <ChartTooltip content={<ChartTooltipContent nameKey="status" hideLabel />} />
-        <Pie
-          data={data}
-          dataKey="count"
-          nameKey="status"
-          innerRadius={58}
-          outerRadius={84}
-          cornerRadius={6}
-          strokeWidth={2}
-          paddingAngle={3}
-        >
-          {data.map((entry) => (
-            <Cell key={entry.status} fill={`var(--color-${entry.status})`} />
-          ))}
-          <Label
-            content={({ viewBox }) => {
-              if (!viewBox || !("cx" in viewBox)) return null;
-              const { cx, cy } = viewBox as { cx: number; cy: number };
-              return (
-                <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
-                  <tspan x={cx} y={cy - 6} className="fill-foreground text-2xl font-bold tabular-nums">
-                    {total.toLocaleString("ru-RU")}
-                  </tspan>
-                  <tspan x={cx} y={cy + 16} className="fill-muted-foreground text-xs">
-                    {pluralizeOrders(total)}
-                  </tspan>
-                </text>
-              );
-            }}
-          />
-        </Pie>
-        <ChartLegend
-          content={<ChartLegendContent nameKey="status" />}
-          className="flex-wrap gap-x-4 gap-y-1"
-        />
-      </PieChart>
-    </ChartContainer>
+    <div className="flex flex-col items-center gap-3">
+      {/* The legend lives outside the SVG so the ring centers exactly in the
+          container — the total is an HTML overlay, dead-center by flexbox. */}
+      <div className="relative">
+        <ChartContainer config={statusConfig} className="aspect-square h-[200px]">
+          <PieChart accessibilityLayer>
+            <ChartTooltip content={<ChartTooltipContent nameKey="status" hideLabel />} />
+            <Pie
+              data={data}
+              dataKey="count"
+              nameKey="status"
+              innerRadius={58}
+              outerRadius={84}
+              cornerRadius={6}
+              strokeWidth={2}
+              paddingAngle={3}
+            >
+              {data.map((entry) => (
+                <Cell key={entry.status} fill={`var(--color-${entry.status})`} />
+              ))}
+            </Pie>
+          </PieChart>
+        </ChartContainer>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-3xl font-bold tracking-tight tabular-nums">
+            {total.toLocaleString("ru-RU")}
+          </span>
+          <span className="text-xs text-muted-foreground">{pluralizeOrders(total)}</span>
+        </div>
+      </div>
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5">
+        {data.map((d) => {
+          const cfg = (statusConfig as Record<string, { label?: string; color?: string }>)[d.status];
+          return (
+            <span key={d.status} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span
+                className="size-2.5 shrink-0 rounded-[2px]"
+                style={{ backgroundColor: cfg?.color }}
+              />
+              {cfg?.label ?? d.status}
+            </span>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 

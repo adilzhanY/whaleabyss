@@ -405,7 +405,9 @@ export default async function AdminDashboardPage({
             icon={TrendingUp}
             iconClass="bg-primary/10 text-primary"
           />
-          <CardContent>
+          {/* flex-1: let the chart fill the card's full height (it stretches
+              to match the stacked column on the right). */}
+          <CardContent className="flex-1">
             {series.length === 0 ? (
               <EmptyChart />
             ) : (

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { orders, orderItems, services, users, boosters } from "@/lib/schema";
-import { desc, eq, sql, and, gte, inArray } from "drizzle-orm";
+import { desc, eq, sql, and, or, gte, inArray, isNotNull } from "drizzle-orm";
 import {
   ShoppingBag,
   TrendingUp,
@@ -9,10 +9,26 @@ import {
   Users as UsersIcon,
   ArrowRight,
 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import RecentOrdersTable from "./_components/RecentOrdersTable";
 import type { OrderRow } from "./_components/orderColumns";
 import TimeRangeSelect from "./_components/TimeRangeSelect";
 import { TIME_RANGE_OPTIONS, type TimeRange } from "./_components/timeRange";
+import {
+  RevenueAreaChart,
+  OrdersBarChart,
+  ClientsLineChart,
+  TopServicesChart,
+  OrderStatusDonut,
+  type SeriesPoint,
+  type TimeUnit,
+} from "./_components/DashboardCharts";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +43,19 @@ const RANGE_SUFFIX: Record<TimeRange, string> = {
   "1y": "за год",
   all: "за всё время",
 };
+
+/** Chart bucket granularity per range — keeps point counts readable. */
+const RANGE_UNIT: Record<TimeRange, TimeUnit> = {
+  "1d": "hour",
+  "3d": "day",
+  "7d": "day",
+  "1m": "day",
+  "6m": "week",
+  "1y": "month",
+  all: "month",
+};
+
+const SUCCESSFUL_STATUSES = ["paid", "in_progress", "completed", "refunded"] as const;
 
 function parseRange(raw: string | string[] | undefined): TimeRange {
   const value = Array.isArray(raw) ? raw[0] : raw;
@@ -48,11 +77,9 @@ function rangeCutoff(range: TimeRange): Date | null {
 }
 
 async function getStats(cutoff: Date | null) {
-  const successfulStatuses = ["paid", "in_progress", "completed", "refunded"] as const;
-
   const orderWhere = cutoff
-    ? and(gte(orders.createdAt, cutoff), inArray(orders.status, successfulStatuses))
-    : inArray(orders.status, successfulStatuses);
+    ? and(gte(orders.createdAt, cutoff), inArray(orders.status, SUCCESSFUL_STATUSES))
+    : inArray(orders.status, SUCCESSFUL_STATUSES);
 
   const [orderStats] = await db
     .select({
@@ -79,6 +106,148 @@ async function getStats(cutoff: Date | null) {
     awaitingFulfilment: pending?.count ?? 0,
     userCount: userCount?.count ?? 0,
   };
+}
+
+// ── Time series for the charts ───────────────────────────────────────────────
+
+/** UTC-truncate to the bucket start — must mirror Postgres date_trunc (UTC session). */
+function truncUTC(date: Date, unit: TimeUnit): Date {
+  const d = new Date(date);
+  d.setUTCMinutes(0, 0, 0);
+  if (unit === "hour") return d;
+  d.setUTCHours(0);
+  if (unit === "day") return d;
+  if (unit === "week") {
+    // ISO week: Monday start, same as date_trunc('week').
+    d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+    return d;
+  }
+  d.setUTCDate(1);
+  return d;
+}
+
+function addUnit(date: Date, unit: TimeUnit): Date {
+  const d = new Date(date);
+  switch (unit) {
+    case "hour": d.setUTCHours(d.getUTCHours() + 1); break;
+    case "day": d.setUTCDate(d.getUTCDate() + 1); break;
+    case "week": d.setUTCDate(d.getUTCDate() + 7); break;
+    case "month": d.setUTCMonth(d.getUTCMonth() + 1); break;
+  }
+  return d;
+}
+
+/**
+ * Revenue + orders + new clients bucketed by `unit`. Gaps are zero-filled in
+ * JS so the charts show a continuous timeline, not just days with activity.
+ */
+async function getTimeSeries(cutoff: Date | null, unit: TimeUnit): Promise<SeriesPoint[]> {
+  // `unit` comes from the fixed RANGE_UNIT map — safe to inline raw.
+  const orderBucket = sql<string>`(extract(epoch from date_trunc('${sql.raw(unit)}', ${orders.createdAt}))::bigint)`;
+  const userBucket = sql<string>`(extract(epoch from date_trunc('${sql.raw(unit)}', ${users.createdAt}))::bigint)`;
+
+  const orderWhere = cutoff
+    ? and(gte(orders.createdAt, cutoff), inArray(orders.status, SUCCESSFUL_STATUSES))
+    : inArray(orders.status, SUCCESSFUL_STATUSES);
+
+  const [orderRows, userRows] = await Promise.all([
+    db
+      .select({
+        bucket: orderBucket,
+        orders: sql<number>`count(*)::int`,
+        revenue: sql<string>`coalesce(sum(case when ${orders.status} = 'refunded' then 0 else ${orders.totalPrice} end), 0)::text`,
+      })
+      .from(orders)
+      .where(orderWhere)
+      .groupBy(orderBucket),
+    db
+      .select({
+        bucket: userBucket,
+        clients: sql<number>`count(*)::int`,
+      })
+      .from(users)
+      .where(cutoff ? gte(users.createdAt, cutoff) : sql`true`)
+      .groupBy(userBucket),
+  ]);
+
+  const byBucket = new Map<number, { revenue: number; orders: number; clients: number }>();
+  const at = (ms: number) => {
+    let p = byBucket.get(ms);
+    if (!p) {
+      p = { revenue: 0, orders: 0, clients: 0 };
+      byBucket.set(ms, p);
+    }
+    return p;
+  };
+  for (const r of orderRows) {
+    const p = at(Number(r.bucket) * 1000);
+    p.orders = r.orders;
+    p.revenue = Number(r.revenue);
+  }
+  for (const r of userRows) {
+    at(Number(r.bucket) * 1000).clients = r.clients;
+  }
+
+  if (byBucket.size === 0) return [];
+
+  // Zero-fill from the cutoff (or earliest data for "all") to now.
+  const firstData = Math.min(...byBucket.keys());
+  const start = cutoff ? truncUTC(cutoff, unit) : new Date(firstData);
+  const end = truncUTC(new Date(), unit);
+
+  const points: SeriesPoint[] = [];
+  for (let d = start; d <= end && points.length < 500; d = addUnit(d, unit)) {
+    const t = d.getTime();
+    const p = byBucket.get(t);
+    points.push({ t, revenue: p?.revenue ?? 0, orders: p?.orders ?? 0, clients: p?.clients ?? 0 });
+  }
+  return points;
+}
+
+/**
+ * Order status composition within the range. Abandoned checkouts (cancelled
+ * with no paymentId) are excluded — they're noise, not business outcomes.
+ */
+async function getStatusBreakdown(cutoff: Date | null) {
+  const meaningful = or(
+    inArray(orders.status, SUCCESSFUL_STATUSES),
+    and(eq(orders.status, "cancelled"), isNotNull(orders.paymentId))
+  );
+
+  const rows = await db
+    .select({
+      status: orders.status,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(orders)
+    .where(cutoff ? and(gte(orders.createdAt, cutoff), meaningful) : meaningful)
+    .groupBy(orders.status)
+    .orderBy(desc(sql`count(*)`));
+
+  return rows.map((r) => ({ status: r.status ?? "paid", count: r.count }));
+}
+
+async function getTopServices(cutoff: Date | null) {
+  const orderFilter = cutoff
+    ? and(inArray(orders.status, SUCCESSFUL_STATUSES), gte(orders.createdAt, cutoff))
+    : inArray(orders.status, SUCCESSFUL_STATUSES);
+
+  const rows = await db
+    .select({
+      id: services.id,
+      title: services.title,
+      sold: sql<number>`count(${orderItems.id})::int`,
+      revenue: sql<string>`coalesce(sum(${orderItems.priceAtPurchase} * coalesce(${orderItems.quantity}, 1)), 0)::text`,
+    })
+    .from(services)
+    .innerJoin(orderItems, eq(orderItems.serviceId, services.id))
+    .innerJoin(orders, eq(orderItems.orderId, orders.id))
+    .where(orderFilter)
+    .groupBy(services.id, services.title)
+    .orderBy(desc(sql<number>`count(${orderItems.id})`))
+    .limit(5);
+
+  return rows.map((r) => ({ title: r.title, sold: r.sold, revenue: Number(r.revenue) }));
 }
 
 async function getRecentOrders(): Promise<OrderRow[]> {
@@ -141,24 +310,6 @@ async function getRecentOrders(): Promise<OrderRow[]> {
   }));
 }
 
-async function getTopServices() {
-  const rows = await db
-    .select({
-      id: services.id,
-      title: services.title,
-      sold: sql<number>`count(${orderItems.id})::int`,
-    })
-    .from(services)
-    .leftJoin(orderItems, eq(orderItems.serviceId, services.id))
-    .leftJoin(orders, eq(orderItems.orderId, orders.id))
-    .where(inArray(orders.status, ["paid", "in_progress", "completed", "refunded"]))
-    .groupBy(services.id, services.title)
-    .orderBy(desc(sql<number>`count(${orderItems.id})`))
-    .limit(5);
-
-  return rows;
-}
-
 export default async function AdminDashboardPage({
   searchParams,
 }: {
@@ -167,21 +318,24 @@ export default async function AdminDashboardPage({
   const { range: rangeParam } = await searchParams;
   const range = parseRange(rangeParam);
   const cutoff = rangeCutoff(range);
+  const unit = RANGE_UNIT[range];
   const suffix = RANGE_SUFFIX[range];
 
-  const [stats, recent, top] = await Promise.all([
+  const [stats, series, statuses, top, recent] = await Promise.all([
     getStats(cutoff),
+    getTimeSeries(cutoff, unit),
+    getStatusBreakdown(cutoff),
+    getTopServices(cutoff),
     getRecentOrders(),
-    getTopServices(),
   ]);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto flex flex-col gap-6">
       {/* Greeting */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Обзор</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Быстрая сводка по магазину {suffix}
           </p>
         </div>
@@ -194,69 +348,97 @@ export default async function AdminDashboardPage({
           icon={TrendingUp}
           label={`Выручка ${suffix}`}
           value={`${stats.revenue.toLocaleString("ru-RU")} ₽`}
-          tone="indigo"
         />
         <StatCard
           icon={ShoppingBag}
           label={`Заказов ${suffix}`}
           value={stats.orderCount.toString()}
-          tone="emerald"
         />
         <StatCard
           icon={Clock}
           label="Ожидают выполнения"
           value={stats.awaitingFulfilment.toString()}
-          tone="amber"
         />
         <StatCard
           icon={UsersIcon}
           label={`Пользователей ${suffix}`}
           value={stats.userCount.toString()}
-          tone="slate"
         />
       </div>
 
+      {/* Revenue */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Выручка</CardTitle>
+          <CardDescription>Динамика выручки {suffix}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {series.length === 0 ? (
+            <EmptyChart />
+          ) : (
+            <RevenueAreaChart data={series} unit={unit} />
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Orders + clients */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Заказы</CardTitle>
+            <CardDescription>Количество заказов {suffix}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {series.length === 0 ? <EmptyChart /> : <OrdersBarChart data={series} unit={unit} />}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Новые клиенты</CardTitle>
+            <CardDescription>Регистрации {suffix}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {series.length === 0 ? <EmptyChart /> : <ClientsLineChart data={series} unit={unit} />}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Top services + status breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Топ услуги</CardTitle>
+            <CardDescription>Самые продаваемые услуги {suffix}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {top.length === 0 ? <EmptyChart /> : <TopServicesChart data={top} />}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Статусы заказов</CardTitle>
+            <CardDescription>Распределение по статусам {suffix}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {statuses.length === 0 ? <EmptyChart /> : <OrderStatusDonut data={statuses} />}
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Recent orders — same table component as /admin/orders */}
-      <section className="space-y-4">
+      <section className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Последние заказы</h2>
           <Link
             href="/admin/orders"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:opacity-80 transition-opacity"
           >
             Все заказы
-            <ArrowRight className="w-4 h-4" strokeWidth={2.25} />
+            <ArrowRight className="size-4" strokeWidth={2.25} />
           </Link>
         </div>
 
         <RecentOrdersTable initialOrders={recent} />
-      </section>
-
-      {/* Top services */}
-      <section className="bg-white rounded-3xl border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold mb-5">Топ услуги</h2>
-        {top.length === 0 ? (
-          <div className="text-sm text-slate-500 py-4">Нет продаж.</div>
-        ) : (
-          <div className="space-y-3">
-            {top.map((s, idx) => (
-              <div
-                key={s.id}
-                className="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-600 text-sm font-semibold flex items-center justify-center">
-                  {idx + 1}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{s.title}</div>
-                </div>
-                <div className="text-sm text-slate-500">
-                  {s.sold} {pluralize(s.sold, ["продажа", "продажи", "продаж"])}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </section>
     </div>
   );
@@ -266,38 +448,28 @@ function StatCard({
   icon: Icon,
   label,
   value,
-  tone,
 }: {
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   label: string;
   value: string;
-  tone: "indigo" | "emerald" | "amber" | "slate";
 }) {
-  const tones: Record<string, string> = {
-    indigo: "bg-indigo-50 text-indigo-600",
-    emerald: "bg-emerald-50 text-emerald-600",
-    amber: "bg-amber-50 text-amber-600",
-    slate: "bg-slate-100 text-slate-700",
-  };
   return (
-    <div className="bg-white rounded-3xl border border-slate-200 p-5">
-      <div
-        className={`w-11 h-11 rounded-2xl ${tones[tone]} flex items-center justify-center mb-4`}
-      >
-        <Icon className="w-5 h-5" strokeWidth={2.25} />
-      </div>
-      <div className="text-xs uppercase tracking-wider text-slate-500 font-medium">
-        {label}
-      </div>
-      <div className="text-2xl font-semibold mt-1 tracking-tight">{value}</div>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardDescription className="flex items-center gap-2">
+          <Icon className="size-4" strokeWidth={2.25} />
+          {label}
+        </CardDescription>
+        <CardTitle className="text-2xl tabular-nums">{value}</CardTitle>
+      </CardHeader>
+    </Card>
   );
 }
 
-function pluralize(n: number, forms: [string, string, string]): string {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return forms[0];
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return forms[1];
-  return forms[2];
+function EmptyChart() {
+  return (
+    <div className="flex h-[220px] items-center justify-center text-sm text-muted-foreground">
+      Нет данных за выбранный период
+    </div>
+  );
 }

@@ -300,7 +300,7 @@ async function getTopServices(cutoff: Date | null) {
 /**
  * Workload per booster within the range: orders they handled (in_progress +
  * completed) and the commission credited (boosterEarning, set on completion).
- * Left join keeps the whole roster visible even with zero orders.
+ * Left join keeps zero-order boosters eligible; only the top 3 are shown.
  */
 async function getBoosterStats(cutoff: Date | null) {
   const joinBase = and(
@@ -318,7 +318,8 @@ async function getBoosterStats(cutoff: Date | null) {
     .leftJoin(orders, cutoff ? and(joinBase, gte(orders.createdAt, cutoff)) : joinBase)
     .where(eq(boosters.status, "active"))
     .groupBy(boosters.id, boosters.firstName, boosters.lastName)
-    .orderBy(desc(sql`count(${orders.id})`));
+    .orderBy(desc(sql`count(${orders.id})`))
+    .limit(3);
 
   return rows.map((r) => ({ name: r.name, orders: r.orders, earned: Number(r.earned) }));
 }

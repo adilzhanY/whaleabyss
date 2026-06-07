@@ -168,7 +168,7 @@ export default function PortalDashboardPage() {
             Сейчас нет заказов в работе
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {activeOrders.map((o) => (
               <PortalOrderCard
                 key={o.id}

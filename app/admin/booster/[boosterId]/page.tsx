@@ -17,6 +17,7 @@ import OrderStatusBadge from "../../_components/OrderStatusBadge";
 import CopyableText, { CopyButton } from "../../_components/CopyableText";
 import EditBoosterModal from "./EditBoosterModal";
 import DocumentsCard, { type BoosterDocument } from "./DocumentsCard";
+import PortalAccessCard from "./PortalAccessCard";
 import TelegramIcon from "@/components/TelegramIcon";
 
 interface Booster {
@@ -46,6 +47,7 @@ interface AssignedOrder {
 
 interface Payload {
   booster: Booster;
+  linkedEmail: string | null;
   documents: BoosterDocument[];
   orders: AssignedOrder[];
   stats: { totalOrders: number; completedOrders: number; activeOrders: number };
@@ -207,6 +209,9 @@ export default function BoosterDetailPage({
           </div>
         )}
       </div>
+
+      {/* Portal access (link a site account → /portal) */}
+      <PortalAccessCard key={`portal-${b.id}`} boosterId={b.id} initialEmail={data.linkedEmail ?? null} />
 
       {/* Documents (agreement + passport scan, private bucket) */}
       <DocumentsCard key={b.id} boosterId={b.id} initialDocuments={documents ?? []} />

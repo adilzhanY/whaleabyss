@@ -80,6 +80,9 @@ export const orders = pgTable('orders', {
   // NULL = not yet credited; set exactly once (idempotency guard). Independent
   // of revenue accounting — the dashboard still counts full totalPrice.
   boosterEarning: decimal('booster_earning', { precision: 10, scale: 2 }),
+  // Toggled by the booster from /portal: «я на аккаунте». Shown to the
+  // customer as a badge on their order. No notifications on toggle.
+  boosterOnline: boolean('booster_online').notNull().default(false),
   status: orderStatusEnum('status').default('pending'),
   totalPrice: decimal('total_price', { precision: 10, scale: 2 }).notNull(),
   paymentId: varchar('payment_id', { length: 255 }),
@@ -178,6 +181,10 @@ export const boosterStatusEnum = pgEnum('booster_status', ['active', 'inactive']
 // `balance` accumulates the booster's unpaid earnings, paid out off-platform.
 export const boosters = pgTable('boosters', {
   id: uuid('id').defaultRandom().primaryKey(),
+  // Portal access: links the roster row to a site account (users.role is set
+  // to 'booster' on link). NULL = no portal access. The FK is the identity
+  // that scopes portal queries; the role only gates the routes.
+  userId: uuid('user_id').unique().references(() => users.id, { onDelete: 'set null' }),
   firstName: varchar('first_name', { length: 100 }).notNull(),
   lastName: varchar('last_name', { length: 100 }).notNull(),
   birthDate: timestamp('birth_date', { withTimezone: true }),

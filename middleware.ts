@@ -3,12 +3,15 @@ import { getToken } from 'next-auth/jwt';
 import { getAuthSecret } from '@/lib/auth/secret';
 
 /**
- * Edge middleware — first line of defense for `/admin/*` and
- * `/api/admin/*`. Non-admins never even hit the route handlers.
+ * Edge middleware — first line of defense for `/admin/*`, `/api/admin/*`
+ * (admin role) and `/portal/*`, `/api/portal/*` (booster role). Wrong-role
+ * visitors never even hit the route handlers.
  *
- * Layer 2 (server guard in layout / requireAdmin in API) still runs and is
- * the actual security boundary. This middleware is mainly for good UX
- * (redirects to `/` instead of rendering a 404/403 shell).
+ * Layer 2 (server guard in layout / requireAdmin / getBoosterContext) still
+ * runs and is the actual security boundary. This middleware is mainly for
+ * good UX (redirects to `/` instead of rendering a 404/403 shell). For the
+ * portal, the role only GATES the route — identity comes from the
+ * boosters.user_id FK resolved server-side.
  */
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -18,7 +21,9 @@ export async function middleware(req: NextRequest) {
     secret: getAuthSecret(),
   });
 
-  const isApi = pathname.startsWith('/api/admin');
+  const isPortal = pathname.startsWith('/portal') || pathname.startsWith('/api/portal');
+  const isApi = pathname.startsWith('/api/admin') || pathname.startsWith('/api/portal');
+  const requiredRole = isPortal ? 'booster' : 'admin';
 
   // Not signed in.
   if (!token) {
@@ -30,8 +35,8 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Signed in but not admin.
-  if (token.role !== 'admin') {
+  // Signed in but wrong role.
+  if (token.role !== requiredRole) {
     if (isApi) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -42,5 +47,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*'],
+  matcher: ['/admin/:path*', '/api/admin/:path*', '/portal/:path*', '/api/portal/:path*'],
 };

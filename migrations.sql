@@ -104,3 +104,12 @@ CREATE TABLE IF NOT EXISTS booster_documents (
   updated_at timestamptz DEFAULT now(),
   CONSTRAINT booster_documents_booster_doc_type_unique UNIQUE (booster_id, doc_type)
 );
+
+-- 2026-06-07: Booster portal (/portal). boosters.user_id links a roster row to
+-- a site account (users.role flips to 'booster' on link — the previously
+-- unused enum value). orders.booster_online is the per-order «я на аккаунте»
+-- toggle, shown to the customer as a badge.
+ALTER TABLE boosters
+ADD COLUMN IF NOT EXISTS user_id uuid UNIQUE REFERENCES users(id) ON DELETE SET NULL;
+ALTER TABLE orders
+ADD COLUMN IF NOT EXISTS booster_online boolean NOT NULL DEFAULT false;

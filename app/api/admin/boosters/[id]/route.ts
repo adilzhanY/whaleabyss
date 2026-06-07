@@ -23,6 +23,14 @@ export async function GET(
       return NextResponse.json({ error: 'Качер не найден' }, { status: 404 });
     }
 
+    // Portal account (if linked) — email shown in the admin UI.
+    const [linkedUser] = booster.userId
+      ? await db
+          .select({ email: users.email })
+          .from(users)
+          .where(eq(users.id, booster.userId))
+      : [];
+
     const assignedOrders = await db
       .select({
         id: orders.id,
@@ -55,6 +63,7 @@ export async function GET(
 
     return NextResponse.json({
       booster,
+      linkedEmail: linkedUser?.email ?? null,
       documents,
       orders: assignedOrders,
       stats: {
@@ -165,7 +174,21 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    await db.delete(boosters).where(eq(boosters.id, id));
+
+    // Unlink the portal account first so no orphaned booster-role user stays.
+    const [existing] = await db
+      .select({ userId: boosters.userId })
+      .from(boosters)
+      .where(eq(boosters.id, id));
+    await db.transaction(async (tx) => {
+      if (existing?.userId) {
+        await tx
+          .update(users)
+          .set({ role: 'user', updatedAt: new Date() })
+          .where(eq(users.id, existing.userId));
+      }
+      await tx.delete(boosters).where(eq(boosters.id, id));
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

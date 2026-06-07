@@ -1,30 +1,14 @@
 "use client";
 
-import { useRef, useState, useEffect, useCallback } from "react";
-import { createPortal } from "react-dom";
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
-import {
-  Eye,
-  Download,
-  Trash2,
-  Upload,
-  FileText,
-  IdCard,
-  Loader2,
-  X,
-  ZoomIn,
-  ZoomOut,
-  RotateCcw,
-} from "lucide-react";
+import { useRef, useState } from "react";
+import { Eye, Download, Trash2, Upload, FileText, IdCard, Loader2 } from "lucide-react";
+import DocumentViewer from "@/components/DocumentViewer";
 
 /**
  * «Документы» card on /admin/booster/[id]: agreement (PDF) + passport scan
  * (JPG/PNG). Files live in the private S3 bucket and are streamed through the
  * admin-guarded API — the URLs below only work with an admin session cookie.
- *
- * Viewer: PDFs render in a same-origin iframe (the browser's built-in viewer
- * gives scroll/zoom/search for free, with zero extra JS attack surface);
- * passport images get pinch/wheel zoom + pan via react-zoom-pan-pinch.
+ * Viewing uses the shared DocumentViewer (iframe for PDFs, zoom/pan for images).
  */
 
 export interface BoosterDocument {
@@ -227,108 +211,15 @@ export default function DocumentsCard({
         })}
       </div>
 
-      {viewing && <DocumentViewer doc={viewing} url={docUrl(viewing)} downloadUrl={docUrl(viewing, true)} onClose={() => setViewing(null)} />}
+      {viewing && (
+        <DocumentViewer
+          fileName={viewing.fileName}
+          mimeType={viewing.mimeType}
+          url={docUrl(viewing)}
+          downloadUrl={docUrl(viewing, true)}
+          onClose={() => setViewing(null)}
+        />
+      )}
     </div>
-  );
-}
-
-/** Full-screen viewer: native iframe for PDFs, zoom/pan canvas for images. */
-function DocumentViewer({
-  doc,
-  url,
-  downloadUrl,
-  onClose,
-}: {
-  doc: BoosterDocument;
-  url: string;
-  downloadUrl: string;
-  onClose: () => void;
-}) {
-  const isPdf = doc.mimeType === "application/pdf";
-
-  const onKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    },
-    [onClose]
-  );
-
-  useEffect(() => {
-    document.addEventListener("keydown", onKeyDown);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = "";
-    };
-  }, [onKeyDown]);
-
-  return createPortal(
-    <div className="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex flex-col" onClick={onClose}>
-      {/* Toolbar */}
-      <div
-        className="flex items-center gap-3 px-4 py-3 bg-slate-900/60 text-white shrink-0"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <span className="text-sm font-medium truncate">{doc.fileName}</span>
-        <a
-          href={downloadUrl}
-          title="Скачать"
-          className="ml-auto inline-flex items-center p-2 rounded-full hover:bg-white/10 transition-colors"
-        >
-          <Download className="w-5 h-5" />
-        </a>
-        <button
-          type="button"
-          onClick={onClose}
-          title="Закрыть (Esc)"
-          className="inline-flex items-center p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 min-h-0 p-4 pt-0" onClick={(e) => e.stopPropagation()}>
-        {isPdf ? (
-          <iframe
-            src={url}
-            title={doc.fileName}
-            className="w-full h-full rounded-xl bg-white border-0"
-          />
-        ) : (
-          <TransformWrapper minScale={0.5} maxScale={8} doubleClick={{ mode: "zoomIn" }} centerOnInit>
-            {({ zoomIn, zoomOut, resetTransform }) => (
-              <div className="relative w-full h-full">
-                <TransformComponent
-                  wrapperStyle={{ width: "100%", height: "100%" }}
-                  contentStyle={{ width: "100%", height: "100%" }}
-                >
-                  {/* Private, cookie-authed stream — next/image optimizer must not proxy it. */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={url}
-                    alt={doc.fileName}
-                    className="w-full h-full object-contain select-none"
-                    draggable={false}
-                  />
-                </TransformComponent>
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-slate-900/70 rounded-full p-1">
-                  <button type="button" onClick={() => zoomOut()} title="Уменьшить" className="p-2 rounded-full text-white hover:bg-white/10 transition-colors cursor-pointer">
-                    <ZoomOut className="w-5 h-5" />
-                  </button>
-                  <button type="button" onClick={() => resetTransform()} title="Сбросить" className="p-2 rounded-full text-white hover:bg-white/10 transition-colors cursor-pointer">
-                    <RotateCcw className="w-5 h-5" />
-                  </button>
-                  <button type="button" onClick={() => zoomIn()} title="Увеличить" className="p-2 rounded-full text-white hover:bg-white/10 transition-colors cursor-pointer">
-                    <ZoomIn className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            )}
-          </TransformWrapper>
-        )}
-      </div>
-    </div>,
-    document.body
   );
 }

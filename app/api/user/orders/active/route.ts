@@ -24,6 +24,7 @@ export async function GET() {
         id: orders.id,
         status: orders.status,
         totalPrice: orders.totalPrice,
+        boosterOnline: orders.boosterOnline,
         createdAt: orders.createdAt,
       })
       .from(orders)

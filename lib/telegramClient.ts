@@ -170,3 +170,45 @@ export async function notifyAdminAboutOrder(orderData: any) {
     console.error('[Telegram] Error sending message:', error);
   }
 }
+
+/**
+ * Notify the admin chat when a BOOSTER changes an order's status from the
+ * portal (/portal). Full context: the order, the booster, and the new status.
+ * Online/offline toggles deliberately do NOT notify — statuses only.
+ */
+export async function notifyAdminAboutBoosterStatusChange(info: {
+  orderId: string;
+  newStatus: string;
+  boosterName: string;
+  boosterTelegram: string | null;
+  totalAmount: string;
+  itemsDescription: string;
+  userNotes: string | null;
+}) {
+  if (!bot || !adminChatId) {
+    console.warn('[Telegram] Bot token or Admin Chat ID missing. Skipping notification.');
+    return;
+  }
+
+  const statusLabel =
+    info.newStatus in STATUS_META
+      ? STATUS_META[info.newStatus as OrderStatus].humanRu
+      : info.newStatus;
+
+  const text =
+    `\n🔧 <b>Качер изменил статус заказа</b>\n➖➖➖➖➖➖➖➖➖➖` +
+    `\n<b>Качер:</b> ${info.boosterName}${info.boosterTelegram ? ` (${info.boosterTelegram})` : ''}` +
+    `\n<b>Новый статус:</b> <b>${statusLabel}</b>` +
+    `\n\n<b>ID заказа:</b> <code>${info.orderId}</code>` +
+    `\n<b>Сумма:</b> ${info.totalAmount} ₽` +
+    `\n<b>Услуги:</b>\n${info.itemsDescription}` +
+    (info.userNotes ? `\n\n<b>Данные клиента:</b>\n${info.userNotes}` : '') +
+    `\n➖➖➖➖➖➖➖➖➖➖`;
+
+  try {
+    await bot.telegram.sendMessage(adminChatId, text, { parse_mode: 'HTML' });
+    console.log(`[Telegram] Notified admin about booster status change on ${info.orderId}`);
+  } catch (error) {
+    console.error('[Telegram] Error sending booster status message:', error);
+  }
+}

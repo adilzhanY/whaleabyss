@@ -177,10 +177,10 @@ const result = await db.select().from(services).where(eq(services.id, id));
   gracefully (warns + proceeds) if the secret isn't configured, for local dev.
 
 **Boosters (качеры) & Commission Payouts:**
-- `boosters` table is a manually-managed roster — **no login/registration**. Admins
-  add/edit boosters at `/admin/boosters` (list with filter+search), `/admin/boosters/new`,
-  and `/admin/booster/[boosterId]` (detail + edit modal). The existing `booster` user role
-  is unrelated and unused by this registry.
+- `boosters` table is an admin-managed roster at `/admin/boosters` (list with
+  filter+search), `/admin/boosters/new`, and `/admin/booster/[boosterId]` (detail + edit
+  modal). Boosters don't register as boosters — they register as **normal users** and the
+  admin links the account (see Booster Portal below).
 - Orders link to a booster via `orders.boosterId` (nullable FK). Assigned from the **"Бустер"**
   column on `/admin/orders` and the dashboard recent-orders table, via the shared
   `app/admin/_components/OrderBoosterCell.tsx`:
@@ -196,6 +196,31 @@ const result = await db.select().from(services).where(eq(services.id, id));
   completion callback. **Does not touch revenue** — the dashboard sums `orders.totalPrice`.
 - Assignment status logic lives in `PATCH /api/admin/orders/[id]` (accepts `status` and/or
   `boosterId`); re-assignment leaves status untouched.
+
+**Booster Portal (/portal):**
+- Boosters access their own page at `/portal` using their **regular site account**
+  (email+password, captcha+OTP registration — all the existing customer auth). The admin
+  links the account on `/admin/booster/[id]` («Доступ в портал», by email): one
+  transaction sets `users.role='booster'` + `boosters.userId` (unique FK,
+  `ON DELETE SET NULL`). Unlink (or booster deletion) reverses both.
+- **Identity model:** the `booster` role only *gates* `/portal/*` + `/api/portal/*`
+  (edge middleware, same pattern as admin). The actual identity is the
+  `boosters.userId` FK resolved by `lib/portalAuth.ts` → `getBoosterContext()` — every
+  portal query is scoped through it; inactive boosters are rejected there.
+- Portal shows: read-only legal data (ФИО, birthDate, ИНН, реквизиты, commission),
+  revenue (**only the booster's cut** — `balance` to be paid out + total earned; order
+  `totalPrice` is never exposed), own documents (view/download via
+  `/api/portal/documents/[docId]`, same private-bucket streaming as admin), and assigned
+  orders.
+- **Order actions:** the only status transition a booster may make is
+  `in_progress → completed` (`PATCH /api/portal/orders/[id]` `{action:'complete'}`) —
+  credits commission via `creditBoosterForCompletedOrder` and notifies the admin chat
+  (`notifyAdminAboutBoosterStatusChange`, full order+booster context). The per-order
+  «я на аккаунте» toggle (`orders.boosterOnline`, in_progress only) shows the customer a
+  «Бустер на аккаунте» badge in `OrderCard`; toggles deliberately do NOT notify.
+- Future direction: Telegram-bot-driven flow (client sends OTP/account data to the bot,
+  bot relays to the booster's portal page, template replies) — keep portal APIs
+  extensible for that.
 
 **Manual Orders (off-site payments):**
 - `/admin/orders/new` ("Добавить вручную" button) lets an admin create a **paid** order for a

@@ -411,7 +411,7 @@ export default async function AdminDashboardPage({
   };
 
   return (
-    <div className="max-w-6xl mx-auto flex flex-col gap-6">
+    <div className="max-w-7xl mx-auto flex flex-col gap-4">
       {/* Greeting */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
@@ -423,8 +423,8 @@ export default async function AdminDashboardPage({
         <TimeRangeSelect value={range} />
       </div>
 
-      {/* Revenue (hero) + pending/statuses column */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Row 1: revenue hero + pending/statuses column */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
           <MetricHeader
             label={`Выручка ${suffix}`}
@@ -433,9 +433,7 @@ export default async function AdminDashboardPage({
             icon={TrendingUp}
             iconClass="bg-primary/10 text-primary"
           />
-          {/* flex-1: let the chart fill the card's full height (it stretches
-              to match the stacked column on the right). */}
-          <CardContent className="flex-1">
+          <CardContent className="flex-1 flex items-end">
             {series.length === 0 ? (
               <EmptyChart />
             ) : (
@@ -444,7 +442,7 @@ export default async function AdminDashboardPage({
           </CardContent>
         </Card>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
           <Card>
             <MetricHeader
               label="Ожидают выполнения"
@@ -466,8 +464,8 @@ export default async function AdminDashboardPage({
         </div>
       </div>
 
-      {/* Orders + clients */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Row 2: all four comparison charts side by side on wide screens */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <Card>
           <MetricHeader
             label={`Заказы ${suffix}`}
@@ -476,7 +474,7 @@ export default async function AdminDashboardPage({
             icon={ShoppingBag}
             iconClass="bg-sky-100 text-sky-600"
           />
-          <CardContent>
+          <CardContent className="flex-1 flex items-end">
             {series.length === 0 ? <EmptyChart /> : <OrdersBarChart data={series} unit={unit} />}
           </CardContent>
         </Card>
@@ -488,29 +486,25 @@ export default async function AdminDashboardPage({
             icon={UsersIcon}
             iconClass="bg-emerald-100 text-emerald-600"
           />
-          <CardContent>
+          <CardContent className="flex-1 flex items-end">
             {series.length === 0 ? <EmptyChart /> : <ClientsLineChart data={series} unit={unit} />}
           </CardContent>
         </Card>
-      </div>
-
-      {/* Top services + boosters */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Топ услуги</CardTitle>
-            <CardDescription>Самые продаваемые услуги {suffix}</CardDescription>
+            <CardDescription>Продажи {suffix}</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 flex items-center">
             {top.length === 0 ? <EmptyChart /> : <TopServicesChart data={top} />}
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
             <CardTitle>Бустеры</CardTitle>
-            <CardDescription>Заказы и заработок качеров {suffix}</CardDescription>
+            <CardDescription>Заказы и заработок {suffix}</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 flex items-center">
             {boosterStats.length === 0 ? <EmptyChart /> : <BoostersChart data={boosterStats} />}
           </CardContent>
         </Card>

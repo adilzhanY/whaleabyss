@@ -85,9 +85,9 @@ const revenueConfig = {
 
 export function RevenueAreaChart({ data, unit }: { data: SeriesPoint[]; unit: TimeUnit }) {
   return (
-    // h-full: the hero card stretches to match the stacked column beside it —
-    // fill whatever height the card gives us instead of a fixed 180px strip.
-    <ChartContainer config={revenueConfig} className="h-full min-h-[180px] w-full">
+    // aspect-auto kills ChartContainer's base aspect-video — without it a
+    // full-width chart forces a 16:9 height (~560px) and the page scrolls.
+    <ChartContainer config={revenueConfig} className="aspect-auto h-[220px] w-full">
       <AreaChart accessibilityLayer data={data} margin={{ left: 4, right: 4 }}>
         <defs>
           <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -150,7 +150,7 @@ const ordersConfig = {
 
 export function OrdersBarChart({ data, unit }: { data: SeriesPoint[]; unit: TimeUnit }) {
   return (
-    <ChartContainer config={ordersConfig} className="h-[180px] w-full">
+    <ChartContainer config={ordersConfig} className="aspect-auto h-[160px] w-full">
       <BarChart accessibilityLayer data={data}>
         <defs>
           <linearGradient id="fillOrders" x1="0" y1="0" x2="0" y2="1">
@@ -183,7 +183,7 @@ const clientsConfig = {
 
 export function ClientsLineChart({ data, unit }: { data: SeriesPoint[]; unit: TimeUnit }) {
   return (
-    <ChartContainer config={clientsConfig} className="h-[180px] w-full">
+    <ChartContainer config={clientsConfig} className="aspect-auto h-[160px] w-full">
       <LineChart accessibilityLayer data={data} margin={{ left: 4, right: 4 }}>
         <CartesianGrid vertical={false} />
         <XAxis
@@ -225,14 +225,14 @@ export function TopServicesChart({ data }: { data: TopServicePoint[] }) {
   return (
     <ChartContainer
       config={topServicesConfig}
-      className="w-full"
-      style={{ height: Math.max(data.length, 1) * 52 + 16 }}
+      className="aspect-auto w-full"
+      style={{ height: Math.max(data.length, 1) * 42 + 12 }}
     >
       <BarChart
         accessibilityLayer
         data={data}
         layout="vertical"
-        margin={{ left: 8, right: 48 }}
+        margin={{ left: 0, right: 36 }}
       >
         <XAxis type="number" dataKey="sold" hide />
         <YAxis
@@ -240,8 +240,8 @@ export function TopServicesChart({ data }: { data: TopServicePoint[] }) {
           dataKey="title"
           tickLine={false}
           axisLine={false}
-          width={150}
-          tickFormatter={(v: string) => (v.length > 18 ? `${v.slice(0, 17)}…` : v)}
+          width={104}
+          tickFormatter={(v: string) => (v.length > 14 ? `${v.slice(0, 13)}…` : v)}
         />
         <ChartTooltip
           content={
@@ -293,14 +293,14 @@ export function BoostersChart({ data }: { data: BoosterPoint[] }) {
   return (
     <ChartContainer
       config={boostersConfig}
-      className="w-full"
-      style={{ height: Math.max(data.length, 1) * 52 + 16 }}
+      className="aspect-auto w-full"
+      style={{ height: Math.max(data.length, 1) * 42 + 12 }}
     >
       <BarChart
         accessibilityLayer
         data={data}
         layout="vertical"
-        margin={{ left: 8, right: 48 }}
+        margin={{ left: 0, right: 36 }}
       >
         <XAxis type="number" dataKey="orders" hide />
         <YAxis
@@ -308,8 +308,8 @@ export function BoostersChart({ data }: { data: BoosterPoint[] }) {
           dataKey="name"
           tickLine={false}
           axisLine={false}
-          width={150}
-          tickFormatter={(v: string) => (v.length > 18 ? `${v.slice(0, 17)}…` : v)}
+          width={104}
+          tickFormatter={(v: string) => (v.length > 14 ? `${v.slice(0, 13)}…` : v)}
         />
         <ChartTooltip
           content={
@@ -363,15 +363,15 @@ export function OrderStatusDonut({ data }: { data: StatusPoint[] }) {
       {/* The legend lives outside the SVG so the ring centers exactly in the
           container — the total is an HTML overlay, dead-center by flexbox. */}
       <div className="relative">
-        <ChartContainer config={statusConfig} className="aspect-square h-[200px]">
+        <ChartContainer config={statusConfig} className="aspect-square h-[170px]">
           <PieChart accessibilityLayer>
             <ChartTooltip content={<ChartTooltipContent nameKey="status" hideLabel />} />
             <Pie
               data={data}
               dataKey="count"
               nameKey="status"
-              innerRadius={58}
-              outerRadius={84}
+              innerRadius={50}
+              outerRadius={72}
               cornerRadius={6}
               strokeWidth={2}
               paddingAngle={3}
@@ -383,7 +383,7 @@ export function OrderStatusDonut({ data }: { data: StatusPoint[] }) {
           </PieChart>
         </ChartContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-bold tracking-tight tabular-nums">
+          <span className="text-2xl font-bold tracking-tight tabular-nums">
             {total.toLocaleString("ru-RU")}
           </span>
           <span className="text-xs text-muted-foreground">{pluralizeOrders(total)}</span>

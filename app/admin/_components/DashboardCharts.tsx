@@ -275,6 +275,71 @@ export function TopServicesChart({ data }: { data: TopServicePoint[] }) {
   );
 }
 
+// ── Boosters: horizontal bars ────────────────────────────────────────────────
+// Same grammar as top services: a small set of named people compared by
+// workload. Bar = orders handled in the range; tooltip adds their commission.
+
+export interface BoosterPoint {
+  name: string;
+  orders: number;
+  earned: number;
+}
+
+const boostersConfig = {
+  orders: { label: "Заказы", color: "var(--chart-2)" },
+} satisfies ChartConfig;
+
+export function BoostersChart({ data }: { data: BoosterPoint[] }) {
+  return (
+    <ChartContainer
+      config={boostersConfig}
+      className="w-full"
+      style={{ height: Math.max(data.length, 1) * 52 + 16 }}
+    >
+      <BarChart
+        accessibilityLayer
+        data={data}
+        layout="vertical"
+        margin={{ left: 8, right: 48 }}
+      >
+        <XAxis type="number" dataKey="orders" hide />
+        <YAxis
+          type="category"
+          dataKey="name"
+          tickLine={false}
+          axisLine={false}
+          width={150}
+          tickFormatter={(v: string) => (v.length > 18 ? `${v.slice(0, 17)}…` : v)}
+        />
+        <ChartTooltip
+          content={
+            <ChartTooltipContent
+              formatter={(value, _name, item) => (
+                <div className="flex flex-col gap-0.5">
+                  <span>
+                    Заказы: <span className="font-mono font-medium">{String(value)}</span>
+                  </span>
+                  <span className="text-muted-foreground">
+                    Заработок: {fullRub(item.payload?.earned ?? 0)}
+                  </span>
+                </div>
+              )}
+            />
+          }
+        />
+        <Bar dataKey="orders" fill="var(--color-orders)" radius={6} maxBarSize={28}>
+          <LabelList
+            dataKey="orders"
+            position="right"
+            className="fill-foreground font-bold"
+            fontSize={13}
+          />
+        </Bar>
+      </BarChart>
+    </ChartContainer>
+  );
+}
+
 // ── Order statuses: donut ────────────────────────────────────────────────────
 
 export interface StatusPoint {

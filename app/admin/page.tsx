@@ -29,6 +29,7 @@ import {
   OrdersBarChart,
   ClientsLineChart,
   TopServicesChart,
+  BoostersChart,
   OrderStatusDonut,
   type SeriesPoint,
   type TimeUnit,
@@ -296,6 +297,32 @@ async function getTopServices(cutoff: Date | null) {
   return rows.map((r) => ({ title: r.title, sold: r.sold, revenue: Number(r.revenue) }));
 }
 
+/**
+ * Workload per booster within the range: orders they handled (in_progress +
+ * completed) and the commission credited (boosterEarning, set on completion).
+ * Left join keeps the whole roster visible even with zero orders.
+ */
+async function getBoosterStats(cutoff: Date | null) {
+  const joinBase = and(
+    eq(orders.boosterId, boosters.id),
+    inArray(orders.status, ["in_progress", "completed"])
+  );
+
+  const rows = await db
+    .select({
+      name: sql<string>`${boosters.firstName} || ' ' || ${boosters.lastName}`,
+      orders: sql<number>`count(${orders.id})::int`,
+      earned: sql<string>`coalesce(sum(${orders.boosterEarning}), 0)::text`,
+    })
+    .from(boosters)
+    .leftJoin(orders, cutoff ? and(joinBase, gte(orders.createdAt, cutoff)) : joinBase)
+    .where(eq(boosters.status, "active"))
+    .groupBy(boosters.id, boosters.firstName, boosters.lastName)
+    .orderBy(desc(sql`count(${orders.id})`));
+
+  return rows.map((r) => ({ name: r.name, orders: r.orders, earned: Number(r.earned) }));
+}
+
 async function getRecentOrders(): Promise<OrderRow[]> {
   const rows = await db
     .select({
@@ -367,12 +394,13 @@ export default async function AdminDashboardPage({
   const unit = RANGE_UNIT[range];
   const suffix = RANGE_SUFFIX[range];
 
-  const [stats, prevStats, series, statuses, top, recent] = await Promise.all([
+  const [stats, prevStats, series, statuses, top, boosterStats, recent] = await Promise.all([
     getStats(cutoff),
     getPrevStats(cutoff),
     getTimeSeries(cutoff, unit),
     getStatusBreakdown(cutoff),
     getTopServices(cutoff),
+    getBoosterStats(cutoff),
     getRecentOrders(),
   ]);
 
@@ -466,16 +494,27 @@ export default async function AdminDashboardPage({
         </Card>
       </div>
 
-      {/* Top services */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Топ услуги</CardTitle>
-          <CardDescription>Самые продаваемые услуги {suffix}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {top.length === 0 ? <EmptyChart /> : <TopServicesChart data={top} />}
-        </CardContent>
-      </Card>
+      {/* Top services + boosters */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Топ услуги</CardTitle>
+            <CardDescription>Самые продаваемые услуги {suffix}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {top.length === 0 ? <EmptyChart /> : <TopServicesChart data={top} />}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Бустеры</CardTitle>
+            <CardDescription>Заказы и заработок качеров {suffix}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {boosterStats.length === 0 ? <EmptyChart /> : <BoostersChart data={boosterStats} />}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Recent orders — same table component as /admin/orders */}
       <section className="flex flex-col gap-4">

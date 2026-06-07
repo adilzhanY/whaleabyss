@@ -141,7 +141,7 @@ export default function PortalPastOrdersPage() {
           Заказы не найдены
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {pastOrders.map((o) => (
             <PortalOrderCard key={o.id} order={o} />
           ))}

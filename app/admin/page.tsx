@@ -1,21 +1,25 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { orders, orderItems, services, users, boosters } from "@/lib/schema";
-import { desc, eq, sql, and, or, gte, inArray, isNotNull } from "drizzle-orm";
+import { desc, eq, sql, and, or, gte, lt, inArray, isNotNull } from "drizzle-orm";
 import {
   ShoppingBag,
   TrendingUp,
+  TrendingDown,
   Clock,
   Users as UsersIcon,
   ArrowRight,
 } from "lucide-react";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import RecentOrdersTable from "./_components/RecentOrdersTable";
 import type { OrderRow } from "./_components/orderColumns";
 import TimeRangeSelect from "./_components/TimeRangeSelect";
@@ -106,6 +110,48 @@ async function getStats(cutoff: Date | null) {
     awaitingFulfilment: pending?.count ?? 0,
     userCount: userCount?.count ?? 0,
   };
+}
+
+/**
+ * Same headline stats for the window of equal length immediately before the
+ * cutoff — powers the «+12% к пред. периоду» delta badges. Null for "all"
+ * (there is no previous period).
+ */
+async function getPrevStats(cutoff: Date | null) {
+  if (!cutoff) return null;
+  const windowMs = Date.now() - cutoff.getTime();
+  const prevStart = new Date(cutoff.getTime() - windowMs);
+
+  const [orderStats] = await db
+    .select({
+      count: sql<number>`count(*)::int`,
+      revenue: sql<string>`coalesce(sum(case when ${orders.status} = 'refunded' then 0 else ${orders.totalPrice} end), 0)::text`,
+    })
+    .from(orders)
+    .where(
+      and(
+        gte(orders.createdAt, prevStart),
+        lt(orders.createdAt, cutoff),
+        inArray(orders.status, SUCCESSFUL_STATUSES)
+      )
+    );
+
+  const [userCount] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(users)
+    .where(and(gte(users.createdAt, prevStart), lt(users.createdAt, cutoff)));
+
+  return {
+    orderCount: orderStats?.count ?? 0,
+    revenue: Number(orderStats?.revenue ?? 0),
+    userCount: userCount?.count ?? 0,
+  };
+}
+
+/** Percent change vs the previous period; null when there's no baseline. */
+function pctChange(current: number, previous: number | null | undefined): number | null {
+  if (previous == null || previous === 0) return null;
+  return ((current - previous) / previous) * 100;
 }
 
 // ── Time series for the charts ───────────────────────────────────────────────
@@ -321,13 +367,20 @@ export default async function AdminDashboardPage({
   const unit = RANGE_UNIT[range];
   const suffix = RANGE_SUFFIX[range];
 
-  const [stats, series, statuses, top, recent] = await Promise.all([
+  const [stats, prevStats, series, statuses, top, recent] = await Promise.all([
     getStats(cutoff),
+    getPrevStats(cutoff),
     getTimeSeries(cutoff, unit),
     getStatusBreakdown(cutoff),
     getTopServices(cutoff),
     getRecentOrders(),
   ]);
+
+  const deltas = {
+    revenue: pctChange(stats.revenue, prevStats?.revenue),
+    orders: pctChange(stats.orderCount, prevStats?.orderCount),
+    clients: pctChange(stats.userCount, prevStats?.userCount),
+  };
 
   return (
     <div className="max-w-6xl mx-auto flex flex-col gap-6">
@@ -342,88 +395,85 @@ export default async function AdminDashboardPage({
         <TimeRangeSelect value={range} />
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          icon={TrendingUp}
-          label={`Выручка ${suffix}`}
-          value={`${stats.revenue.toLocaleString("ru-RU")} ₽`}
-        />
-        <StatCard
-          icon={ShoppingBag}
-          label={`Заказов ${suffix}`}
-          value={stats.orderCount.toString()}
-        />
-        <StatCard
-          icon={Clock}
-          label="Ожидают выполнения"
-          value={stats.awaitingFulfilment.toString()}
-        />
-        <StatCard
-          icon={UsersIcon}
-          label={`Пользователей ${suffix}`}
-          value={stats.userCount.toString()}
-        />
-      </div>
+      {/* Revenue (hero) + pending/statuses column */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2">
+          <MetricHeader
+            label={`Выручка ${suffix}`}
+            value={`${stats.revenue.toLocaleString("ru-RU")} ₽`}
+            delta={deltas.revenue}
+            icon={TrendingUp}
+            iconClass="bg-primary/10 text-primary"
+          />
+          <CardContent>
+            {series.length === 0 ? (
+              <EmptyChart />
+            ) : (
+              <RevenueAreaChart data={series} unit={unit} />
+            )}
+          </CardContent>
+        </Card>
 
-      {/* Revenue */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Выручка</CardTitle>
-          <CardDescription>Динамика выручки {suffix}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {series.length === 0 ? (
-            <EmptyChart />
-          ) : (
-            <RevenueAreaChart data={series} unit={unit} />
-          )}
-        </CardContent>
-      </Card>
+        <div className="flex flex-col gap-6">
+          <Card>
+            <MetricHeader
+              label="Ожидают выполнения"
+              value={stats.awaitingFulfilment.toString()}
+              delta={null}
+              icon={Clock}
+              iconClass="bg-amber-100 text-amber-600"
+            />
+          </Card>
+          <Card className="flex-1">
+            <CardHeader>
+              <CardTitle>Статусы заказов</CardTitle>
+              <CardDescription>Распределение {suffix}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {statuses.length === 0 ? <EmptyChart /> : <OrderStatusDonut data={statuses} />}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {/* Orders + clients */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Заказы</CardTitle>
-            <CardDescription>Количество заказов {suffix}</CardDescription>
-          </CardHeader>
+          <MetricHeader
+            label={`Заказы ${suffix}`}
+            value={stats.orderCount.toLocaleString("ru-RU")}
+            delta={deltas.orders}
+            icon={ShoppingBag}
+            iconClass="bg-sky-100 text-sky-600"
+          />
           <CardContent>
             {series.length === 0 ? <EmptyChart /> : <OrdersBarChart data={series} unit={unit} />}
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle>Новые клиенты</CardTitle>
-            <CardDescription>Регистрации {suffix}</CardDescription>
-          </CardHeader>
+          <MetricHeader
+            label={`Новые клиенты ${suffix}`}
+            value={stats.userCount.toLocaleString("ru-RU")}
+            delta={deltas.clients}
+            icon={UsersIcon}
+            iconClass="bg-emerald-100 text-emerald-600"
+          />
           <CardContent>
             {series.length === 0 ? <EmptyChart /> : <ClientsLineChart data={series} unit={unit} />}
           </CardContent>
         </Card>
       </div>
 
-      {/* Top services + status breakdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Топ услуги</CardTitle>
-            <CardDescription>Самые продаваемые услуги {suffix}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {top.length === 0 ? <EmptyChart /> : <TopServicesChart data={top} />}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Статусы заказов</CardTitle>
-            <CardDescription>Распределение по статусам {suffix}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {statuses.length === 0 ? <EmptyChart /> : <OrderStatusDonut data={statuses} />}
-          </CardContent>
-        </Card>
-      </div>
+      {/* Top services */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Топ услуги</CardTitle>
+          <CardDescription>Самые продаваемые услуги {suffix}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {top.length === 0 ? <EmptyChart /> : <TopServicesChart data={top} />}
+        </CardContent>
+      </Card>
 
       {/* Recent orders — same table component as /admin/orders */}
       <section className="flex flex-col gap-4">
@@ -444,25 +494,55 @@ export default async function AdminDashboardPage({
   );
 }
 
-function StatCard({
-  icon: Icon,
+/** Big bold number + colored icon chip + delta badge — the headline of each card. */
+function MetricHeader({
   label,
   value,
+  delta,
+  icon: Icon,
+  iconClass,
 }: {
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   label: string;
   value: string;
+  delta: number | null;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  iconClass: string;
 }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardDescription className="flex items-center gap-2">
-          <Icon className="size-4" strokeWidth={2.25} />
-          {label}
-        </CardDescription>
-        <CardTitle className="text-2xl tabular-nums">{value}</CardTitle>
-      </CardHeader>
-    </Card>
+    <CardHeader>
+      <CardDescription>{label}</CardDescription>
+      <CardTitle className="text-3xl font-bold tracking-tight tabular-nums">
+        {value}
+      </CardTitle>
+      <CardAction>
+        <div className={cn("flex size-10 items-center justify-center rounded-xl", iconClass)}>
+          <Icon className="size-5" strokeWidth={2.25} />
+        </div>
+      </CardAction>
+      {delta !== null && (
+        <div className="flex items-center gap-2">
+          <DeltaBadge pct={delta} />
+          <span className="text-xs text-muted-foreground">к пред. периоду</span>
+        </div>
+      )}
+    </CardHeader>
+  );
+}
+
+function DeltaBadge({ pct }: { pct: number }) {
+  const up = pct >= 0;
+  const Arrow = up ? TrendingUp : TrendingDown;
+  return (
+    <Badge
+      className={cn(
+        "gap-1 font-semibold",
+        up ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+      )}
+    >
+      <Arrow className="size-3" />
+      {up ? "+" : ""}
+      {pct.toFixed(0)}%
+    </Badge>
   );
 }
 

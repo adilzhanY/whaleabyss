@@ -7,6 +7,7 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  Label,
   LabelList,
   Line,
   LineChart,
@@ -84,7 +85,7 @@ const revenueConfig = {
 
 export function RevenueAreaChart({ data, unit }: { data: SeriesPoint[]; unit: TimeUnit }) {
   return (
-    <ChartContainer config={revenueConfig} className="h-[280px] w-full">
+    <ChartContainer config={revenueConfig} className="h-[180px] w-full">
       <AreaChart accessibilityLayer data={data} margin={{ left: 4, right: 4 }}>
         <defs>
           <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -147,8 +148,14 @@ const ordersConfig = {
 
 export function OrdersBarChart({ data, unit }: { data: SeriesPoint[]; unit: TimeUnit }) {
   return (
-    <ChartContainer config={ordersConfig} className="h-[220px] w-full">
+    <ChartContainer config={ordersConfig} className="h-[180px] w-full">
       <BarChart accessibilityLayer data={data}>
+        <defs>
+          <linearGradient id="fillOrders" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--color-orders)" stopOpacity={0.95} />
+            <stop offset="100%" stopColor="var(--chart-2)" stopOpacity={0.45} />
+          </linearGradient>
+        </defs>
         <CartesianGrid vertical={false} />
         <XAxis
           dataKey="t"
@@ -160,7 +167,7 @@ export function OrdersBarChart({ data, unit }: { data: SeriesPoint[]; unit: Time
         />
         <YAxis tickLine={false} axisLine={false} width={32} allowDecimals={false} />
         <ChartTooltip content={<ChartTooltipContent labelFormatter={labelFormatter(unit)} />} />
-        <Bar dataKey="orders" fill="var(--color-orders)" radius={[4, 4, 0, 0]} maxBarSize={36} />
+        <Bar dataKey="orders" fill="url(#fillOrders)" radius={[6, 6, 0, 0]} maxBarSize={32} />
       </BarChart>
     </ChartContainer>
   );
@@ -174,7 +181,7 @@ const clientsConfig = {
 
 export function ClientsLineChart({ data, unit }: { data: SeriesPoint[]; unit: TimeUnit }) {
   return (
-    <ChartContainer config={clientsConfig} className="h-[220px] w-full">
+    <ChartContainer config={clientsConfig} className="h-[180px] w-full">
       <LineChart accessibilityLayer data={data} margin={{ left: 4, right: 4 }}>
         <CartesianGrid vertical={false} />
         <XAxis
@@ -250,8 +257,16 @@ export function TopServicesChart({ data }: { data: TopServicePoint[] }) {
             />
           }
         />
-        <Bar dataKey="sold" fill="var(--color-sold)" radius={4} maxBarSize={28}>
-          <LabelList dataKey="sold" position="right" className="fill-foreground" fontSize={12} />
+        <Bar dataKey="sold" radius={6} maxBarSize={28}>
+          {data.map((entry, idx) => (
+            <Cell key={entry.title} fill={`var(--chart-${(idx % 5) + 1})`} />
+          ))}
+          <LabelList
+            dataKey="sold"
+            position="right"
+            className="fill-foreground font-bold"
+            fontSize={13}
+          />
         </Bar>
       </BarChart>
     </ChartContainer>
@@ -277,29 +292,36 @@ const statusConfig = {
 export function OrderStatusDonut({ data }: { data: StatusPoint[] }) {
   const total = data.reduce((sum, d) => sum + d.count, 0);
   return (
-    <ChartContainer config={statusConfig} className="mx-auto aspect-square max-h-[260px]">
+    <ChartContainer config={statusConfig} className="mx-auto aspect-square max-h-[240px]">
       <PieChart accessibilityLayer>
         <ChartTooltip content={<ChartTooltipContent nameKey="status" hideLabel />} />
         <Pie
           data={data}
           dataKey="count"
           nameKey="status"
-          innerRadius={60}
-          outerRadius={90}
+          innerRadius={58}
+          outerRadius={84}
+          cornerRadius={6}
           strokeWidth={2}
-          paddingAngle={2}
+          paddingAngle={3}
         >
           {data.map((entry) => (
             <Cell key={entry.status} fill={`var(--color-${entry.status})`} />
           ))}
-          <LabelList
-            dataKey="count"
-            className="fill-background"
-            stroke="none"
-            fontSize={11}
-            formatter={(v) => {
-              const n = Number(v);
-              return total > 0 && n / total >= 0.06 ? n : "";
+          <Label
+            content={({ viewBox }) => {
+              if (!viewBox || !("cx" in viewBox)) return null;
+              const { cx, cy } = viewBox as { cx: number; cy: number };
+              return (
+                <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
+                  <tspan x={cx} y={cy - 6} className="fill-foreground text-2xl font-bold tabular-nums">
+                    {total.toLocaleString("ru-RU")}
+                  </tspan>
+                  <tspan x={cx} y={cy + 16} className="fill-muted-foreground text-xs">
+                    {pluralizeOrders(total)}
+                  </tspan>
+                </text>
+              );
             }}
           />
         </Pie>
@@ -310,4 +332,12 @@ export function OrderStatusDonut({ data }: { data: StatusPoint[] }) {
       </PieChart>
     </ChartContainer>
   );
+}
+
+function pluralizeOrders(n: number): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return "заказ";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return "заказа";
+  return "заказов";
 }

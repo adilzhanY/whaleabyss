@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { ArrowLeft, Mail, User, Calendar, DollarSign, ShoppingBag, Star } from "lucide-react";
 import OrderStatusBadge from "../../_components/OrderStatusBadge";
+import CopyableText from "../../_components/CopyableText";
 import TelegramIcon from "@/components/TelegramIcon";
 
 interface UserDetails {
@@ -180,7 +181,7 @@ export default function UserDetailPage() {
                 <Mail className="h-5 w-5 text-slate-400" />
                 <div>
                   <p className="text-xs text-slate-500">Email</p>
-                  <p className="text-sm font-medium text-slate-700">{user.email}</p>
+                  <CopyableText value={user.email} className="text-sm font-medium text-slate-700" />
                 </div>
               </div>
 
@@ -203,7 +204,7 @@ export default function UserDetailPage() {
                   <TelegramIcon className="h-5 w-5 text-slate-400" />
                   <div>
                     <p className="text-xs text-slate-500">Telegram</p>
-                    <p className="text-sm font-medium text-slate-700">{user.telegramUsername}</p>
+                    <CopyableText value={user.telegramUsername} className="text-sm font-medium text-slate-700" />
                   </div>
                 </div>
               )}
@@ -234,7 +235,7 @@ export default function UserDetailPage() {
                   <Mail className="h-5 w-5 text-slate-400" />
                   <div>
                     <p className="text-xs text-slate-500">Email для чеков</p>
-                    <p className="text-sm font-medium text-slate-700">{user.receiptEmail}</p>
+                    <CopyableText value={user.receiptEmail} className="text-sm font-medium text-slate-700" />
                   </div>
                 </div>
               )}

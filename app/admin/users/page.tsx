@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search } from "lucide-react";
 import CustomSelect from "@/components/CustomSelect";
 import Input from "@/components/Input";
@@ -20,6 +20,7 @@ const USERS_PER_PAGE = 10;
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
 
@@ -29,9 +30,15 @@ export default function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
+  // Only the latest request's result is applied (guards out-of-order responses).
+  const reqIdRef = useRef(0);
+
+  // Re-fetch from the server on any page/filter/search change — SQL does all the
+  // filtering, sorting and slicing, so the client only ever holds one page.
   useEffect(() => {
     fetchUsers();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, sortBy, roleFilter, debouncedSearch]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -45,47 +52,28 @@ export default function AdminUsersPage() {
   }, [sortBy, roleFilter, debouncedSearch]);
 
   const fetchUsers = async () => {
+    const reqId = ++reqIdRef.current;
     try {
       setLoading(true);
-      const res = await fetch("/api/admin/users");
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(USERS_PER_PAGE),
+        sort: sortBy,
+        role: roleFilter,
+      });
+      if (debouncedSearch.trim()) params.set("search", debouncedSearch.trim());
+
+      const res = await fetch(`/api/admin/users?${params.toString()}`);
       const data = await res.json();
+      if (reqId !== reqIdRef.current) return; // superseded by a newer request
       setUsers(data.users || []);
+      setTotal(data.total || 0);
     } catch (error) {
-      console.error("Failed to fetch users:", error);
+      if (reqId === reqIdRef.current) console.error("Failed to fetch users:", error);
     } finally {
-      setLoading(false);
+      if (reqId === reqIdRef.current) setLoading(false);
     }
   };
-
-  const filteredUsers = useMemo(() => {
-    let result = [...users];
-
-    // Role filter
-    if (roleFilter !== "all") {
-      result = result.filter((u) => u.role === roleFilter);
-    }
-
-    // Search filter
-    if (debouncedSearch.trim()) {
-      const query = debouncedSearch.toLowerCase();
-      result = result.filter(
-        (u) =>
-          u.id.toLowerCase().includes(query) ||
-          u.username.toLowerCase().includes(query) ||
-          u.email.toLowerCase().includes(query) ||
-          u.telegramUsername?.toLowerCase().includes(query)
-      );
-    }
-
-    // Sort
-    result.sort((a, b) => {
-      const dateA = new Date(a.createdAt).getTime();
-      const dateB = new Date(b.createdAt).getTime();
-      return sortBy === "newest" ? dateB - dateA : dateA - dateB;
-    });
-
-    return result;
-  }, [users, sortBy, roleFilter, debouncedSearch]);
 
   const getRoleBadge = (role: string) => {
     const styles = {
@@ -184,7 +172,7 @@ export default function AdminUsersPage() {
     <div className="p-6" style={{ fontFamily: "Onest, sans-serif" }}>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-slate-900">Управление пользователями</h1>
-        <p className="text-sm text-slate-600 mt-1">Всего пользователей: {users.length}</p>
+        <p className="text-sm text-slate-600 mt-1">Всего пользователей: {total}</p>
       </div>
 
       {/* Filters */}
@@ -240,9 +228,10 @@ export default function AdminUsersPage() {
       {/* Users Table */}
       <DataTable
         columns={columns}
-        data={filteredUsers}
+        data={users}
+        totalCount={total}
         getRowKey={(u) => u.id}
-        loading={loading}
+        loading={loading && users.length === 0}
         emptyMessage="Пользователи не найдены"
         onRowClick={(u) => {
           window.location.href = `/admin/users/${u.id}`;

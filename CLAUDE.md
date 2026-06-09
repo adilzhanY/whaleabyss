@@ -190,10 +190,13 @@ const result = await db.select().from(services).where(eq(services.id, id));
     changing status).
   - status `cancelled`/`pending` → shows "—" (no assignment offered).
 - **40/60 split:** on completion, `lib/boosterPayout.ts` → `creditBoosterForCompletedOrder()`
-  credits `totalPrice * commissionPercent / 100` (default 40%) to `booster.balance`. The
-  amount is written to `orders.boosterEarning` which doubles as an **idempotency guard**
-  (credit happens exactly once). Called from both the admin order PATCH and the Telegram
-  completion callback. **Does not touch revenue** — the dashboard sums `orders.totalPrice`.
+  credits `commissionPercent / 100` (default 40%) of the **pre-discount** order value —
+  `Σ order_items.priceAtPurchase × quantity`, **not** `orders.totalPrice` — to `booster.balance`,
+  so a customer's promocode discount never shrinks the booster's cut (falls back to
+  `totalPrice` for legacy orders with no line items). The amount is written to
+  `orders.boosterEarning` which doubles as an **idempotency guard** (credit happens exactly
+  once, never recomputed). Called from both the admin order PATCH and the Telegram completion
+  callback. **Does not touch revenue** — the dashboard sums `orders.totalPrice`.
 - Assignment status logic lives in `PATCH /api/admin/orders/[id]` (accepts `status` and/or
   `boosterId`); re-assignment leaves status untouched.
 
@@ -257,6 +260,14 @@ const result = await db.select().from(services).where(eq(services.id, id));
 - Yandex Cloud S3 via `@aws-sdk/client-s3`
 - Images stored in `whaleabyss-bucket`
 - Remote pattern configured in `next.config.ts`
+- **Caching:** all public-bucket uploads set `Cache-Control: public, max-age=31536000, immutable`
+  (services upload, avatar, seed). Filenames are content-versioned (random hash per upload),
+  so each URL is immutable — repeat visitors load from browser cache (no S3 egress / faster)
+  and **changing** an image yields a NEW url that dodges the cache, so there's never staleness.
+  When adding a new S3 upload path, set this header too. Private booster docs
+  (`lib/boosterDocsS3.ts`, `whaleabyss-private`) are auth-streamed and deliberately NOT cached
+  `public`. Service card images render as CSS `background-image` (fetched straight from S3, not
+  via `next/image`), so this header is what governs their caching.
 
 **Auth Rate Limiting (brute-force / email-bombing protection):**
 - `lib/rateLimit.ts` — in-memory sliding-window limiter. Exports `checkRateLimit`
@@ -423,3 +434,14 @@ TypeScript paths configured in `tsconfig.json`:
 - Fuzzy search was removed - search is now handled server-side without Fuse.js
 - Reusable form primitives: `components/Input.tsx`, `components/Textarea.tsx` (branded, rounded). Use the `components/TelegramIcon.tsx` brand glyph for any Telegram icon (tints via `currentColor`) — don't use the lucide `Send` icon for Telegram
 - Admin list pages (`/admin/users`, `/admin/boosters`) share a filter+search pattern: `CustomSelect` dropdowns + a debounced `Input` with a `Search` icon
+- **Server-side pagination (orders + users lists):** `/admin/orders` and `/admin/users` do all
+  filtering/sorting/paging in SQL — the API takes `?page&pageSize&sort&…&search` and returns
+  `{ <rows>, total, page, pageSize }`, fetching only the current page (~10 rows + a `count(*)`)
+  instead of the whole table (these lists grow unbounded). Filters are reproduced faithfully in
+  SQL (`ILIKE` search incl. `uuid::text`, enum `::text =` for status/role, end-of-day-inclusive
+  date range for orders). The shared `DataTable` opts in via a **`totalCount`** prop (server
+  mode: `data` is already the current page; paginate against `totalCount`); omit it and it
+  client-slices the full `data` array (boosters/services/reviews still do this — fine for those
+  small, bounded sets). Client pages refetch on every page/filter/search change with a
+  request-id guard (`reqIdRef`) so out-of-order responses can't clobber state, and pass
+  `loading={loading && rows.length === 0}` so only the first load shows the full-table spinner.

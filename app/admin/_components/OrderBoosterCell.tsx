@@ -36,7 +36,8 @@ export default function OrderBoosterCell({
   };
 
   const hasBooster = boosterId && boosterFirstName;
-  const blocked = status === "cancelled" || status === "pending";
+  const blocked =
+    status === "cancelled" || status === "pending" || status === "refunded";
 
   return (
     <>

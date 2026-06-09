@@ -198,6 +198,8 @@ async function run() {
                   ext === ".png"
                     ? "image/png"
                     : "image/jpeg",
+                // Content-versioned key → immutable URL; cache for a year.
+                CacheControl: "public, max-age=31536000, immutable",
               }),
             );
 

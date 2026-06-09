@@ -97,6 +97,11 @@ export async function POST(req: NextRequest) {
         Key: key,
         Body: buffer,
         ContentType: file.type,
+        // Filenames are content-versioned (random hash per upload), so each URL
+        // is immutable — a given URL never changes content. Cache it for a year
+        // so repeat visitors load from browser cache (zero S3 egress). Changing a
+        // service image produces a NEW url, which dodges the cache automatically.
+        CacheControl: "public, max-age=31536000, immutable",
       })
     );
   } catch (err) {

@@ -66,6 +66,10 @@ export async function POST(req: Request) {
       Body: buffer,
       ContentType: file.type,
       ACL: ObjectCannedACL.public_read,
+      // Filename carries a random hash per upload, so the URL is immutable —
+      // cache for a year (repeat loads come from the browser, no S3 egress).
+      // A new avatar gets a new url, so the change is never hidden by the cache.
+      CacheControl: 'public, max-age=31536000, immutable',
     };
 
     const command = new PutObjectCommand(uploadParams);

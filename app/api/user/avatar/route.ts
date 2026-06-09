@@ -6,6 +6,7 @@ import { db } from '@/lib/db';
 import { users } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
+import { enforceRateLimit, RATE_TIERS } from '@/lib/apiRateLimit';
 
 const s3Client = new S3Client({
   region: 'ru-central1',
@@ -24,6 +25,10 @@ export async function POST(req: Request) {
     }
 
     const userId = session.user.id;
+
+    // S3 upload = metered storage + egress; cap per user before touching S3.
+    const limited = enforceRateLimit(req, 'avatar', RATE_TIERS.upload, userId);
+    if (limited) return limited;
 
     const formData = await req.formData();
     const file = formData.get('file') as File;

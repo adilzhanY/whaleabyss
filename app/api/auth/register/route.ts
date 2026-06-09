@@ -3,9 +3,13 @@ import bcrypt from "bcrypt";
 import { db } from "@/lib/db";
 import { users, otps } from "@/lib/schema";
 import { eq } from "drizzle-orm";
+import { enforceRateLimit, RATE_TIERS } from "@/lib/apiRateLimit";
 
 export async function POST(req: Request) {
   try {
+    const limited = enforceRateLimit(req, "register", RATE_TIERS.auth);
+    if (limited) return limited;
+
     const body = await req.json();
     const { username, email, password, otp } = body;
 

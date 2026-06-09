@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { services, serviceAddons } from '@/lib/schema';
 import { eq, and, asc } from 'drizzle-orm';
+import { enforceRateLimit, RATE_TIERS } from '@/lib/apiRateLimit';
 
 /**
  * GET /api/services/[slug]/addons
@@ -9,10 +10,13 @@ import { eq, and, asc } from 'drizzle-orm';
  * is added to the cart. Empty list → the add-to-cart flow skips the modal.
  */
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const limited = enforceRateLimit(req, 'addons', RATE_TIERS.read);
+    if (limited) return limited;
+
     const { slug } = await params;
 
     const parent = await db

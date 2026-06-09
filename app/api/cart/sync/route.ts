@@ -4,6 +4,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { db } from '@/lib/db';
 import { cartItems, services } from '@/lib/schema';
 import { eq, and } from 'drizzle-orm';
+import { enforceRateLimit, RATE_TIERS } from '@/lib/apiRateLimit';
 
 /**
  * POST /api/cart/sync
@@ -18,6 +19,9 @@ export async function POST(req: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
+
+    const limited = enforceRateLimit(req, 'cart:sync', RATE_TIERS.sync, userId);
+    if (limited) return limited;
 
     const body = await req.json();
     const { items } = body;

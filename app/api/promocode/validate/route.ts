@@ -4,6 +4,7 @@ import { promocodes, promocodeUsage } from '@/lib/schema';
 import { eq, and } from 'drizzle-orm';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { enforceRateLimit, RATE_TIERS } from '@/lib/apiRateLimit';
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,6 +15,10 @@ export async function POST(req: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: 'Необходимо войти в систему' }, { status: 401 });
     }
+
+    // Cap promocode probing per account (brute-forcing valid codes).
+    const limited = enforceRateLimit(req, 'promocode', RATE_TIERS.promocode, userId);
+    if (limited) return limited;
 
     const body = await req.json();
     const { code } = body;

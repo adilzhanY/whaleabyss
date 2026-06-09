@@ -10,6 +10,7 @@ import { inArray, eq } from 'drizzle-orm';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { validatePromocodeForUser } from '@/lib/promocodeValidation';
+import { enforceRateLimit, RATE_TIERS } from '@/lib/apiRateLimit';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -26,6 +27,11 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
     // @ts-ignore - augmented in next-auth session callback
     const userId: string | null = session?.user?.id || null;
+
+    // Throttle order creation before any DB write or Freekassa call. Keyed by
+    // user (guests → IP); a real shopper never checks out 10×/min.
+    const limited = enforceRateLimit(req, 'checkout', RATE_TIERS.checkout, userId);
+    if (limited) return limited;
 
     const body = await req.json();
     const { items, email, telegram, adventureRank, method, promocode } = body ?? {};

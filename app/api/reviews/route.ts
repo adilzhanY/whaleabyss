@@ -4,6 +4,7 @@ import { reviews, users } from '@/lib/schema';
 import { desc, sql } from 'drizzle-orm';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { enforceRateLimit, RATE_TIERS } from '@/lib/apiRateLimit';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,6 +33,9 @@ const fakeReviewUsers = [
 
 export async function GET(req: NextRequest) {
   try {
+    const limited = enforceRateLimit(req, 'reviews:read', RATE_TIERS.read);
+    if (limited) return limited;
+
     const { searchParams } = req.nextUrl;
     const offset = parseInt(searchParams.get('offset') || '0');
     const limit = parseInt(searchParams.get('limit') || '5');
@@ -85,6 +89,9 @@ export async function POST(req: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const limited = enforceRateLimit(req, 'reviews:write', RATE_TIERS.write, session.user.id);
+    if (limited) return limited;
 
     const body = await req.json();
     const { rating, description } = body;

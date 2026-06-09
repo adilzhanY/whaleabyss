@@ -280,6 +280,44 @@ const result = await db.select().from(services).where(eq(services.id, id));
 - Per-email/account keys are the real protection (IPs are spoofable via `X-Forwarded-For`);
   per-IP is defense-in-depth.
 
+**General API Rate Limiting (cost/abuse protection):**
+- `lib/apiRateLimit.ts` — ergonomic layer over `lib/rateLimit.ts` for non-auth endpoints.
+  `enforceRateLimit(req, bucket, tier, identifier?)` returns a ready 429 `NextResponse`
+  (with `Retry-After`) or `null` to proceed; drop it at the top of a handler in two lines.
+- **Identity:** keyed by **user id when authenticated** (stable, NAT-proof — many RU users
+  share one mobile-carrier IP — and spoof-proof), falling back to **client IP** for anonymous
+  calls. So user-keyed buckets ignore `X-Forwarded-For` spoofing; IP buckets are a backstop.
+- **Tiers** (`RATE_TIERS`, per 60s per identity), tuned so a real session never trips them:
+  `checkout` 10, `upload` 6 (avatar → S3 $$), `write` 6 (reviews/deletes), `promocode` 20
+  (anti-brute-force), `auth` 8 (register/reset), `sync` 60 (cart), `read` 120 (public reads).
+- **Applied at:** `POST /api/checkout`, `POST /api/user/avatar`, `POST|GET /api/reviews`,
+  `POST /api/promocode/validate`, `POST /api/cart/sync`, `POST /api/auth/register`,
+  `POST /api/auth/reset-password`, `GET /api/events`, `GET /api/services/[slug]/addons`.
+  Machine-to-machine routes are intentionally **not** limited (FK/Telegram webhooks are
+  signature/secret-auth'd and must stay reachable for retries; cron is bearer-auth'd;
+  `/api/admin/*` + `/api/portal/*` are role-gated in `middleware.ts`).
+- **Not in edge middleware on purpose:** Next.js middleware runs in the Edge runtime, a
+  separate isolate that does NOT share the in-process counter Map with Node route handlers
+  (and lacks `setInterval`). Putting the limiter there would be silently ineffective.
+- **App-level limits can't stop a distributed flood** — the request already reached Node.
+  The volumetric/cost backstop is an **nginx `limit_req` zone** in front of the app. Add to
+  the prod nginx `server` block (state survives app restarts, shared machine-wide, stops the
+  flood before it spends Node CPU):
+  ```nginx
+  # http{} block:
+  limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+  limit_req_status 429;
+  # server{} block, around the API:
+  location /api/ {
+      limit_req zone=api burst=30 nodelay;   # ~10 req/s avg, bursts to 30
+      proxy_pass http://127.0.0.1:3000;
+  }
+  ```
+  For per-IP keys to be trustworthy, nginx must set `$remote_addr` into the forwarded chain
+  (standard `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`) and `getClientIp`
+  should read the **trusted** entry — today it reads the left-most (client-claimed) value, so
+  IP buckets remain spoof-bypassable until that's hardened (user-keyed buckets already aren't).
+
 **Security Headers & CSP (`next.config.ts`):**
 - `poweredByHeader: false`. Enforced headers on all routes: HSTS (`max-age=63072000`,
   **no** `includeSubDomains`/`preload` — intentional, to avoid bricking a non-HTTPS subdomain),

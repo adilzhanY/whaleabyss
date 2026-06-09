@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { events, eventServices, services } from '@/lib/schema';
 import { eq, and, lte, gte } from 'drizzle-orm';
+import { enforceRateLimit, RATE_TIERS } from '@/lib/apiRateLimit';
 
 export async function GET(req: NextRequest) {
   try {
+    const limited = enforceRateLimit(req, 'events', RATE_TIERS.read);
+    if (limited) return limited;
+
     const now = new Date();
 
     const activeEvents = await db

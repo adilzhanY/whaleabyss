@@ -3,9 +3,13 @@ import { db } from '@/lib/db';
 import { users, passwordResetTokens } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcrypt';
+import { enforceRateLimit, RATE_TIERS } from '@/lib/apiRateLimit';
 
 export async function POST(req: NextRequest) {
   try {
+    const limited = enforceRateLimit(req, 'reset-password', RATE_TIERS.auth);
+    if (limited) return limited;
+
     const { token, password } = await req.json();
 
     if (!token || !password) {

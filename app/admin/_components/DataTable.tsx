@@ -42,6 +42,13 @@ interface DataTableProps<T> {
   onPageChange?: (page: number) => void;
   /** Tighter horizontal cell padding to fit more columns without horizontal scroll. */
   dense?: boolean;
+  /**
+   * Server-pagination mode. When set, `data` is treated as the CURRENT page's
+   * rows (already sliced in SQL) and this is the total row count across all
+   * pages — the table renders `data` as-is and paginates against this number.
+   * Omit for the default client-side slicing of the full `data` array.
+   */
+  totalCount?: number;
 }
 
 const alignClass: Record<NonNullable<Column<unknown>["align"]>, string> = {
@@ -62,13 +69,21 @@ export default function DataTable<T>({
   pageSize,
   onPageChange,
   dense = false,
+  totalCount,
 }: DataTableProps<T>) {
   const padX = dense ? "px-2" : "px-4";
+  const serverPaginated = typeof totalCount === "number";
   const paginated = typeof pageSize === "number" && pageSize > 0;
-  const totalPages = paginated ? Math.max(1, Math.ceil(data.length / pageSize)) : 1;
+  const rowCount = serverPaginated ? totalCount : data.length;
+  const totalPages = paginated ? Math.max(1, Math.ceil(rowCount / pageSize)) : 1;
   const currentPage = Math.min(page, totalPages);
   const startIndex = paginated ? (currentPage - 1) * pageSize : 0;
-  const rows = paginated ? data.slice(startIndex, startIndex + pageSize) : data;
+  // Server mode: `data` is already this page's rows; don't slice again.
+  const rows = serverPaginated
+    ? data
+    : paginated
+      ? data.slice(startIndex, startIndex + pageSize)
+      : data;
 
   if (loading) {
     return (

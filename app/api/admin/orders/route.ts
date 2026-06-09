@@ -8,7 +8,7 @@ import {
   boosters,
   promocodeUsage,
 } from '@/lib/schema';
-import { desc, eq, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, ilike, inArray, lte, or, sql, type SQL } from 'drizzle-orm';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { validatePromocodeForUser } from '@/lib/promocodeValidation';
@@ -17,12 +17,65 @@ export const dynamic = 'force-dynamic';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
-export async function GET() {
+const VALID_STATUSES = new Set([
+  'pending', 'paid', 'in_progress', 'completed', 'cancelled', 'refunded',
+]);
+
+export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (session?.user?.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // --- Server-side pagination + filtering. The orders list grows unbounded,
+    // so we never ship the whole table: SQL does the filtering, sorting and
+    // slicing, mirroring exactly what the client used to do in-memory. ---
+    const sp = req.nextUrl.searchParams;
+    const page = Math.max(1, parseInt(sp.get('page') || '1', 10) || 1);
+    const pageSize = Math.min(100, Math.max(1, parseInt(sp.get('pageSize') || '10', 10) || 10));
+    const sort = sp.get('sort') === 'oldest' ? 'oldest' : 'newest';
+    const status = sp.get('status') || 'all';
+    const startDate = sp.get('startDate') || '';
+    const endDate = sp.get('endDate') || '';
+    const search = (sp.get('search') || '').trim();
+
+    const conditions: SQL[] = [];
+    if (status !== 'all' && VALID_STATUSES.has(status)) {
+      conditions.push(sql`${orders.status}::text = ${status}`);
+    }
+    if (startDate) {
+      const start = new Date(startDate);
+      if (!Number.isNaN(start.getTime())) conditions.push(gte(orders.createdAt, start));
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      if (!Number.isNaN(end.getTime())) {
+        end.setHours(23, 59, 59, 999); // inclusive of the whole end day
+        conditions.push(lte(orders.createdAt, end));
+      }
+    }
+    if (search) {
+      const like = `%${search}%`;
+      conditions.push(
+        or(
+          sql`${orders.id}::text ILIKE ${like}`,
+          ilike(orders.paymentId, like),
+          ilike(users.username, like),
+          ilike(users.email, like),
+        )!,
+      );
+    }
+    const whereExpr = conditions.length ? and(...conditions) : undefined;
+
+    // Total matching rows (same filters, joined to users for name/email search),
+    // for the pagination control.
+    const [countRow] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(orders)
+      .leftJoin(users, eq(orders.userId, users.id))
+      .where(whereExpr);
+    const total = countRow?.count ?? 0;
 
     const ordersData = await db
       .select({
@@ -44,9 +97,12 @@ export async function GET() {
       .from(orders)
       .leftJoin(users, eq(orders.userId, users.id))
       .leftJoin(boosters, eq(orders.boosterId, boosters.id))
-      .orderBy(desc(orders.createdAt));
+      .where(whereExpr)
+      .orderBy(sort === 'oldest' ? asc(orders.createdAt) : desc(orders.createdAt))
+      .limit(pageSize)
+      .offset((page - 1) * pageSize);
 
-    // Attach line items (compact: title + qty/period) for the Позиции column.
+    // Attach line items only for THIS page's orders (compact: title + qty/period).
     const orderIds = ordersData.map((o) => o.id);
     const itemRows = orderIds.length
       ? await db
@@ -80,7 +136,7 @@ export async function GET() {
       })),
     }));
 
-    return NextResponse.json({ orders: ordersWithItems });
+    return NextResponse.json({ orders: ordersWithItems, total, page, pageSize });
   } catch (error) {
     console.error('[Admin Orders API Error]', error);
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });

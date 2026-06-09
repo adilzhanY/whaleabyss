@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { Search, Plus } from "lucide-react";
 import {
@@ -18,6 +18,7 @@ const ORDERS_PER_PAGE = 10;
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
 
@@ -29,9 +30,15 @@ export default function AdminOrdersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
+  // Guards against out-of-order responses: only the latest request's result wins.
+  const reqIdRef = useRef(0);
+
+  // Re-fetch from the server on any page/filter/search change — SQL does all the
+  // filtering, sorting and slicing, so the client only ever holds one page.
   useEffect(() => {
     fetchOrders();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, sortBy, statusFilter, startDate, endDate, debouncedSearch]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -52,58 +59,30 @@ export default function AdminOrdersPage() {
     );
 
   const fetchOrders = async () => {
+    const reqId = ++reqIdRef.current;
     try {
       setLoading(true);
-      const res = await fetch("/api/admin/orders");
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(ORDERS_PER_PAGE),
+        sort: sortBy,
+        status: statusFilter,
+      });
+      if (startDate) params.set("startDate", startDate);
+      if (endDate) params.set("endDate", endDate);
+      if (debouncedSearch.trim()) params.set("search", debouncedSearch.trim());
+
+      const res = await fetch(`/api/admin/orders?${params.toString()}`);
       const data = await res.json();
+      if (reqId !== reqIdRef.current) return; // superseded by a newer request
       setOrders(data.orders || []);
+      setTotal(data.total || 0);
     } catch (error) {
-      console.error("Failed to fetch orders:", error);
+      if (reqId === reqIdRef.current) console.error("Failed to fetch orders:", error);
     } finally {
-      setLoading(false);
+      if (reqId === reqIdRef.current) setLoading(false);
     }
   };
-
-  const filteredOrders = useMemo(() => {
-    let result = [...orders];
-
-    // Date range filter
-    if (startDate) {
-      const start = new Date(startDate);
-      result = result.filter((o) => new Date(o.createdAt) >= start);
-    }
-    if (endDate) {
-      const end = new Date(endDate);
-      end.setHours(23, 59, 59, 999);
-      result = result.filter((o) => new Date(o.createdAt) <= end);
-    }
-
-    // Status filter
-    if (statusFilter !== "all") {
-      result = result.filter((o) => o.status === statusFilter);
-    }
-
-    // Search filter
-    if (debouncedSearch.trim()) {
-      const query = debouncedSearch.toLowerCase();
-      result = result.filter(
-        (o) =>
-          o.id.toLowerCase().includes(query) ||
-          o.paymentId?.toLowerCase().includes(query) ||
-          o.username?.toLowerCase().includes(query) ||
-          o.email?.toLowerCase().includes(query)
-      );
-    }
-
-    // Sort
-    result.sort((a, b) => {
-      const dateA = new Date(a.createdAt).getTime();
-      const dateB = new Date(b.createdAt).getTime();
-      return sortBy === "newest" ? dateB - dateA : dateA - dateB;
-    });
-
-    return result;
-  }, [orders, sortBy, startDate, endDate, statusFilter, debouncedSearch]);
 
   const columns = useMemo(
     () => buildOrderColumns({ onOrderChange, showIndex: true }),
@@ -115,7 +94,7 @@ export default function AdminOrdersPage() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Заказы</h1>
-          <p className="text-sm text-slate-600 mt-1">Всего заказов: {orders.length}</p>
+          <p className="text-sm text-slate-600 mt-1">Всего заказов: {total}</p>
         </div>
         <Link
           href="/admin/orders/new"
@@ -204,9 +183,10 @@ export default function AdminOrdersPage() {
       {/* Orders Table */}
       <DataTable
         columns={columns}
-        data={filteredOrders}
+        data={orders}
+        totalCount={total}
         getRowKey={(o) => o.id}
-        loading={loading}
+        loading={loading && orders.length === 0}
         emptyMessage="Заказы не найдены"
         page={page}
         pageSize={ORDERS_PER_PAGE}

@@ -35,7 +35,7 @@ export default function OrderItemsCell({ items }: { items: OrderItemSummary[] })
   return (
     <div
       onClick={hasMore ? () => setExpanded((e) => !e) : undefined}
-      className={`max-w-[280px] ${hasMore ? "cursor-pointer" : ""}`}
+      className={`max-w-[176px] ${hasMore ? "cursor-pointer" : ""}`}
       title={hasMore ? (expanded ? "Свернуть" : "Показать полностью") : undefined}
     >
       <ul className="text-xs text-slate-600 space-y-0.5">

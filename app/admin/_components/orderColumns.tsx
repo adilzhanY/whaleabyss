@@ -67,7 +67,7 @@ export function buildOrderColumns({
     columns.push({
       key: "index",
       header: "№",
-      width: "w-12",
+      width: "w-8",
       hideOnMobile: true,
       render: (_row, index) => (
         <span className="text-slate-600">{index + 1}</span>
@@ -104,6 +104,7 @@ export function buildOrderColumns({
       key: "items",
       header: "Позиции",
       mobileLabel: "Позиции",
+      width: "w-44",
       mobileFullWidth: true,
       render: (o) => <OrderItemsCell items={o.items} />,
     },
@@ -111,6 +112,7 @@ export function buildOrderColumns({
       key: "customer",
       header: "Клиент",
       mobileLabel: "Клиент",
+      width: "w-44",
       render: (o) => (
         <div className="md:text-left text-right">
           <div className="font-medium flex items-center gap-1.5 md:justify-start justify-end">
@@ -156,7 +158,7 @@ export function buildOrderColumns({
     },
     {
       key: "online",
-      header: "На аккаунте",
+      header: "На акке",
       mobileLabel: "На аккаунте",
       render: (o) => (
         <div className="md:block flex justify-end">
@@ -174,6 +176,7 @@ export function buildOrderColumns({
       key: "status",
       header: "Статус",
       mobileLabel: "Статус",
+      width: "w-20",
       render: (o) => (
         <OrderStatusCell
           orderId={o.id}

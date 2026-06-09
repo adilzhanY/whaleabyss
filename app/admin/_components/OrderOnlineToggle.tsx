@@ -72,7 +72,7 @@ export default function OrderOnlineToggle({
       ) : (
         <span className={`w-2 h-2 rounded-full ${value ? "bg-emerald-500" : "bg-slate-300"}`} />
       )}
-      {value ? "На аккаунте" : "Не на аккаунте"}
+      {value ? "На акке" : "Не на акке"}
     </button>
   );
 }

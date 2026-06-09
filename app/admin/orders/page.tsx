@@ -211,6 +211,7 @@ export default function AdminOrdersPage() {
         page={page}
         pageSize={ORDERS_PER_PAGE}
         onPageChange={setPage}
+        dense
       />
     </div>
   );

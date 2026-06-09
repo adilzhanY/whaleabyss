@@ -40,6 +40,8 @@ interface DataTableProps<T> {
   page?: number;
   pageSize?: number;
   onPageChange?: (page: number) => void;
+  /** Tighter horizontal cell padding to fit more columns without horizontal scroll. */
+  dense?: boolean;
 }
 
 const alignClass: Record<NonNullable<Column<unknown>["align"]>, string> = {
@@ -59,7 +61,9 @@ export default function DataTable<T>({
   page = 1,
   pageSize,
   onPageChange,
+  dense = false,
 }: DataTableProps<T>) {
+  const padX = dense ? "px-2" : "px-4";
   const paginated = typeof pageSize === "number" && pageSize > 0;
   const totalPages = paginated ? Math.max(1, Math.ceil(data.length / pageSize)) : 1;
   const currentPage = Math.min(page, totalPages);
@@ -98,7 +102,7 @@ export default function DataTable<T>({
                 <th
                   key={col.key}
                   className={[
-                    "font-medium px-4 py-3",
+                    `font-medium ${padX} py-3`,
                     alignClass[col.align ?? "left"],
                     col.width ?? "",
                     col.headerClassName ?? "",
@@ -126,7 +130,7 @@ export default function DataTable<T>({
                     <td
                       key={col.key}
                       className={[
-                        "px-4 py-3 align-top",
+                        `${padX} py-3 align-top`,
                         alignClass[col.align ?? "left"],
                         col.cellClassName ?? "",
                       ].join(" ")}

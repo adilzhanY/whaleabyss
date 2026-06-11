@@ -94,8 +94,9 @@ export const authOptions: AuthOptions = {
       }
 
       // Refresh role on every request so admin promotion/demotion takes
-      // effect without the user re-logging in.
-      if (token.id && !token.role) {
+      // effect without the user re-logging in (e.g. linking a booster
+      // account must grant /portal access on the next session refresh).
+      if (token.id && !user) {
         const dbUser = await db
           .select({ role: users.role })
           .from(users)

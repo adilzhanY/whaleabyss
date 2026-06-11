@@ -182,6 +182,16 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 								Это ваша панель управления. Здесь вы можете следить за статусом
 								текущих заказов и быстро оформлять новые.
 							</p>
+							{session.user.role === "booster" && (
+								<div className="mb-10">
+									<Link
+										href="/portal"
+										className="btn-primary inline-flex items-center justify-center !rounded-full !px-6 sm:!px-8 !py-3.5 !text-sm !font-bold w-full sm:w-auto"
+									>
+										Перейти на портал
+									</Link>
+								</div>
+							)}
 							<div className="w-full">
 								<div className="flex items-center justify-between mb-6">
 									<h2

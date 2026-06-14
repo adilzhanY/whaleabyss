@@ -5,9 +5,17 @@ import Image from "next/image";
 import { useState } from "react";
 import { X } from "lucide-react";
 
+// Master toggle for the floating bottom-right banner.
+// Set to `true` to show the banner site-wide again.
+const BANNER_ENABLED = false;
+
 export default function FloatingBanner() {
   const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(true);
+
+  if (!BANNER_ENABLED) {
+    return null;
+  }
 
   // Hide on admin pages
   if (pathname?.startsWith("/admin")) {

@@ -36,14 +36,24 @@ export default function OrderCard({ order, isGrayscale = false }: OrderCardProps
             № {order.id.slice(0, 8)}
           </span>
           <span className="flex items-center gap-2">
-            {order.status === "in_progress" && order.boosterOnline && (
-              <span
-                className="inline-flex items-center justify-center gap-1.5 text-[11px] font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider bg-emerald-50 text-emerald-700"
-                title="Бустер сейчас выполняет заказ на вашем аккаунте"
-              >
-                <CircleDot className="w-4 h-4 animate-pulse" strokeWidth={2.5} />
-                Бустер на аккаунте
-              </span>
+            {order.status === "in_progress" && (
+              order.boosterOnline ? (
+                <span
+                  className="inline-flex items-center justify-center gap-1.5 text-[11px] font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider bg-emerald-50 text-emerald-700"
+                  title="Бустер сейчас выполняет заказ на вашем аккаунте"
+                >
+                  <CircleDot className="w-4 h-4 animate-pulse" strokeWidth={2.5} />
+                  Бустер на аккаунте
+                </span>
+              ) : (
+                <span
+                  className="inline-flex items-center justify-center gap-1.5 text-[11px] font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider bg-slate-100 text-slate-500"
+                  title="Бустер сейчас не на вашем аккаунте"
+                >
+                  <CircleDot className="w-4 h-4" strokeWidth={2.5} />
+                  Бустер не на аккаунте
+                </span>
+              )
             )}
             <span className={`inline-flex items-center justify-center gap-1.5 text-[11px] font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider ${meta.classes}`}>
               <StatusIcon className="w-4 h-4" strokeWidth={2.5} />

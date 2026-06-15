@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Clock, Search, FilterX } from "lucide-react";
@@ -39,6 +39,23 @@ export default function OrdersPage() {
   const [dateFilter, setDateFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // `silent` skips the full-page loading spinner — used for background refreshes
+  // so polling doesn't flash the list away under the customer.
+  const fetchOrders = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    try {
+      // no-store: never let the browser/bfcache serve a stale snapshot, so a
+      // status change (e.g. booster toggling «на аккаунте») is always reflected.
+      const res = await fetch("/api/user/orders", { cache: "no-store" });
+      const data = await res.json();
+      if (Array.isArray(data)) setOrders(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (status === "unauthenticated") {
       setAuthOpen(true);
@@ -46,18 +63,33 @@ export default function OrdersPage() {
     } else if (session?.user) {
       fetchOrders();
     }
-  }, [session, status]);
+  }, [session, status, fetchOrders]);
 
-  const fetchOrders = async () => {
-    setLoading(true);
-    fetch("/api/user/orders")
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) setOrders(data);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  };
+  // Only orders in a non-terminal state can still change server-side (booster
+  // assignment, «на аккаунте» toggle, completion). If the customer is only
+  // viewing finished history, we never poll — zero extra requests.
+  const hasActiveOrder = orders.some((o) =>
+    ["pending", "paid", "in_progress"].includes(o.status)
+  );
+
+  // Keep an actively-watched order fresh without a persistent connection:
+  // refetch on tab refocus (feels instant) + a light poll, both paused while
+  // the tab is hidden. Bounded to ~the moments the customer actually cares.
+  useEffect(() => {
+    if (status !== "authenticated" || !hasActiveOrder) return;
+
+    const refreshIfVisible = () => {
+      if (document.visibilityState === "visible") fetchOrders(true);
+    };
+
+    document.addEventListener("visibilitychange", refreshIfVisible);
+    const interval = setInterval(refreshIfVisible, 20000);
+
+    return () => {
+      document.removeEventListener("visibilitychange", refreshIfVisible);
+      clearInterval(interval);
+    };
+  }, [status, hasActiveOrder, fetchOrders]);
 
   const filteredOrders = orders.filter((order) => {
     // Status Filter

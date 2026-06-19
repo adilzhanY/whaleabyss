@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { orders, orderItems, services, users, boosters } from "@/lib/schema";
-import { desc, eq, sql, and, or, gte, lt, inArray, isNotNull } from "drizzle-orm";
+import { desc, eq, sql, and, or, gte, lt, ne, inArray, isNotNull } from "drizzle-orm";
 import {
   ShoppingBag,
   TrendingUp,
@@ -9,6 +9,8 @@ import {
   Clock,
   Users as UsersIcon,
   ArrowRight,
+  Wallet,
+  HandCoins,
 } from "lucide-react";
 import {
   Card,
@@ -26,12 +28,15 @@ import TimeRangeSelect from "./_components/TimeRangeSelect";
 import { TIME_RANGE_OPTIONS, type TimeRange } from "./_components/timeRange";
 import {
   RevenueAreaChart,
+  NetRevenueAreaChart,
+  BoosterRevenueChart,
   OrdersBarChart,
   ClientsLineChart,
   TopServicesChart,
   BoostersChart,
   OrderStatusDonut,
   type SeriesPoint,
+  type BoosterSeriesPoint,
   type TimeUnit,
 } from "./_components/DashboardCharts";
 
@@ -62,6 +67,14 @@ const RANGE_UNIT: Record<TimeRange, TimeUnit> = {
 
 const SUCCESSFUL_STATUSES = ["paid", "in_progress", "completed", "refunded"] as const;
 
+/**
+ * The site owner is on the booster roster (она берёт заказы), but her commission
+ * is not a real payout — it stays in the business. So she's excluded from every
+ * booster-facing metric (net-revenue commission deduction, booster-earnings
+ * chart, top-boosters bar). Her orders STILL count toward gross revenue.
+ */
+const OWNER_BOOSTER_ID = "37cc32d8-f730-4a71-bb55-a325c11d3239";
+
 function parseRange(raw: string | string[] | undefined): TimeRange {
   const value = Array.isArray(raw) ? raw[0] : raw;
   return RANGE_VALUES.includes(value as TimeRange) ? (value as TimeRange) : "all";
@@ -90,6 +103,7 @@ async function getStats(cutoff: Date | null) {
     .select({
       count: sql<number>`count(*)::int`,
       revenue: sql<string>`coalesce(sum(case when ${orders.status} = 'refunded' then 0 else ${orders.totalPrice} end), 0)::text`,
+      commission: sql<string>`coalesce(sum(case when ${orders.status} = 'refunded' or ${orders.boosterId} = ${OWNER_BOOSTER_ID} then 0 else coalesce(${orders.boosterEarning}, 0) end), 0)::text`,
     })
     .from(orders)
     .where(orderWhere);
@@ -105,9 +119,14 @@ async function getStats(cutoff: Date | null) {
     .from(users)
     .where(cutoff ? gte(users.createdAt, cutoff) : sql`true`);
 
+  const revenue = Number(orderStats?.revenue ?? 0);
+  const commissionPaid = Number(orderStats?.commission ?? 0);
+
   return {
     orderCount: orderStats?.count ?? 0,
-    revenue: Number(orderStats?.revenue ?? 0),
+    revenue,
+    commissionPaid,
+    net: revenue - commissionPaid,
     awaitingFulfilment: pending?.count ?? 0,
     userCount: userCount?.count ?? 0,
   };
@@ -203,6 +222,7 @@ async function getTimeSeries(cutoff: Date | null, unit: TimeUnit): Promise<Serie
         bucket: orderBucket,
         orders: sql<number>`count(*)::int`,
         revenue: sql<string>`coalesce(sum(case when ${orders.status} = 'refunded' then 0 else ${orders.totalPrice} end), 0)::text`,
+        commission: sql<string>`coalesce(sum(case when ${orders.status} = 'refunded' or ${orders.boosterId} = ${OWNER_BOOSTER_ID} then 0 else coalesce(${orders.boosterEarning}, 0) end), 0)::text`,
       })
       .from(orders)
       .where(orderWhere)
@@ -217,11 +237,11 @@ async function getTimeSeries(cutoff: Date | null, unit: TimeUnit): Promise<Serie
       .groupBy(userBucket),
   ]);
 
-  const byBucket = new Map<number, { revenue: number; orders: number; clients: number }>();
+  const byBucket = new Map<number, { revenue: number; orders: number; clients: number; commission: number }>();
   const at = (ms: number) => {
     let p = byBucket.get(ms);
     if (!p) {
-      p = { revenue: 0, orders: 0, clients: 0 };
+      p = { revenue: 0, orders: 0, clients: 0, commission: 0 };
       byBucket.set(ms, p);
     }
     return p;
@@ -230,6 +250,7 @@ async function getTimeSeries(cutoff: Date | null, unit: TimeUnit): Promise<Serie
     const p = at(Number(r.bucket) * 1000);
     p.orders = r.orders;
     p.revenue = Number(r.revenue);
+    p.commission = Number(r.commission);
   }
   for (const r of userRows) {
     at(Number(r.bucket) * 1000).clients = r.clients;
@@ -246,7 +267,76 @@ async function getTimeSeries(cutoff: Date | null, unit: TimeUnit): Promise<Serie
   for (let d = start; d <= end && points.length < 500; d = addUnit(d, unit)) {
     const t = d.getTime();
     const p = byBucket.get(t);
-    points.push({ t, revenue: p?.revenue ?? 0, orders: p?.orders ?? 0, clients: p?.clients ?? 0 });
+    const revenue = p?.revenue ?? 0;
+    const commission = p?.commission ?? 0;
+    points.push({
+      t,
+      revenue,
+      orders: p?.orders ?? 0,
+      clients: p?.clients ?? 0,
+      commission,
+      net: revenue - commission,
+    });
+  }
+  return points;
+}
+
+/**
+ * Booster commission earned over time, bucketed by `unit`. Each bucket carries
+ * the total plus the top-5 earners (for the tooltip). Buckets by the order's
+ * createdAt (same axis as revenue) and excludes refunded orders so the totals
+ * tie out with the commission subtracted in the net-revenue chart. Zero-filled
+ * in JS like getTimeSeries.
+ */
+async function getBoosterTimeSeries(
+  cutoff: Date | null,
+  unit: TimeUnit
+): Promise<BoosterSeriesPoint[]> {
+  const bucketSql = sql<string>`(extract(epoch from date_trunc('${sql.raw(unit)}', ${orders.createdAt}))::bigint)`;
+  const base = and(
+    isNotNull(orders.boosterEarning),
+    ne(orders.status, "refunded"),
+    ne(orders.boosterId, OWNER_BOOSTER_ID)
+  );
+  const where = cutoff ? and(base, gte(orders.createdAt, cutoff)) : base;
+
+  const rows = await db
+    .select({
+      bucket: bucketSql,
+      name: sql<string>`${boosters.firstName} || ' ' || ${boosters.lastName}`,
+      earned: sql<string>`coalesce(sum(${orders.boosterEarning}), 0)::text`,
+    })
+    .from(orders)
+    .innerJoin(boosters, eq(orders.boosterId, boosters.id))
+    .where(where)
+    .groupBy(bucketSql, boosters.id, boosters.firstName, boosters.lastName);
+
+  const byBucket = new Map<number, { total: number; entries: { name: string; earned: number }[] }>();
+  for (const r of rows) {
+    const earned = Number(r.earned);
+    if (earned <= 0) continue;
+    const ms = Number(r.bucket) * 1000;
+    let b = byBucket.get(ms);
+    if (!b) {
+      b = { total: 0, entries: [] };
+      byBucket.set(ms, b);
+    }
+    b.total += earned;
+    b.entries.push({ name: r.name, earned });
+  }
+
+  if (byBucket.size === 0) return [];
+
+  const firstData = Math.min(...byBucket.keys());
+  const start = cutoff ? truncUTC(cutoff, unit) : new Date(firstData);
+  const end = truncUTC(new Date(), unit);
+
+  const points: BoosterSeriesPoint[] = [];
+  for (let d = start; d <= end && points.length < 500; d = addUnit(d, unit)) {
+    const t = d.getTime();
+    const b = byBucket.get(t);
+    const top = b ? [...b.entries].sort((a, z) => z.earned - a.earned).slice(0, 5) : [];
+    points.push({ t, total: b?.total ?? 0, top });
   }
   return points;
 }
@@ -316,7 +406,7 @@ async function getBoosterStats(cutoff: Date | null) {
     })
     .from(boosters)
     .leftJoin(orders, cutoff ? and(joinBase, gte(orders.createdAt, cutoff)) : joinBase)
-    .where(eq(boosters.status, "active"))
+    .where(and(eq(boosters.status, "active"), ne(boosters.id, OWNER_BOOSTER_ID)))
     .groupBy(boosters.id, boosters.firstName, boosters.lastName)
     .orderBy(desc(sql`count(${orders.id})`))
     .limit(3);
@@ -396,15 +486,17 @@ export default async function AdminDashboardPage({
   const unit = RANGE_UNIT[range];
   const suffix = RANGE_SUFFIX[range];
 
-  const [stats, prevStats, series, statuses, top, boosterStats, recent] = await Promise.all([
-    getStats(cutoff),
-    getPrevStats(cutoff),
-    getTimeSeries(cutoff, unit),
-    getStatusBreakdown(cutoff),
-    getTopServices(cutoff),
-    getBoosterStats(cutoff),
-    getRecentOrders(),
-  ]);
+  const [stats, prevStats, series, boosterSeries, statuses, top, boosterStats, recent] =
+    await Promise.all([
+      getStats(cutoff),
+      getPrevStats(cutoff),
+      getTimeSeries(cutoff, unit),
+      getBoosterTimeSeries(cutoff, unit),
+      getStatusBreakdown(cutoff),
+      getTopServices(cutoff),
+      getBoosterStats(cutoff),
+      getRecentOrders(),
+    ]);
 
   const deltas = {
     revenue: pctChange(stats.revenue, prevStats?.revenue),
@@ -465,6 +557,58 @@ export default async function AdminDashboardPage({
           </Card>
         </div>
       </div>
+
+      {/* Row 1.5: net revenue (what we keep after paying booster commission) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <Card className="lg:col-span-2">
+          <MetricHeader
+            label={`Чистая выручка ${suffix}`}
+            value={`${stats.net.toLocaleString("ru-RU")} ₽`}
+            delta={null}
+            icon={Wallet}
+            iconClass="bg-emerald-100 text-emerald-600"
+          />
+          <CardContent className="flex-1 flex items-end">
+            {series.length === 0 ? <EmptyChart /> : <NetRevenueAreaChart data={series} unit={unit} />}
+          </CardContent>
+        </Card>
+
+        <div className="flex flex-col gap-4">
+          <Card>
+            <MetricHeader
+              label={`Получено всего ${suffix}`}
+              value={`${stats.revenue.toLocaleString("ru-RU")} ₽`}
+              delta={deltas.revenue}
+              icon={TrendingUp}
+              iconClass="bg-primary/10 text-primary"
+            />
+          </Card>
+          <Card>
+            <MetricHeader
+              label={`Выплачено бустерам ${suffix}`}
+              value={`${stats.commissionPaid.toLocaleString("ru-RU")} ₽`}
+              delta={null}
+              icon={HandCoins}
+              iconClass="bg-violet-100 text-violet-600"
+            />
+          </Card>
+        </div>
+      </div>
+
+      {/* Row 1.6: booster earnings over time (top-5 earners in the tooltip) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Заработок бустеров</CardTitle>
+          <CardDescription>Сумма комиссий {suffix} · топ-5 в подсказке</CardDescription>
+        </CardHeader>
+        <CardContent className="flex-1 flex items-end">
+          {boosterSeries.length === 0 ? (
+            <EmptyChart />
+          ) : (
+            <BoosterRevenueChart data={boosterSeries} unit={unit} />
+          )}
+        </CardContent>
+      </Card>
 
       {/* Row 2: all four comparison charts side by side on wide screens */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">

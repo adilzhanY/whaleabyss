@@ -42,6 +42,10 @@ export interface SeriesPoint {
   revenue: number;
   orders: number;
   clients: number;
+  /** Booster commission paid out for orders in this bucket (what we give). */
+  commission: number;
+  /** Revenue kept after paying booster commission (revenue − commission). */
+  net: number;
 }
 
 const tickFormatter = (unit: TimeUnit) => (t: number) => {
@@ -136,6 +140,210 @@ export function RevenueAreaChart({ data, unit }: { data: SeriesPoint[]; unit: Ti
           stroke="var(--color-revenue)"
           strokeWidth={2}
           fill="url(#fillRevenue)"
+        />
+      </AreaChart>
+    </ChartContainer>
+  );
+}
+
+// ── Net revenue: gross vs after-commission area chart ────────────────────────
+// Two stacked-look areas: the full revenue (what we take) and the net kept after
+// paying booster commission (what's left). The gap between them is what we give.
+
+const netRevenueConfig = {
+  revenue: { label: "Выручка", color: "var(--chart-2)" },
+  net: { label: "Чистая выручка", color: "var(--chart-3)" },
+} satisfies ChartConfig;
+
+/** Shared shadcn-style tooltip shell so custom tooltips match ChartTooltipContent. */
+function TooltipBox({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="border-border/50 bg-background grid min-w-[10rem] items-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl">
+      {children}
+    </div>
+  );
+}
+
+function TooltipRow({ label, value, color }: { label: string; value: string; color?: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      {color ? (
+        <div className="size-2.5 shrink-0 rounded-[2px]" style={{ backgroundColor: color }} />
+      ) : (
+        <div className="size-2.5 shrink-0" />
+      )}
+      <span className="text-muted-foreground">{label}</span>
+      <span className="text-foreground ml-auto font-mono font-medium tabular-nums">{value}</span>
+    </div>
+  );
+}
+
+type TooltipPayload = readonly { payload?: SeriesPoint }[];
+
+function NetRevenueTooltip({
+  active,
+  payload,
+  unit,
+}: {
+  active?: boolean;
+  payload?: TooltipPayload;
+  unit: TimeUnit;
+}) {
+  const p = payload?.[0]?.payload;
+  if (!active || !p) return null;
+  return (
+    <TooltipBox>
+      <div className="font-medium">{labelFormatter(unit)(undefined, payload!)}</div>
+      <TooltipRow label="Выручка" value={fullRub(p.revenue)} color="var(--chart-2)" />
+      <TooltipRow label="Бустерам" value={fullRub(p.commission)} color="var(--muted-foreground)" />
+      <TooltipRow label="Чистыми" value={fullRub(p.net)} color="var(--chart-3)" />
+    </TooltipBox>
+  );
+}
+
+export function NetRevenueAreaChart({ data, unit }: { data: SeriesPoint[]; unit: TimeUnit }) {
+  return (
+    <ChartContainer config={netRevenueConfig} className="aspect-auto h-[220px] w-full">
+      <AreaChart accessibilityLayer data={data} margin={{ left: 4, right: 4 }}>
+        <defs>
+          <linearGradient id="fillGross" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="var(--color-revenue)" stopOpacity={0.35} />
+            <stop offset="95%" stopColor="var(--color-revenue)" stopOpacity={0.03} />
+          </linearGradient>
+          <linearGradient id="fillNet" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="var(--color-net)" stopOpacity={0.6} />
+            <stop offset="95%" stopColor="var(--color-net)" stopOpacity={0.05} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid vertical={false} />
+        <XAxis
+          dataKey="t"
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          minTickGap={28}
+          tickFormatter={tickFormatter(unit)}
+        />
+        <YAxis
+          tickLine={false}
+          axisLine={false}
+          tickMargin={4}
+          width={72}
+          tickFormatter={(v: number) => compactRub(v)}
+        />
+        <ChartTooltip content={<NetRevenueTooltip unit={unit} />} />
+        {/* Gross drawn first (behind), net on top — the visible band between the
+            two strokes is the commission paid to boosters. */}
+        <Area
+          dataKey="revenue"
+          type="monotone"
+          stroke="var(--color-revenue)"
+          strokeWidth={2}
+          strokeDasharray="4 3"
+          fill="url(#fillGross)"
+        />
+        <Area
+          dataKey="net"
+          type="monotone"
+          stroke="var(--color-net)"
+          strokeWidth={2}
+          fill="url(#fillNet)"
+        />
+      </AreaChart>
+    </ChartContainer>
+  );
+}
+
+// ── Booster earnings: total commission over time, top-5 breakdown in tooltip ──
+
+export interface BoosterSeriesPoint {
+  /** Bucket start, epoch milliseconds (UTC). */
+  t: number;
+  /** Total commission earned by all boosters in this bucket. */
+  total: number;
+  /** Highest-earning boosters in this bucket (already sorted desc, ≤5). */
+  top: { name: string; earned: number }[];
+}
+
+const boosterRevenueConfig = {
+  total: { label: "Заработок бустеров", color: "var(--chart-4)" },
+} satisfies ChartConfig;
+
+function BoosterRevenueTooltip({
+  active,
+  payload,
+  unit,
+}: {
+  active?: boolean;
+  payload?: readonly { payload?: BoosterSeriesPoint }[];
+  unit: TimeUnit;
+}) {
+  const p = payload?.[0]?.payload;
+  if (!active || !p) return null;
+  const d = new Date(p.t);
+  const label =
+    unit === "hour"
+      ? d.toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
+      : unit === "month"
+        ? d.toLocaleDateString("ru-RU", { month: "long", year: "numeric" })
+        : d.toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" });
+  return (
+    <TooltipBox>
+      <div className="font-medium">{label}</div>
+      <TooltipRow label="Всего" value={fullRub(p.total)} color="var(--chart-4)" />
+      {p.top.length > 0 && (
+        <>
+          <div className="text-muted-foreground mt-0.5 border-t pt-1 text-[11px] uppercase tracking-wide">
+            Топ бустеров
+          </div>
+          {p.top.map((b, i) => (
+            <div key={b.name} className="flex items-center gap-2">
+              <span className="text-muted-foreground tabular-nums">{i + 1}.</span>
+              <span className="truncate">{b.name}</span>
+              <span className="text-foreground ml-auto font-mono font-medium tabular-nums">
+                {fullRub(b.earned)}
+              </span>
+            </div>
+          ))}
+        </>
+      )}
+    </TooltipBox>
+  );
+}
+
+export function BoosterRevenueChart({ data, unit }: { data: BoosterSeriesPoint[]; unit: TimeUnit }) {
+  return (
+    <ChartContainer config={boosterRevenueConfig} className="aspect-auto h-[220px] w-full">
+      <AreaChart accessibilityLayer data={data} margin={{ left: 4, right: 4 }}>
+        <defs>
+          <linearGradient id="fillBoosterRevenue" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="var(--color-total)" stopOpacity={0.6} />
+            <stop offset="95%" stopColor="var(--color-total)" stopOpacity={0.05} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid vertical={false} />
+        <XAxis
+          dataKey="t"
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          minTickGap={28}
+          tickFormatter={tickFormatter(unit)}
+        />
+        <YAxis
+          tickLine={false}
+          axisLine={false}
+          tickMargin={4}
+          width={72}
+          tickFormatter={(v: number) => compactRub(v)}
+        />
+        <ChartTooltip content={<BoosterRevenueTooltip unit={unit} />} />
+        <Area
+          dataKey="total"
+          type="monotone"
+          stroke="var(--color-total)"
+          strokeWidth={2}
+          fill="url(#fillBoosterRevenue)"
         />
       </AreaChart>
     </ChartContainer>

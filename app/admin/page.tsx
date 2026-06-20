@@ -9,8 +9,6 @@ import {
   Clock,
   Users as UsersIcon,
   ArrowRight,
-  Wallet,
-  HandCoins,
 } from "lucide-react";
 import {
   Card,
@@ -27,7 +25,6 @@ import type { OrderRow } from "./_components/orderColumns";
 import TimeRangeSelect from "./_components/TimeRangeSelect";
 import { TIME_RANGE_OPTIONS, type TimeRange } from "./_components/timeRange";
 import {
-  RevenueAreaChart,
   NetRevenueAreaChart,
   BoosterRevenueChart,
   OrdersBarChart,
@@ -517,22 +514,28 @@ export default async function AdminDashboardPage({
         <TimeRangeSelect value={range} />
       </div>
 
-      {/* Row 1: revenue hero + pending/statuses column */}
+      {/* Row 1: revenue hero (gross vs net overlay) + pending/statuses column */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
-          <MetricHeader
-            label={`Выручка ${suffix}`}
-            value={`${stats.revenue.toLocaleString("ru-RU")} ₽`}
-            delta={deltas.revenue}
-            icon={TrendingUp}
-            iconClass="bg-primary/10 text-primary"
-          />
+          <CardHeader>
+            <CardDescription>Выручка {suffix}</CardDescription>
+            <div className="flex flex-wrap items-end gap-x-10 gap-y-3">
+              <RevenueStat
+                label="Получено"
+                value={stats.revenue}
+                color="var(--chart-2)"
+                delta={deltas.revenue}
+              />
+              <RevenueStat
+                label="Чистыми (после комиссий)"
+                value={stats.net}
+                color="var(--chart-3)"
+                delta={null}
+              />
+            </div>
+          </CardHeader>
           <CardContent className="flex-1 flex items-end">
-            {series.length === 0 ? (
-              <EmptyChart />
-            ) : (
-              <RevenueAreaChart data={series} unit={unit} />
-            )}
+            {series.length === 0 ? <EmptyChart /> : <NetRevenueAreaChart data={series} unit={unit} />}
           </CardContent>
         </Card>
 
@@ -554,43 +557,6 @@ export default async function AdminDashboardPage({
             <CardContent>
               {statuses.length === 0 ? <EmptyChart /> : <OrderStatusDonut data={statuses} />}
             </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Row 1.5: net revenue (what we keep after paying booster commission) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="lg:col-span-2">
-          <MetricHeader
-            label={`Чистая выручка ${suffix}`}
-            value={`${stats.net.toLocaleString("ru-RU")} ₽`}
-            delta={null}
-            icon={Wallet}
-            iconClass="bg-emerald-100 text-emerald-600"
-          />
-          <CardContent className="flex-1 flex items-end">
-            {series.length === 0 ? <EmptyChart /> : <NetRevenueAreaChart data={series} unit={unit} />}
-          </CardContent>
-        </Card>
-
-        <div className="flex flex-col gap-4">
-          <Card>
-            <MetricHeader
-              label={`Получено всего ${suffix}`}
-              value={`${stats.revenue.toLocaleString("ru-RU")} ₽`}
-              delta={deltas.revenue}
-              icon={TrendingUp}
-              iconClass="bg-primary/10 text-primary"
-            />
-          </Card>
-          <Card>
-            <MetricHeader
-              label={`Выплачено бустерам ${suffix}`}
-              value={`${stats.commissionPaid.toLocaleString("ru-RU")} ₽`}
-              delta={null}
-              icon={HandCoins}
-              iconClass="bg-violet-100 text-violet-600"
-            />
           </Card>
         </div>
       </div>
@@ -707,6 +673,38 @@ function MetricHeader({
         </div>
       )}
     </CardHeader>
+  );
+}
+
+/** One labelled money figure with a color swatch — used for the gross/net pair
+ *  on top of the revenue hero. The swatch matches the chart's area color. */
+function RevenueStat({
+  label,
+  value,
+  color,
+  delta,
+}: {
+  label: string;
+  value: number;
+  color: string;
+  delta: number | null;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        <span className="size-2.5 shrink-0 rounded-[2px]" style={{ backgroundColor: color }} />
+        {label}
+      </span>
+      <span className="text-3xl font-bold tracking-tight tabular-nums">
+        {value.toLocaleString("ru-RU")} ₽
+      </span>
+      {delta !== null && (
+        <div className="flex items-center gap-2">
+          <DeltaBadge pct={delta} />
+          <span className="text-xs text-muted-foreground">к пред. периоду</span>
+        </div>
+      )}
+    </div>
   );
 }
 

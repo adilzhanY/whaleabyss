@@ -191,6 +191,12 @@ export default function CartPage() {
       });
 
       if (!res.ok) {
+        // 422 = Adventure Rank gate: the server sends a ready Russian message
+        // naming the service and ranks — show it verbatim.
+        if (res.status === 422) {
+          const msg = (await res.text()).trim();
+          throw new Error(msg || "Услуга недоступна для вашего ранга приключений");
+        }
         throw new Error("Ошибка при создании заказа");
       }
 

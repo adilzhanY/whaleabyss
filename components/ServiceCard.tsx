@@ -5,6 +5,7 @@ import { useAddToCartWithAddons } from "@/components/QuestAddonModal";
 import Link from "next/link";
 import { ServiceItem } from "@/lib/services";
 import { isCategoryOnDiscount, calculateDiscountedPrice, getActiveEvent } from "@/lib/events";
+import { parseMinAdventureRank } from "@/lib/adventureRank";
 
 interface ServiceCardProps {
   item: ServiceItem;
@@ -27,13 +28,17 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
     e.stopPropagation();
     // Opens the quest-addon modal when the service has linked quests,
     // otherwise adds to the cart directly and opens it.
-    addToCartWithAddons({
-      id: item.id,
-      title: item.title,
-      subtitle: item.subtitle,
-      price: finalPrice,
-      image: item.background || "/images/genshin_background.jpg",
-    });
+    addToCartWithAddons(
+      {
+        id: item.id,
+        title: item.title,
+        subtitle: item.subtitle,
+        price: finalPrice,
+        image: item.background || "/images/genshin_background.jpg",
+      },
+      1,
+      parseMinAdventureRank(item.description)
+    );
   };
 
   return (

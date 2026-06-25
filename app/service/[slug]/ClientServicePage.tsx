@@ -7,6 +7,7 @@ import CartModal from "@/components/CartModal";
 import AuthModal from "@/components/AuthModal";
 import { ServiceItem } from "@/lib/services";
 import { useAddToCartWithAddons } from "@/components/QuestAddonModal";
+import { parseMinAdventureRank } from "@/lib/adventureRank";
 import { UserCircle, Tag, Layers, CheckCircle, Info, ShoppingCart, Gauge, Shield, MonitorPlay } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -75,7 +76,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
       price: pricePerItem,
       image: service.background || "/images/genshin_background.jpg",
       ...(service.isPerDay ? { startDate, endDate } : {}),
-    }, activeDays);
+    }, activeDays, parseMinAdventureRank(service.description));
   };
 
   const currentStartDate = startDate;

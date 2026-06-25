@@ -26,6 +26,7 @@ const displayFont = Space_Grotesk({
 import { Providers } from "./Providers";
 import CookieConsent from "@/components/CookieConsent";
 import QuestAddonModal from "@/components/QuestAddonModal";
+import RankGateModal from "@/components/RankGateModal";
 
 export const metadata: Metadata = {
   title: "Whale Abyss — Экспертное сопровождение аккаунтов",
@@ -72,6 +73,8 @@ export default function RootLayout({
         <CookieConsent />
         {/* Quest-addon upsell modal — global so every "add to cart" point can open it. */}
         <QuestAddonModal />
+        {/* Adventure Rank gate — opened by add-to-cart when the user's rank is too low. */}
+        <RankGateModal />
       </body>
     </html>
   );

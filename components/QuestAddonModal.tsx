@@ -5,6 +5,7 @@ import Image from "next/image";
 import { X, Check, ListChecks } from "lucide-react";
 import { useCart, CartItem } from "@/store/useCart";
 import { useAddonPrompt } from "@/store/useAddonPrompt";
+import { useRankGate } from "@/store/useRankGate";
 
 /**
  * Upsell modal shown when an exploration service with linked quest addons is
@@ -199,15 +200,63 @@ export default function QuestAddonModal() {
 }
 
 /**
- * Drop-in replacement for addToCart+openCart: checks the service for quest
- * addons first and opens the upsell modal when there are any; otherwise adds
- * to the cart directly (and on any fetch error, so the cart never breaks).
+ * Read the signed-in user's Adventure Rank for the add-to-cart gate.
+ * Distinguishes "not logged in" (401) from a network/other error so the caller
+ * can decide whether to enforce the gate or fall through to checkout.
+ */
+async function fetchUserAdventureRank(): Promise<
+  | { state: "anon" }
+  | { state: "ok"; rank: number | null }
+  | { state: "error" }
+> {
+  try {
+    const res = await fetch("/api/user/profile");
+    if (res.status === 401) return { state: "anon" };
+    if (!res.ok) return { state: "error" };
+    const data = await res.json();
+    const raw = data?.adventureRank;
+    const rank = raw == null || raw === "" ? null : Number(raw);
+    return { state: "ok", rank: Number.isFinite(rank) ? (rank as number) : null };
+  } catch {
+    return { state: "error" };
+  }
+}
+
+/**
+ * Drop-in replacement for addToCart+openCart. Before adding it:
+ *  1. enforces the service's Adventure Rank gate (`minAdventureRank`, parsed
+ *     from the description by the caller) for logged-in users — blocking with
+ *     the RankGateModal when their rank is below the requirement or unset;
+ *  2. checks the service for quest addons and opens the upsell modal when there
+ *     are any; otherwise adds to the cart directly (and on any fetch error, so
+ *     the cart never breaks).
+ *
+ * Anonymous users are not blocked here (we can't read their rank) — they must
+ * log in at checkout, where `/api/checkout` re-parses the requirement and
+ * enforces it server-side regardless of what the client did.
  */
 export function useAddToCartWithAddons() {
   const { addToCart, openCart } = useCart();
   const openPrompt = useAddonPrompt((s) => s.open);
+  const openRankGate = useRankGate((s) => s.open);
 
-  return async (item: Omit<CartItem, "quantity">, quantity = 1) => {
+  return async (
+    item: Omit<CartItem, "quantity">,
+    quantity = 1,
+    minAdventureRank: number | null = null
+  ) => {
+    if (minAdventureRank != null) {
+      const profile = await fetchUserAdventureRank();
+      // Only block when we positively know a logged-in user's rank is too low
+      // (or unset). Anonymous/error → fall through; checkout is the backstop.
+      if (profile.state === "ok") {
+        if (profile.rank == null || profile.rank < minAdventureRank) {
+          openRankGate({ requiredRank: minAdventureRank, currentRank: profile.rank });
+          return;
+        }
+      }
+    }
+
     try {
       const res = await fetch(`/api/services/${encodeURIComponent(item.id)}/addons`);
       if (res.ok) {

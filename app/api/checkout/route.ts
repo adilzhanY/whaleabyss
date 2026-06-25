@@ -11,6 +11,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { validatePromocodeForUser } from '@/lib/promocodeValidation';
 import { enforceRateLimit, RATE_TIERS } from '@/lib/apiRateLimit';
+import { parseMinAdventureRank } from '@/lib/adventureRank';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -92,6 +93,9 @@ export async function POST(req: NextRequest) {
       .select({
         id: services.id,
         slug: services.slug,
+        title: services.title,
+        subtitle: services.subtitle,
+        description: services.description,
         price: services.price,
         isTestService: services.isTestService,
       })
@@ -100,6 +104,25 @@ export async function POST(req: NextRequest) {
 
     if (dbServices.length !== slugs.length || dbServices.some((s) => s.isTestService)) {
       return new NextResponse('Invalid request data', { status: 400 });
+    }
+
+    // Adventure Rank gate (defense-in-depth — the client blocks add-to-cart, but
+    // never trust it). Each service's minimum rank lives in its description; if
+    // the buyer's AR is below any item's requirement, reject with a 422 the cart
+    // page surfaces verbatim. Returns the highest unmet requirement.
+    let unmet: { name: string; min: number } | null = null;
+    for (const s of dbServices) {
+      const min = parseMinAdventureRank(s.description);
+      if (min != null && ar < min && (!unmet || min > unmet.min)) {
+        unmet = { name: s.subtitle || s.title, min };
+      }
+    }
+    if (unmet) {
+      return new NextResponse(
+        `Услуга «${unmet.name}» доступна с ${unmet.min} ранга приключений, а ваш ранг — ${ar}. ` +
+          `Измените ранг приключений в профиле или удалите услугу из корзины.`,
+        { status: 422 }
+      );
     }
 
     // Compute each line's unit price + subtotal from current DB prices.

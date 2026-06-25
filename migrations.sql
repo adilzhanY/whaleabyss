@@ -113,3 +113,13 @@ ALTER TABLE boosters
 ADD COLUMN IF NOT EXISTS user_id uuid UNIQUE REFERENCES users(id) ON DELETE SET NULL;
 ALTER TABLE orders
 ADD COLUMN IF NOT EXISTS booster_online boolean NOT NULL DEFAULT false;
+
+-- 2026-06-25: admin-seeded fake reviews. Fake reviews (is_fake=true, user_id NULL)
+-- now carry their own author identity in columns instead of a hardcoded id→name
+-- map in app/api/reviews/route.ts. author_avatar_url NULL → first-letter avatar.
+ALTER TABLE reviews
+  ADD COLUMN IF NOT EXISTS is_fake boolean NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS author_name varchar(255),
+  ADD COLUMN IF NOT EXISTS author_avatar_url varchar(512);
+-- (data migration: backfilled the 20 legacy hardcoded fakes into the new columns
+--  and inserted 3 new approved fake reviews — see migrate_fake_reviews.mjs history.)

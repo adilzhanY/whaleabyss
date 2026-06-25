@@ -156,6 +156,12 @@ export const reviews = pgTable('reviews', {
   rating: decimal('rating', { precision: 2, scale: 1 }).notNull(), // 0.5, 1.0, 1.5, ..., 5.0
   description: text('description').notNull(),
   status: reviewStatusEnum('status').default('pending'),
+  // Admin-seeded fake reviews (isFake=true, userId=null) carry their own author
+  // identity inline instead of joining `users`. authorAvatarUrl null → the UI
+  // renders the first letter of authorName, same as real users with no avatar.
+  isFake: boolean('is_fake').notNull().default(false),
+  authorName: varchar('author_name', { length: 255 }),
+  authorAvatarUrl: varchar('author_avatar_url', { length: 512 }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 

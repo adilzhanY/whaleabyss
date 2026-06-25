@@ -48,6 +48,8 @@ export async function GET(req: NextRequest) {
         rating: reviews.rating,
         description: reviews.description,
         createdAt: reviews.createdAt,
+        authorName: reviews.authorName,
+        authorAvatarUrl: reviews.authorAvatarUrl,
         userName: users.username,
         userAvatar: users.avatarUrl,
       })
@@ -58,16 +60,19 @@ export async function GET(req: NextRequest) {
       .limit(limit)
       .offset(offset);
 
-    // Map anonymous reviews to fake users based on review ID
-    const enrichedReviews = reviewsData.map((review) => {
+    // Resolve the display identity for each review:
+    //  1. Fake reviews carry their own author name/avatar in columns.
+    //  2. Legacy pre-migration fakes (no columns) fall back to the id→user map.
+    //  3. Real reviews use the joined user. A null avatar → first-letter fallback
+    //     in the UI, same for everyone.
+    const enrichedReviews = reviewsData.map(({ authorName, authorAvatarUrl, ...review }) => {
+      if (authorName) {
+        return { ...review, userName: authorName, userAvatar: authorAvatarUrl };
+      }
       if (!review.userId) {
         const fakeUser = fakeReviewUsers.find((fu) => fu.id === review.id);
         if (fakeUser) {
-          return {
-            ...review,
-            userName: fakeUser.username,
-            userAvatar: fakeUser.avatar,
-          };
+          return { ...review, userName: fakeUser.username, userAvatar: fakeUser.avatar };
         }
       }
       return review;

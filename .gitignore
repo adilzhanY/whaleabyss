@@ -42,3 +42,10 @@ next-env.d.ts
 
 # private documents
 AGREEMENT.md
+
+# personal React learning (not part of the app)
+LEARNING_PATH.md
+/learning
+
+# public assets (managed/served separately; new files not tracked)
+/public

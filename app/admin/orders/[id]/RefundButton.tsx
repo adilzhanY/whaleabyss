@@ -15,11 +15,6 @@ export default function RefundButton({ orderId, orderStatus }: RefundButtonProps
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Only show refund button for paid orders
-  if (orderStatus !== "paid") {
-    return null;
-  }
-
   const handleRefund = async () => {
     setIsRefunding(true);
     setError(null);

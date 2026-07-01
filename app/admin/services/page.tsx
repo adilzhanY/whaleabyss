@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Sparkles } from "lucide-react";
 import CustomSelect from "@/components/CustomSelect";
 import Input from "@/components/Input";
 import DataTable, { type Column } from "../_components/DataTable";
@@ -15,6 +15,8 @@ interface ServiceRow {
   price: string;
   imageUrl: string | null;
   category: string | null;
+  categorySlug: string | null;
+  featuredInActual: boolean;
   regions: string[];
   updatedAt: string | null;
 }
@@ -135,7 +137,17 @@ export default function AdminServicesPage() {
       key: "category",
       header: "Категория",
       width: "w-36",
-      render: (s) => <span className="text-slate-600">{s.category ?? "—"}</span>,
+      render: (s) => (
+        <div className="flex flex-col gap-1">
+          <span className="text-slate-600">{s.category ?? "—"}</span>
+          {s.featuredInActual && s.categorySlug !== "actual" && (
+            <span className="inline-flex w-fit items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-medium whitespace-nowrap">
+              <Sparkles className="w-3 h-3" strokeWidth={2.25} />
+              Актуальное
+            </span>
+          )}
+        </div>
+      ),
     },
     {
       key: "regions",

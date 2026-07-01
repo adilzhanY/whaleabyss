@@ -61,6 +61,12 @@ export async function PATCH(
     }
   }
 
+  // Boolean flag: spotlight the service in «Актуальное» (additive, keeps its
+  // native category). Coerce explicitly so a stray string doesn't slip through.
+  if ("featuredInActual" in body) {
+    update.featuredInActual = Boolean(body.featuredInActual);
+  }
+
   // Optional: replace the set of parent (exploration) services this service
   // is offered as a quest addon of (service_addons, addon side). Quest
   // services in «Задания» manage their regions through this field.

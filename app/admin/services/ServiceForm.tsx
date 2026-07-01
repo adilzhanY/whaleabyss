@@ -22,6 +22,7 @@ export interface ServiceInitial {
   price?: string | number;
   imageUrl?: string | null;
   categoryId?: string | null;
+  featuredInActual?: boolean;
 }
 
 /** Exploration service offered as a parent region in the quest-addon picker. */
@@ -35,6 +36,7 @@ export default function ServiceForm({
   categories,
   mode,
   missionsCategoryId = null,
+  actualCategoryId = null,
   regionOptions = [],
   initialParentIds = [],
 }: {
@@ -43,6 +45,8 @@ export default function ServiceForm({
   mode: "create" | "edit";
   /** id of the «Задания» category — the region picker shows only for it. */
   missionsCategoryId?: string | null;
+  /** id of the «Актуальное» category — the spotlight toggle hides for it. */
+  actualCategoryId?: string | null;
   /** Exploration services available as parent regions (service_addons). */
   regionOptions?: RegionOption[];
   /** Currently linked parent region service ids. */
@@ -58,7 +62,13 @@ export default function ServiceForm({
     description: initial.description ?? "",
     price: initial.price?.toString() ?? "",
     categoryId: initial.categoryId ?? "",
+    featuredInActual: initial.featuredInActual ?? false,
   });
+
+  // «Актуальное» spotlight — hide the toggle when the service is already
+  // natively in that category (the flag would be redundant there).
+  const isActualService =
+    Boolean(actualCategoryId) && form.categoryId === actualCategoryId;
 
   // Parent regions this quest is an addon of (only for «Задания» services).
   const [parentIds, setParentIds] = useState<string[]>(initialParentIds);
@@ -176,6 +186,8 @@ export default function ServiceForm({
       const payload: Record<string, unknown> = {
         ...form,
         categoryId: form.categoryId || null,
+        // A service natively in «Актуальное» is there already — never also flag it.
+        featuredInActual: isActualService ? false : form.featuredInActual,
       };
       // Only send imageUrl if it actually changed (so untouched edits don't overwrite).
       if (mode === "create") payload.imageUrl = imageUrl;
@@ -320,6 +332,46 @@ export default function ServiceForm({
           />
         </Field>
       </div>
+
+      {/* «Актуальное» spotlight — additive: keeps the native category, also
+          shows the service in the actual section (e.g. a brand-new region). */}
+      {!isActualService && (
+        <button
+          type="button"
+          onClick={() =>
+            setForm((f) => ({ ...f, featuredInActual: !f.featuredInActual }))
+          }
+          className={[
+            "flex w-full items-start gap-3 rounded-2xl border px-4 py-3.5 text-left transition-colors cursor-pointer",
+            form.featuredInActual
+              ? "border-indigo-500 bg-indigo-50/60"
+              : "border-slate-200 bg-white hover:border-indigo-300",
+          ].join(" ")}
+        >
+          <span
+            className={[
+              "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-colors",
+              form.featuredInActual
+                ? "bg-indigo-600 border-indigo-600"
+                : "border-slate-300 bg-white",
+            ].join(" ")}
+          >
+            {form.featuredInActual && (
+              <Check className="h-3 w-3 text-white" strokeWidth={3} />
+            )}
+          </span>
+          <span className="min-w-0">
+            <span className="flex items-center gap-1.5 text-sm font-medium text-slate-900">
+              <Sparkles className="h-4 w-4 text-indigo-500" strokeWidth={2} />
+              Показывать в «Актуальном»
+            </span>
+            <span className="mt-0.5 block text-xs text-slate-500">
+              Услуга останется в своей категории и дополнительно появится в
+              разделе «Актуальное» — удобно для новых локаций.
+            </span>
+          </span>
+        </button>
+      )}
 
       {/* Region links — only for «Задания»: in which exploration services'
           quest-addon modal this task is offered. */}

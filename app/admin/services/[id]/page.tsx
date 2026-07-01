@@ -35,6 +35,8 @@ export default async function EditServicePage({ params }: PageProps) {
     cats.find((c) => c.slug === "missions")?.id ?? null;
   const locationsCategoryId =
     cats.find((c) => c.slug === "locations")?.id ?? null;
+  const actualCategoryId =
+    cats.find((c) => c.slug === "actual")?.id ?? null;
 
   const regionOptions = locationsCategoryId
     ? await db
@@ -77,6 +79,7 @@ export default async function EditServicePage({ params }: PageProps) {
           mode="edit"
           categories={cats}
           missionsCategoryId={missionsCategoryId}
+          actualCategoryId={actualCategoryId}
           regionOptions={regionOptions.map((r) => ({
             id: r.id,
             label: r.subtitle || r.title,
@@ -91,6 +94,7 @@ export default async function EditServicePage({ params }: PageProps) {
             price: service.price,
             imageUrl: service.imageUrl,
             categoryId: service.categoryId,
+            featuredInActual: service.featuredInActual,
           }}
         />
       </div>

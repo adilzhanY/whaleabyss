@@ -9,9 +9,11 @@ export const dynamic = "force-dynamic";
 
 export default async function NewServicePage() {
   const cats = await db
-    .select({ id: categories.id, title: categories.title })
+    .select({ id: categories.id, title: categories.title, slug: categories.slug })
     .from(categories)
     .orderBy(asc(categories.title));
+
+  const actualCategoryId = cats.find((c) => c.slug === "actual")?.id ?? null;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -32,7 +34,12 @@ export default async function NewServicePage() {
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8">
-        <ServiceForm initial={{}} categories={cats} mode="create" />
+        <ServiceForm
+          initial={{}}
+          categories={cats}
+          mode="create"
+          actualCategoryId={actualCategoryId}
+        />
       </div>
     </div>
   );

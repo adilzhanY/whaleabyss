@@ -23,6 +23,8 @@ export async function GET() {
       price: services.price,
       imageUrl: services.imageUrl,
       category: categories.title,
+      categorySlug: categories.slug,
+      featuredInActual: services.featuredInActual,
       updatedAt: services.updatedAt,
     })
     .from(services)
@@ -74,6 +76,7 @@ export async function POST(req: NextRequest) {
     imageUrl,
     categoryId,
     isTestService,
+    featuredInActual,
   } = body as Record<string, unknown>;
 
   if (!slug || typeof slug !== "string") {
@@ -121,6 +124,7 @@ export async function POST(req: NextRequest) {
       imageUrl: (imageUrl as string) || null,
       categoryId: (categoryId as string) || null,
       isTestService: Boolean(isTestService),
+      featuredInActual: Boolean(featuredInActual),
     })
     .returning();
 

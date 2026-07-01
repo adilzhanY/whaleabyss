@@ -54,6 +54,10 @@ export const services = pgTable('services', {
   price: varchar('price', { length: 20 }).notNull(), // Decimal stored as string
   imageUrl: varchar('image_url', { length: 255 }),
   isTestService: boolean('is_test_service').default(false),
+  // When true, the service also surfaces in the «Актуальное» (actual) category
+  // in addition to its native category — used to spotlight a new/current
+  // service without moving it out of its real category.
+  featuredInActual: boolean('featured_in_actual').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });

@@ -123,3 +123,9 @@ ALTER TABLE reviews
   ADD COLUMN IF NOT EXISTS author_avatar_url varchar(512);
 -- (data migration: backfilled the 20 legacy hardcoded fakes into the new columns
 --  and inserted 3 new approved fake reviews — see migrate_fake_reviews.mjs history.)
+
+-- 2026-07-01: spotlight a service in «Актуальное» without moving it out of its
+-- native category. When true, getServiceCategories() also includes the service
+-- in the actual category (keeping its native categorySlug for the detail page).
+ALTER TABLE services
+  ADD COLUMN IF NOT EXISTS featured_in_actual boolean NOT NULL DEFAULT false;

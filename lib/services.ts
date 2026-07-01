@@ -85,8 +85,17 @@ export const getServiceCategories = cache(async (): Promise<ServiceCategory[]> =
     }
   }
 
+  // Native category slug per service id, so a service featured into «Актуальное»
+  // keeps its real category on the detail page / for discounts.
+  const catSlugById = new Map(allCategories.map(c => [c.id, c.slug]));
+
   return allCategories.map(cat => {
-    let catServices = allServices.filter(s => s.categoryId === cat.id);
+    // The «actual» category also gathers services flagged featuredInActual,
+    // regardless of their native category (spotlight without re-homing them).
+    let catServices =
+      cat.slug === 'actual'
+        ? allServices.filter(s => s.categoryId === cat.id || s.featuredInActual)
+        : allServices.filter(s => s.categoryId === cat.id);
 
     // Sort array by json implicit order
     catServices.sort((a, b) => {
@@ -114,7 +123,7 @@ export const getServiceCategories = cache(async (): Promise<ServiceCategory[]> =
           price: parseFloat(s.price),
           description: s.description || '',
           background: s.imageUrl || '',
-          categorySlug: cat.slug,
+          categorySlug: (s.categoryId && catSlugById.get(s.categoryId)) || cat.slug,
           ...enrichItemUI(s, idx)
         };
       })

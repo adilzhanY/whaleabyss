@@ -51,7 +51,7 @@ export default function FloatingBanner() {
             className="block"
           >
             <Image
-              src="/images/events/contest1.png"
+              src="/images/events/contest2.png"
               alt="Contest Banner"
               width={300}
               height={300}

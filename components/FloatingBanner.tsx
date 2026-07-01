@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 
 // Master toggle for the floating bottom-right banner.
 // Set to `true` to show the banner site-wide again.
-const BANNER_ENABLED = false;
+const BANNER_ENABLED = true;
 
 export default function FloatingBanner() {
   const pathname = usePathname();
@@ -45,7 +45,7 @@ export default function FloatingBanner() {
 
           {/* Main image */}
           <a
-            href="https://t.me/whaleabyss/315"
+            href="https://t.me/whaleabyss/322"
             target="_blank"
             rel="noopener noreferrer"
             className="block"

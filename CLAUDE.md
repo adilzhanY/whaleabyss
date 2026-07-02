@@ -125,7 +125,18 @@ const result = await db.select().from(services).where(eq(services.id, id));
 ### Key Architectural Patterns
 
 **Authentication & Authorization:**
-- NextAuth.js with credentials provider
+- NextAuth.js with credentials provider + Yandex ID OAuth («Войти с Яндексом»)
+- **Yandex OAuth:** no NextAuth adapter — the `signIn` callback maps the Yandex
+  identity onto our own tables via `lib/oauthUser.ts` → `getOrCreateUserFromYandex()`:
+  match `oauth_accounts` (provider, providerAccountId) → else link by verified email →
+  else create a user with `passwordHash = NULL` (auto-generated ASCII username,
+  avatar hotlinked from `avatars.yandex.net` — whitelisted in CSP `img-src` and
+  `images.remotePatterns`). The callback rewrites `user` to the local row, so the
+  jwt/session callbacks are provider-agnostic. Sign-in is denied if Yandex returns
+  no email. OAuth-only users can set a password later via the forgot-password flow;
+  credentials login rejects NULL-hash accounts with the generic error (no enumeration).
+  App: oauth.yandex.ru, scopes `login:email login:info login:avatar`, redirect URIs
+  registered for prod + localhost (`/api/auth/callback/yandex`)
 - User roles: `user`, `admin`, `booster` (enum in DB)
 - Middleware (`middleware.ts`) protects `/admin/*` and `/api/admin/*` routes
 - Admin routes have two-layer protection: Edge middleware + server-side checks
@@ -350,7 +361,8 @@ const result = await db.select().from(services).where(eq(services.id, id));
 ### Database Schema Highlights
 
 **Tables:**
-- `users` - User accounts with role-based access
+- `users` - User accounts with role-based access (`passwordHash` is NULL for OAuth-created accounts)
+- `oauth_accounts` - External login identities (provider + providerAccountId → userId), unique per provider account
 - `services` - Boosting services with `isTestService` flag
 - `categories` - Service categories
 - `orders` - Orders with status enum: `pending`, `paid`, `in_progress`, `completed`, `cancelled`, `refunded`. Also `boosterId` (assigned качер, nullable FK) and `boosterEarning` (commission credited on completion; NULL = not yet credited, used as idempotency guard)
@@ -383,6 +395,8 @@ Required in `.env`:
   to reject forged updates. Re-run `scripts/telegram/set_telegram_webhook.mjs`
   after setting/changing it
 - `YANDEX_KEY_ID` & `YANDEX_SECRET_KEY` - S3 credentials
+- `YANDEX_CLIENT_ID` & `YANDEX_CLIENT_SECRET` - Yandex ID OAuth app («Войти с
+  Яндексом», app "Whale Abyss" at oauth.yandex.ru) — NOT the S3 keys above
 - `NEXT_PUBLIC_SITE_URL` - Public site URL
 - `CRON_SECRET` - Bearer token for `/api/cron/cleanup-orders` (order lifecycle cleanup)
 - `NEXT_PUBLIC_YANDEX_SMARTCAPTCHA_CLIENT_KEY` - SmartCaptcha client/site key (browser widget)

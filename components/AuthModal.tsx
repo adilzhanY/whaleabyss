@@ -2,6 +2,7 @@
 "use client";
 
 import { X, LogIn, UserPlus, Eye, EyeOff } from "lucide-react";
+import { Tabs } from "@heroui/react";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -44,6 +45,20 @@ function loadSmartCaptchaScript(): Promise<void> {
   });
 }
 
+/** Yandex «Я» glyph in the brand red circle (glyph: Font Awesome Free, CC BY 4.0). */
+function YandexLogo({ size = 22 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="12" fill="#FC3F1D" />
+      <path
+        d="M153.1 315.8L65.7 512H2l96-209.8c-45.1-22.9-75.2-64.4-75.2-141.1C22.7 53.7 90.8 0 171.7 0H254v512h-55.1V315.8h-45.8zm45.8-269.3h-29.4c-44.4 0-87.4 29.4-87.4 114.6 0 82.3 39.4 108.8 87.4 108.8h29.4V46.5z"
+        fill="#fff"
+        transform="translate(9.25 6.5) scale(0.0215)"
+      />
+    </svg>
+  );
+}
+
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [tab, setTab] = useState<Tab>("login");
   const [show, setShow] = useState(false);
@@ -60,6 +75,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isYandexLoading, setIsYandexLoading] = useState(false);
 
   // Forgot password states
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -100,6 +116,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setForgotPasswordEmail("");
     setForgotPasswordSuccess(false);
   }, [tab, isOpen]);
+
+  // OAuth is a full-page redirect (Yandex → /api/auth/callback/yandex → back
+  // here); the loading flag only covers the moment before navigation starts.
+  const handleYandexSignIn = () => {
+    setError("");
+    setIsYandexLoading(true);
+    signIn("yandex", { callbackUrl: window.location.href });
+  };
 
   const triggerShake = () => {
     setIsShaking(true);
@@ -346,26 +370,30 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         </div>
 
         {step === "form" && (
-          <div
-            className="mb-6 flex rounded-full p-1"
-            style={{ backgroundColor: "var(--bg-highlight)" }}
+          <Tabs
+            className="mb-6 w-full"
+            selectedKey={tab}
+            onSelectionChange={(key) => setTab(key as Tab)}
           >
-            {(["login", "register"] as Tab[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className="flex flex-1 items-center justify-center gap-2 rounded-full py-2 text-sm font-semibold transition-all"
-                style={{
-                  backgroundColor: tab === t ? "var(--bg-card)" : "transparent",
-                  color: tab === t ? "var(--accent-primary)" : "var(--text-secondary)",
-                  boxShadow: tab === t ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
-                }}
+            <Tabs.ListContainer>
+              <Tabs.List
+                aria-label="Вход или регистрация"
+                className="rounded-full bg-[var(--bg-highlight)]"
               >
-                {t === "login" ? <LogIn className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
-                {t === "login" ? "Войти" : "Регистрация"}
-              </button>
-            ))}
-          </div>
+                {(["login", "register"] as Tab[]).map((t) => (
+                  <Tabs.Tab
+                    key={t}
+                    id={t}
+                    className="h-auto gap-2 rounded-full py-2 text-sm font-semibold text-[var(--text-secondary)] data-[selected=true]:text-[var(--accent-primary)]"
+                  >
+                    {t === "login" ? <LogIn className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
+                    {t === "login" ? "Войти" : "Регистрация"}
+                    <Tabs.Indicator className="rounded-full bg-[var(--bg-card)] shadow-[0_1px_3px_rgba(0,0,0,0.1)]" />
+                  </Tabs.Tab>
+                ))}
+              </Tabs.List>
+            </Tabs.ListContainer>
+          </Tabs>
         )}
 
         {step === "success" ? (
@@ -564,49 +592,53 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 className="text-sm"
               />
             </div>
-            <div className="relative">
+            <div>
               <label className="mb-1 block text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
                 Пароль
               </label>
-              <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                sanitize={stripNonLatin}
-                required
-                className="text-sm pr-12"
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-6.5 p-1 text-gray-500 hover:text-gray-700"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-
-            {tab === "register" && (
               <div className="relative">
-                <label className="mb-1 block text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
-                  Повторите пароль
-                </label>
                 <Input
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   sanitize={stripNonLatin}
                   required
                   className="text-sm pr-12"
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-6.5 p-1 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-gray-700"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
+              </div>
+            </div>
+
+            {tab === "register" && (
+              <div>
+                <label className="mb-1 block text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
+                  Повторите пароль
+                </label>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    sanitize={stripNonLatin}
+                    required
+                    className="text-sm pr-12"
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-gray-700"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
             )}
 
@@ -671,6 +703,52 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   Забыли пароль?
                 </button>
               </div>
+            )}
+
+            <div className="flex items-center gap-3 pt-1">
+              <div className="h-px flex-1" style={{ backgroundColor: "var(--bg-highlight)" }} />
+              <span className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
+                или
+              </span>
+              <div className="h-px flex-1" style={{ backgroundColor: "var(--bg-highlight)" }} />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleYandexSignIn}
+              disabled={isYandexLoading}
+              className="btn-primary w-full !py-3 !text-sm !bg-black !border-black hover:!bg-neutral-800 !text-white"
+            >
+              <YandexLogo />
+              {isYandexLoading ? "Перенаправление..." : "Войти с Яндексом"}
+            </button>
+
+            {tab === "register" && (
+              <p className="text-center text-[11px] leading-snug" style={{ color: "var(--text-secondary)" }}>
+                Входя через Яндекс, вы соглашаетесь с условиями{" "}
+                <Link
+                  href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="underline hover:opacity-80 transition-opacity"
+                  style={{ color: "var(--accent-primary)" }}
+                >
+                  Политики конфиденциальности
+                </Link>
+                {" "}и{" "}
+                <Link
+                  href="/public_offer"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="underline hover:opacity-80 transition-opacity"
+                  style={{ color: "var(--accent-primary)" }}
+                >
+                  Пользовательского соглашения
+                </Link>
+                .
+              </p>
             )}
           </form >
         )

@@ -34,7 +34,8 @@ const cspDirectives = [
   // protection.
   "script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://smartcaptcha.cloud.yandex.ru",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://storage.yandexcloud.net https://mc.yandex.ru",
+  // avatars.yandex.net — profile pictures of users who signed in with Yandex ID.
+  "img-src 'self' data: blob: https://storage.yandexcloud.net https://mc.yandex.ru https://avatars.yandex.net",
   "font-src 'self' data:",
   "connect-src 'self' https://mc.yandex.ru https://mc.yandex.com https://smartcaptcha.cloud.yandex.ru",
   // 'self' — admin booster-document viewer renders PDFs in a same-origin iframe.
@@ -69,6 +70,12 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'storage.yandexcloud.net',
         pathname: '/whaleabyss-bucket/**',
+      },
+      // Yandex ID avatars (users who signed in with Yandex).
+      {
+        protocol: 'https',
+        hostname: 'avatars.yandex.net',
+        pathname: '/get-yapic/**',
       },
     ],
   },

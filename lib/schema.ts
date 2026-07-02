@@ -6,7 +6,9 @@ export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
   username: varchar('username', { length: 50 }).notNull().unique(),
   email: varchar('email', { length: 255 }).notNull().unique(),
-  passwordHash: varchar('password_hash', { length: 255 }).notNull(),
+  // NULL for accounts created via OAuth (Yandex) that never set a password.
+  // Such users can still set one later through the forgot-password flow.
+  passwordHash: varchar('password_hash', { length: 255 }),
   role: userRoleEnum('role').default('user'),
   avatarUrl: varchar('avatar_url', { length: 255 }),
   telegramUsername: varchar('telegram_username', { length: 255 }),
@@ -20,6 +22,19 @@ export const users = pgTable('users', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
+
+// External login identities (OAuth). One user can have several providers
+// linked; a (provider, providerAccountId) pair maps to exactly one user.
+// Linking by verified provider email happens in lib/oauthUser.ts.
+export const oauthAccounts = pgTable('oauth_accounts', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  provider: varchar('provider', { length: 32 }).notNull(), // e.g. 'yandex'
+  providerAccountId: varchar('provider_account_id', { length: 255 }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+}, (t) => [
+  unique('oauth_accounts_provider_account_unique').on(t.provider, t.providerAccountId),
+]);
 
 export const otps = pgTable('otps', {
   email: varchar('email', { length: 255 }).primaryKey(),

@@ -1,5 +1,12 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+/* HeroUI v3 — partial import (Tabs in AuthModal is the only consumer). We skip
+   the full "@heroui/styles" bundle on purpose: it re-imports tailwindcss and
+   applies global base/scrollbar styles. Imported BEFORE shadcn so any @theme
+   token-name collisions resolve to the site's later definitions. */
+@import "@heroui/styles/themes/default";
+@import "@heroui/styles/utilities";
+@import "@heroui/styles/components/tabs.css" layer(components);
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));

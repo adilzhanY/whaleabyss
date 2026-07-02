@@ -129,3 +129,18 @@ ALTER TABLE reviews
 -- in the actual category (keeping its native categorySlug for the detail page).
 ALTER TABLE services
   ADD COLUMN IF NOT EXISTS featured_in_actual boolean NOT NULL DEFAULT false;
+
+-- 2026-07-02: "Войти с Яндексом" (OAuth via Yandex ID). OAuth identities live in
+-- oauth_accounts (one user ↔ many providers); users created via OAuth have no
+-- password, so password_hash becomes nullable (they can set one later via the
+-- forgot-password flow).
+ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
+CREATE TABLE IF NOT EXISTS oauth_accounts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  provider varchar(32) NOT NULL,
+  provider_account_id varchar(255) NOT NULL,
+  created_at timestamptz DEFAULT now(),
+  CONSTRAINT oauth_accounts_provider_account_unique UNIQUE (provider, provider_account_id)
+);
+CREATE INDEX IF NOT EXISTS oauth_accounts_user_id_idx ON oauth_accounts(user_id);

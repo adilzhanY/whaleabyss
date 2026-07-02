@@ -1,11 +1,13 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import YandexProvider from "next-auth/providers/yandex";
 import bcrypt from "bcrypt";
 import { db } from "@/lib/db";
 import { users } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { AuthOptions } from "next-auth";
 import { getAuthSecret } from "@/lib/auth/secret";
+import { getOrCreateUserFromYandex, type YandexProfile } from "@/lib/oauthUser";
 import { checkRateLimit, recordRateLimitHit, resetRateLimit, getClientIp } from "@/lib/rateLimit";
 
 // Brute-force protection: count only FAILED attempts and forgive them on a
@@ -74,12 +76,39 @@ export const authOptions: AuthOptions = {
           role: user.role ?? 'user',
         };
       }
-    })
+    }),
+    // «Войти с Яндексом». No NextAuth adapter — the signIn callback below maps
+    // the Yandex identity onto our own users/oauth_accounts tables and rewrites
+    // `user` to the local row, so the jwt/session callbacks work unchanged.
+    YandexProvider({
+      clientId: process.env.YANDEX_CLIENT_ID ?? "",
+      clientSecret: process.env.YANDEX_CLIENT_SECRET ?? "",
+    }),
   ],
   session: {
     strategy: "jwt",
   },
+  // OAuth failures (denied consent, provider errors) land back on the homepage
+  // instead of NextAuth's default English error page.
+  pages: {
+    error: "/",
+  },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account?.provider !== "yandex") return true;
+      const dbUser = await getOrCreateUserFromYandex(profile as unknown as YandexProfile);
+      // No email from Yandex → we can't provision an account (email is the
+      // primary identity for orders/receipts). Deny; user lands on "/".
+      if (!dbUser) return false;
+      // Replace provider identity with our local one so the jwt callback's
+      // `if (user)` branch stores the DB uuid + role in the token.
+      user.id = dbUser.id;
+      user.name = dbUser.username;
+      user.email = dbUser.email;
+      user.image = dbUser.avatarUrl;
+      user.role = dbUser.role ?? "user";
+      return true;
+    },
     async jwt({ token, user, trigger, session }) {
       if (trigger === "update") {
         if (session?.image) token.image = session.image;

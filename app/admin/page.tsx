@@ -22,8 +22,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import RecentOrdersTable from "./_components/RecentOrdersTable";
 import type { OrderRow } from "./_components/orderColumns";
-import TimeRangeSelect from "./_components/TimeRangeSelect";
-import { TIME_RANGE_OPTIONS, type TimeRange } from "./_components/timeRange";
+import MonthSelect from "./_components/MonthSelect";
+import { LESSON_CUTOFF, OWNER_BOOSTER_ID } from "./_components/lessonOrders";
 import {
   NetRevenueAreaChart,
   BoosterRevenueChart,
@@ -34,78 +34,94 @@ import {
   OrderStatusDonut,
   type SeriesPoint,
   type BoosterSeriesPoint,
-  type TimeUnit,
 } from "./_components/DashboardCharts";
 
 export const dynamic = "force-dynamic";
 
-const RANGE_VALUES = TIME_RANGE_OPTIONS.map((o) => o.value) as readonly TimeRange[];
-
-const RANGE_SUFFIX: Record<TimeRange, string> = {
-  "1d": "за 1 день",
-  "3d": "за 3 дня",
-  "7d": "за 7 дней",
-  "1m": "за месяц",
-  "6m": "за полгода",
-  "1y": "за год",
-  all: "за всё время",
-};
-
-/** Chart bucket granularity per range — keeps point counts readable. */
-const RANGE_UNIT: Record<TimeRange, TimeUnit> = {
-  "1d": "hour",
-  "3d": "day",
-  "7d": "day",
-  "1m": "day",
-  "6m": "week",
-  "1y": "month",
-  all: "month",
-};
-
 const SUCCESSFUL_STATUSES = ["paid", "in_progress", "completed", "refunded"] as const;
 
-/**
- * The site owner is on the booster roster (она берёт заказы), but her commission
- * is not a real payout — it stays in the business. So she's excluded from every
- * booster-facing metric (net-revenue commission deduction, booster-earnings
- * chart, top-boosters bar). Her orders STILL count toward gross revenue.
- */
-const OWNER_BOOSTER_ID = "37cc32d8-f730-4a71-bb55-a325c11d3239";
+// ── Month window ─────────────────────────────────────────────────────────────
+// The dashboard shows exactly one calendar month (picked with ‹ Май 2026 ›),
+// bucketed into quarters of the month: days 1–7, 8–14, 15–21, 22–end.
 
-function parseRange(raw: string | string[] | undefined): TimeRange {
+interface MonthWindow {
+  /** "YYYY-MM" */
+  key: string;
+  start: Date;
+  end: Date;
+}
+
+function currentMonthKey(): string {
+  const now = new Date();
+  return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+function parseMonth(raw: string | string[] | undefined): string {
   const value = Array.isArray(raw) ? raw[0] : raw;
-  return RANGE_VALUES.includes(value as TimeRange) ? (value as TimeRange) : "all";
+  const cur = currentMonthKey();
+  if (!value || !/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) return cur;
+  // "YYYY-MM" compares correctly as a string — never show a future month.
+  return value <= cur ? value : cur;
 }
 
-function rangeCutoff(range: TimeRange): Date | null {
-  if (range === "all") return null;
-  const d = new Date();
-  switch (range) {
-    case "1d": d.setDate(d.getDate() - 1); break;
-    case "3d": d.setDate(d.getDate() - 3); break;
-    case "7d": d.setDate(d.getDate() - 7); break;
-    case "1m": d.setMonth(d.getMonth() - 1); break;
-    case "6m": d.setMonth(d.getMonth() - 6); break;
-    case "1y": d.setFullYear(d.getFullYear() - 1); break;
-  }
-  return d;
+function monthWindow(key: string): MonthWindow {
+  const [y, m] = key.split("-").map(Number);
+  return { key, start: new Date(Date.UTC(y, m - 1, 1)), end: new Date(Date.UTC(y, m, 1)) };
 }
 
-async function getStats(cutoff: Date | null) {
-  const orderWhere = cutoff
-    ? and(gte(orders.createdAt, cutoff), inArray(orders.status, SUCCESSFUL_STATUSES))
-    : inArray(orders.status, SUCCESSFUL_STATUSES);
+function prevMonthKey(key: string): string {
+  const [y, m] = key.split("-").map(Number);
+  return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, "0")}`;
+}
 
+const MONTHS_ACC = [
+  "январь", "февраль", "март", "апрель", "май", "июнь",
+  "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь",
+];
+
+/** «за май 2026» — plugged into card descriptions. */
+function monthSuffix(key: string): string {
+  const [y, m] = key.split("-").map(Number);
+  return `за ${MONTHS_ACC[m - 1]} ${y}`;
+}
+
+/** X-axis labels for the four quarters of the month ("22–31" adapts to length). */
+function quarterLabels(key: string): string[] {
+  const [y, m] = key.split("-").map(Number);
+  const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  return ["1–7", "8–14", "15–21", `22–${daysInMonth}`];
+}
+
+/** Quarter-of-month index 0..3 — must mirror quarterLabels (UTC session). */
+const orderQuarter = sql<number>`least((extract(day from ${orders.createdAt})::int - 1) / 7, 3)`;
+const userQuarter = sql<number>`least((extract(day from ${users.createdAt})::int - 1) / 7, 3)`;
+
+// ── Money that actually reached us ───────────────────────────────────────────
+// Orders created before LESSON_CUTOFF are «учебные»: fulfilled, but the
+// proceeds went to a wrong crypto address and are gone. They stay in the DB
+// untouched and still count as orders (and for booster commission), but every
+// revenue figure zeroes them out. This also covers the owner-booster's
+// pre-cutoff orders. Refunds are zeroed as before.
+const realRevenue = sql<string>`coalesce(sum(case when ${orders.status} = 'refunded' or ${orders.createdAt} < ${LESSON_CUTOFF} then 0 else ${orders.totalPrice} end), 0)::text`;
+// Commission subtracted from the net-revenue figure: only on orders whose
+// revenue is counted (post-cutoff, not refunded) and never the owner's cut.
+const realCommission = sql<string>`coalesce(sum(case when ${orders.status} = 'refunded' or ${orders.createdAt} < ${LESSON_CUTOFF} or ${orders.boosterId} = ${OWNER_BOOSTER_ID} then 0 else coalesce(${orders.boosterEarning}, 0) end), 0)::text`;
+
+function inWindow(win: MonthWindow) {
+  return and(gte(orders.createdAt, win.start), lt(orders.createdAt, win.end));
+}
+
+async function getStats(win: MonthWindow) {
   const [orderStats] = await db
     .select({
       count: sql<number>`count(*)::int`,
-      revenue: sql<string>`coalesce(sum(case when ${orders.status} = 'refunded' then 0 else ${orders.totalPrice} end), 0)::text`,
-      commission: sql<string>`coalesce(sum(case when ${orders.status} = 'refunded' or ${orders.boosterId} = ${OWNER_BOOSTER_ID} then 0 else coalesce(${orders.boosterEarning}, 0) end), 0)::text`,
+      revenue: realRevenue,
+      commission: realCommission,
     })
     .from(orders)
-    .where(orderWhere);
+    .where(and(inWindow(win), inArray(orders.status, SUCCESSFUL_STATUSES)));
 
-  // Awaiting-fulfilment is a current-state count; not affected by the range.
+  // Awaiting-fulfilment is a current-state count; not affected by the month.
   const [pending] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(orders)
@@ -114,7 +130,7 @@ async function getStats(cutoff: Date | null) {
   const [userCount] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(users)
-    .where(cutoff ? gte(users.createdAt, cutoff) : sql`true`);
+    .where(and(gte(users.createdAt, win.start), lt(users.createdAt, win.end)));
 
   const revenue = Number(orderStats?.revenue ?? 0);
   const commissionPaid = Number(orderStats?.commission ?? 0);
@@ -130,33 +146,22 @@ async function getStats(cutoff: Date | null) {
 }
 
 /**
- * Same headline stats for the window of equal length immediately before the
- * cutoff — powers the «+12% к пред. периоду» delta badges. Null for "all"
- * (there is no previous period).
+ * Same headline stats for the previous calendar month — powers the
+ * «+12% к пред. месяцу» delta badges.
  */
-async function getPrevStats(cutoff: Date | null) {
-  if (!cutoff) return null;
-  const windowMs = Date.now() - cutoff.getTime();
-  const prevStart = new Date(cutoff.getTime() - windowMs);
-
+async function getPrevStats(win: MonthWindow) {
   const [orderStats] = await db
     .select({
       count: sql<number>`count(*)::int`,
-      revenue: sql<string>`coalesce(sum(case when ${orders.status} = 'refunded' then 0 else ${orders.totalPrice} end), 0)::text`,
+      revenue: realRevenue,
     })
     .from(orders)
-    .where(
-      and(
-        gte(orders.createdAt, prevStart),
-        lt(orders.createdAt, cutoff),
-        inArray(orders.status, SUCCESSFUL_STATUSES)
-      )
-    );
+    .where(and(inWindow(win), inArray(orders.status, SUCCESSFUL_STATUSES)));
 
   const [userCount] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(users)
-    .where(and(gte(users.createdAt, prevStart), lt(users.createdAt, cutoff)));
+    .where(and(gte(users.createdAt, win.start), lt(users.createdAt, win.end)));
 
   return {
     orderCount: orderStats?.count ?? 0,
@@ -165,7 +170,7 @@ async function getPrevStats(cutoff: Date | null) {
   };
 }
 
-/** Percent change vs the previous period; null when there's no baseline. */
+/** Percent change vs the previous month; null when there's no baseline. */
 function pctChange(current: number, previous: number | null | undefined): number | null {
   if (previous == null || previous === 0) return null;
   return ((current - previous) / previous) * 100;
@@ -173,150 +178,85 @@ function pctChange(current: number, previous: number | null | undefined): number
 
 // ── Time series for the charts ───────────────────────────────────────────────
 
-/** UTC-truncate to the bucket start — must mirror Postgres date_trunc (UTC session). */
-function truncUTC(date: Date, unit: TimeUnit): Date {
-  const d = new Date(date);
-  d.setUTCMinutes(0, 0, 0);
-  if (unit === "hour") return d;
-  d.setUTCHours(0);
-  if (unit === "day") return d;
-  if (unit === "week") {
-    // ISO week: Monday start, same as date_trunc('week').
-    d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
-    return d;
-  }
-  d.setUTCDate(1);
-  return d;
-}
-
-function addUnit(date: Date, unit: TimeUnit): Date {
-  const d = new Date(date);
-  switch (unit) {
-    case "hour": d.setUTCHours(d.getUTCHours() + 1); break;
-    case "day": d.setUTCDate(d.getUTCDate() + 1); break;
-    case "week": d.setUTCDate(d.getUTCDate() + 7); break;
-    case "month": d.setUTCMonth(d.getUTCMonth() + 1); break;
-  }
-  return d;
-}
-
 /**
- * Revenue + orders + new clients bucketed by `unit`. Gaps are zero-filled in
- * JS so the charts show a continuous timeline, not just days with activity.
+ * Revenue + orders + new clients bucketed by quarter of the selected month.
+ * All four quarters are always present (zero-filled) so the axis is stable.
  */
-async function getTimeSeries(cutoff: Date | null, unit: TimeUnit): Promise<SeriesPoint[]> {
-  // `unit` comes from the fixed RANGE_UNIT map — safe to inline raw.
-  const orderBucket = sql<string>`(extract(epoch from date_trunc('${sql.raw(unit)}', ${orders.createdAt}))::bigint)`;
-  const userBucket = sql<string>`(extract(epoch from date_trunc('${sql.raw(unit)}', ${users.createdAt}))::bigint)`;
-
-  const orderWhere = cutoff
-    ? and(gte(orders.createdAt, cutoff), inArray(orders.status, SUCCESSFUL_STATUSES))
-    : inArray(orders.status, SUCCESSFUL_STATUSES);
-
+async function getTimeSeries(win: MonthWindow): Promise<SeriesPoint[]> {
   const [orderRows, userRows] = await Promise.all([
     db
       .select({
-        bucket: orderBucket,
+        bucket: orderQuarter,
         orders: sql<number>`count(*)::int`,
-        revenue: sql<string>`coalesce(sum(case when ${orders.status} = 'refunded' then 0 else ${orders.totalPrice} end), 0)::text`,
-        commission: sql<string>`coalesce(sum(case when ${orders.status} = 'refunded' or ${orders.boosterId} = ${OWNER_BOOSTER_ID} then 0 else coalesce(${orders.boosterEarning}, 0) end), 0)::text`,
+        revenue: realRevenue,
+        commission: realCommission,
       })
       .from(orders)
-      .where(orderWhere)
-      .groupBy(orderBucket),
+      .where(and(inWindow(win), inArray(orders.status, SUCCESSFUL_STATUSES)))
+      .groupBy(orderQuarter),
     db
       .select({
-        bucket: userBucket,
+        bucket: userQuarter,
         clients: sql<number>`count(*)::int`,
       })
       .from(users)
-      .where(cutoff ? gte(users.createdAt, cutoff) : sql`true`)
-      .groupBy(userBucket),
+      .where(and(gte(users.createdAt, win.start), lt(users.createdAt, win.end)))
+      .groupBy(userQuarter),
   ]);
 
-  const byBucket = new Map<number, { revenue: number; orders: number; clients: number; commission: number }>();
-  const at = (ms: number) => {
-    let p = byBucket.get(ms);
-    if (!p) {
-      p = { revenue: 0, orders: 0, clients: 0, commission: 0 };
-      byBucket.set(ms, p);
-    }
-    return p;
-  };
-  for (const r of orderRows) {
-    const p = at(Number(r.bucket) * 1000);
-    p.orders = r.orders;
-    p.revenue = Number(r.revenue);
-    p.commission = Number(r.commission);
-  }
-  for (const r of userRows) {
-    at(Number(r.bucket) * 1000).clients = r.clients;
-  }
+  if (orderRows.length === 0 && userRows.length === 0) return [];
 
-  if (byBucket.size === 0) return [];
+  const orderBy = new Map(orderRows.map((r) => [Number(r.bucket), r]));
+  const userBy = new Map(userRows.map((r) => [Number(r.bucket), r]));
 
-  // Zero-fill from the cutoff (or earliest data for "all") to now.
-  const firstData = Math.min(...byBucket.keys());
-  const start = cutoff ? truncUTC(cutoff, unit) : new Date(firstData);
-  const end = truncUTC(new Date(), unit);
-
-  const points: SeriesPoint[] = [];
-  for (let d = start; d <= end && points.length < 500; d = addUnit(d, unit)) {
-    const t = d.getTime();
-    const p = byBucket.get(t);
-    const revenue = p?.revenue ?? 0;
-    const commission = p?.commission ?? 0;
-    points.push({
-      t,
+  return quarterLabels(win.key).map((label, i) => {
+    const o = orderBy.get(i);
+    const revenue = Number(o?.revenue ?? 0);
+    const commission = Number(o?.commission ?? 0);
+    return {
+      label,
       revenue,
-      orders: p?.orders ?? 0,
-      clients: p?.clients ?? 0,
+      orders: o?.orders ?? 0,
+      clients: userBy.get(i)?.clients ?? 0,
       commission,
       net: revenue - commission,
-    });
-  }
-  return points;
+    };
+  });
 }
 
 /**
- * Booster commission earned over time, bucketed by `unit`. Each bucket carries
- * the total plus the top-5 earners (for the tooltip). Buckets by the order's
- * createdAt (same axis as revenue) and excludes refunded orders so the totals
- * tie out with the commission subtracted in the net-revenue chart. Zero-filled
- * in JS like getTimeSeries.
+ * Booster commission earned per quarter of the month, with the top-5 earners
+ * for the tooltip. Lesson (pre-cutoff) orders DO count here — the boosters'
+ * money is real even though ours is gone. The owner-booster never counts.
  */
-async function getBoosterTimeSeries(
-  cutoff: Date | null,
-  unit: TimeUnit
-): Promise<BoosterSeriesPoint[]> {
-  const bucketSql = sql<string>`(extract(epoch from date_trunc('${sql.raw(unit)}', ${orders.createdAt}))::bigint)`;
-  const base = and(
-    isNotNull(orders.boosterEarning),
-    ne(orders.status, "refunded"),
-    ne(orders.boosterId, OWNER_BOOSTER_ID)
-  );
-  const where = cutoff ? and(base, gte(orders.createdAt, cutoff)) : base;
-
+async function getBoosterTimeSeries(win: MonthWindow): Promise<BoosterSeriesPoint[]> {
   const rows = await db
     .select({
-      bucket: bucketSql,
+      bucket: orderQuarter,
       name: sql<string>`${boosters.firstName} || ' ' || ${boosters.lastName}`,
       earned: sql<string>`coalesce(sum(${orders.boosterEarning}), 0)::text`,
     })
     .from(orders)
     .innerJoin(boosters, eq(orders.boosterId, boosters.id))
-    .where(where)
-    .groupBy(bucketSql, boosters.id, boosters.firstName, boosters.lastName);
+    .where(
+      and(
+        inWindow(win),
+        isNotNull(orders.boosterEarning),
+        ne(orders.status, "refunded"),
+        ne(orders.boosterId, OWNER_BOOSTER_ID)
+      )
+    )
+    .groupBy(orderQuarter, boosters.id, boosters.firstName, boosters.lastName);
 
   const byBucket = new Map<number, { total: number; entries: { name: string; earned: number }[] }>();
   for (const r of rows) {
     const earned = Number(r.earned);
     if (earned <= 0) continue;
-    const ms = Number(r.bucket) * 1000;
-    let b = byBucket.get(ms);
+    const idx = Number(r.bucket);
+    let b = byBucket.get(idx);
     if (!b) {
       b = { total: 0, entries: [] };
-      byBucket.set(ms, b);
+      byBucket.set(idx, b);
     }
     b.total += earned;
     b.entries.push({ name: r.name, earned });
@@ -324,25 +264,18 @@ async function getBoosterTimeSeries(
 
   if (byBucket.size === 0) return [];
 
-  const firstData = Math.min(...byBucket.keys());
-  const start = cutoff ? truncUTC(cutoff, unit) : new Date(firstData);
-  const end = truncUTC(new Date(), unit);
-
-  const points: BoosterSeriesPoint[] = [];
-  for (let d = start; d <= end && points.length < 500; d = addUnit(d, unit)) {
-    const t = d.getTime();
-    const b = byBucket.get(t);
+  return quarterLabels(win.key).map((label, i) => {
+    const b = byBucket.get(i);
     const top = b ? [...b.entries].sort((a, z) => z.earned - a.earned).slice(0, 5) : [];
-    points.push({ t, total: b?.total ?? 0, top });
-  }
-  return points;
+    return { label, total: b?.total ?? 0, top };
+  });
 }
 
 /**
- * Order status composition within the range. Abandoned checkouts (cancelled
+ * Order status composition within the month. Abandoned checkouts (cancelled
  * with no paymentId) are excluded — they're noise, not business outcomes.
  */
-async function getStatusBreakdown(cutoff: Date | null) {
+async function getStatusBreakdown(win: MonthWindow) {
   const meaningful = or(
     inArray(orders.status, SUCCESSFUL_STATUSES),
     and(eq(orders.status, "cancelled"), isNotNull(orders.paymentId))
@@ -354,29 +287,26 @@ async function getStatusBreakdown(cutoff: Date | null) {
       count: sql<number>`count(*)::int`,
     })
     .from(orders)
-    .where(cutoff ? and(gte(orders.createdAt, cutoff), meaningful) : meaningful)
+    .where(and(inWindow(win), meaningful))
     .groupBy(orders.status)
     .orderBy(desc(sql`count(*)`));
 
   return rows.map((r) => ({ status: r.status ?? "paid", count: r.count }));
 }
 
-async function getTopServices(cutoff: Date | null) {
-  const orderFilter = cutoff
-    ? and(inArray(orders.status, SUCCESSFUL_STATUSES), gte(orders.createdAt, cutoff))
-    : inArray(orders.status, SUCCESSFUL_STATUSES);
-
+async function getTopServices(win: MonthWindow) {
   const rows = await db
     .select({
       id: services.id,
       title: services.title,
       sold: sql<number>`count(${orderItems.id})::int`,
-      revenue: sql<string>`coalesce(sum(${orderItems.priceAtPurchase} * coalesce(${orderItems.quantity}, 1)), 0)::text`,
+      // Lesson orders sell, but their money is gone — zero them here too.
+      revenue: sql<string>`coalesce(sum(case when ${orders.createdAt} < ${LESSON_CUTOFF} then 0 else ${orderItems.priceAtPurchase} * coalesce(${orderItems.quantity}, 1) end), 0)::text`,
     })
     .from(services)
     .innerJoin(orderItems, eq(orderItems.serviceId, services.id))
     .innerJoin(orders, eq(orderItems.orderId, orders.id))
-    .where(orderFilter)
+    .where(and(inWindow(win), inArray(orders.status, SUCCESSFUL_STATUSES)))
     .groupBy(services.id, services.title)
     .orderBy(desc(sql<number>`count(${orderItems.id})`))
     .limit(5);
@@ -385,14 +315,16 @@ async function getTopServices(cutoff: Date | null) {
 }
 
 /**
- * Workload per booster within the range: orders they handled (in_progress +
+ * Workload per booster within the month: orders they handled (in_progress +
  * completed) and the commission credited (boosterEarning, set on completion).
  * Left join keeps zero-order boosters eligible; only the top 3 are shown.
+ * Lesson orders count — the boosters' cut is real money either way.
  */
-async function getBoosterStats(cutoff: Date | null) {
+async function getBoosterStats(win: MonthWindow) {
   const joinBase = and(
     eq(orders.boosterId, boosters.id),
-    inArray(orders.status, ["in_progress", "completed"])
+    inArray(orders.status, ["in_progress", "completed"]),
+    inWindow(win)
   );
 
   const rows = await db
@@ -402,7 +334,7 @@ async function getBoosterStats(cutoff: Date | null) {
       earned: sql<string>`coalesce(sum(${orders.boosterEarning}), 0)::text`,
     })
     .from(boosters)
-    .leftJoin(orders, cutoff ? and(joinBase, gte(orders.createdAt, cutoff)) : joinBase)
+    .leftJoin(orders, joinBase)
     .where(and(eq(boosters.status, "active"), ne(boosters.id, OWNER_BOOSTER_ID)))
     .groupBy(boosters.id, boosters.firstName, boosters.lastName)
     .orderBy(desc(sql`count(${orders.id})`))
@@ -475,23 +407,23 @@ async function getRecentOrders(): Promise<OrderRow[]> {
 export default async function AdminDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ range?: string | string[] }>;
+  searchParams: Promise<{ month?: string | string[] }>;
 }) {
-  const { range: rangeParam } = await searchParams;
-  const range = parseRange(rangeParam);
-  const cutoff = rangeCutoff(range);
-  const unit = RANGE_UNIT[range];
-  const suffix = RANGE_SUFFIX[range];
+  const { month: monthParam } = await searchParams;
+  const monthKey = parseMonth(monthParam);
+  const win = monthWindow(monthKey);
+  const prevWin = monthWindow(prevMonthKey(monthKey));
+  const suffix = monthSuffix(monthKey);
 
   const [stats, prevStats, series, boosterSeries, statuses, top, boosterStats, recent] =
     await Promise.all([
-      getStats(cutoff),
-      getPrevStats(cutoff),
-      getTimeSeries(cutoff, unit),
-      getBoosterTimeSeries(cutoff, unit),
-      getStatusBreakdown(cutoff),
-      getTopServices(cutoff),
-      getBoosterStats(cutoff),
+      getStats(win),
+      getPrevStats(prevWin),
+      getTimeSeries(win),
+      getBoosterTimeSeries(win),
+      getStatusBreakdown(win),
+      getTopServices(win),
+      getBoosterStats(win),
       getRecentOrders(),
     ]);
 
@@ -511,7 +443,7 @@ export default async function AdminDashboardPage({
             Быстрая сводка по магазину {suffix}
           </p>
         </div>
-        <TimeRangeSelect value={range} />
+        <MonthSelect month={monthKey} isCurrent={monthKey === currentMonthKey()} />
       </div>
 
       {/* Row 1: revenue hero (gross vs net overlay) + pending/statuses column */}
@@ -535,7 +467,7 @@ export default async function AdminDashboardPage({
             </div>
           </CardHeader>
           <CardContent className="flex-1 flex items-end">
-            {series.length === 0 ? <EmptyChart /> : <NetRevenueAreaChart data={series} unit={unit} />}
+            {series.length === 0 ? <EmptyChart /> : <NetRevenueAreaChart data={series} />}
           </CardContent>
         </Card>
 
@@ -571,7 +503,7 @@ export default async function AdminDashboardPage({
           {boosterSeries.length === 0 ? (
             <EmptyChart />
           ) : (
-            <BoosterRevenueChart data={boosterSeries} unit={unit} />
+            <BoosterRevenueChart data={boosterSeries} />
           )}
         </CardContent>
       </Card>
@@ -587,7 +519,7 @@ export default async function AdminDashboardPage({
             iconClass="bg-sky-100 text-sky-600"
           />
           <CardContent className="flex-1 flex items-end">
-            {series.length === 0 ? <EmptyChart /> : <OrdersBarChart data={series} unit={unit} />}
+            {series.length === 0 ? <EmptyChart /> : <OrdersBarChart data={series} />}
           </CardContent>
         </Card>
         <Card>
@@ -599,7 +531,7 @@ export default async function AdminDashboardPage({
             iconClass="bg-emerald-100 text-emerald-600"
           />
           <CardContent className="flex-1 flex items-end">
-            {series.length === 0 ? <EmptyChart /> : <ClientsLineChart data={series} unit={unit} />}
+            {series.length === 0 ? <EmptyChart /> : <ClientsLineChart data={series} />}
           </CardContent>
         </Card>
         <Card>
@@ -669,7 +601,7 @@ function MetricHeader({
       {delta !== null && (
         <div className="flex items-center gap-2">
           <DeltaBadge pct={delta} />
-          <span className="text-xs text-muted-foreground">к пред. периоду</span>
+          <span className="text-xs text-muted-foreground">к пред. месяцу</span>
         </div>
       )}
     </CardHeader>
@@ -701,7 +633,7 @@ function RevenueStat({
       {delta !== null && (
         <div className="flex items-center gap-2">
           <DeltaBadge pct={delta} />
-          <span className="text-xs text-muted-foreground">к пред. периоду</span>
+          <span className="text-xs text-muted-foreground">к пред. месяцу</span>
         </div>
       )}
     </div>

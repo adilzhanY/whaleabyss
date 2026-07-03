@@ -34,11 +34,9 @@ import {
  * Colors come from the --chart-* tokens (brand palette) in globals.css.
  */
 
-export type TimeUnit = "hour" | "day" | "week" | "month";
-
 export interface SeriesPoint {
-  /** Bucket start, epoch milliseconds (UTC). */
-  t: number;
+  /** X-axis label — a quarter of the selected month, e.g. "1–7" or "22–31". */
+  label: string;
   revenue: number;
   orders: number;
   clients: number;
@@ -48,31 +46,6 @@ export interface SeriesPoint {
   net: number;
 }
 
-const tickFormatter = (unit: TimeUnit) => (t: number) => {
-  const d = new Date(t);
-  switch (unit) {
-    case "hour":
-      return d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
-    case "month":
-      return d.toLocaleDateString("ru-RU", { month: "short", year: "2-digit" });
-    default:
-      return d.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" });
-  }
-};
-
-const labelFormatter = (unit: TimeUnit) => (_label: unknown, payload: readonly { payload?: { t?: number } }[]) => {
-  const t = payload?.[0]?.payload?.t;
-  if (!t) return "";
-  const d = new Date(t);
-  if (unit === "hour") {
-    return d.toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
-  }
-  if (unit === "month") {
-    return d.toLocaleDateString("ru-RU", { month: "long", year: "numeric" });
-  }
-  return d.toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" });
-};
-
 // NBSP-joined so recharts' <Text> never wraps the tick onto two lines.
 const compactRub = (v: number) =>
   `${new Intl.NumberFormat("ru-RU", { notation: "compact", maximumFractionDigits: 1 })
@@ -80,71 +53,6 @@ const compactRub = (v: number) =>
     .replace(/\s/g, " ")} ₽`;
 
 const fullRub = (v: number) => `${v.toLocaleString("ru-RU")} ₽`;
-
-// ── Revenue: area chart ──────────────────────────────────────────────────────
-
-const revenueConfig = {
-  revenue: { label: "Выручка", color: "var(--chart-1)" },
-} satisfies ChartConfig;
-
-export function RevenueAreaChart({ data, unit }: { data: SeriesPoint[]; unit: TimeUnit }) {
-  return (
-    // aspect-auto kills ChartContainer's base aspect-video — without it a
-    // full-width chart forces a 16:9 height (~560px) and the page scrolls.
-    <ChartContainer config={revenueConfig} className="aspect-auto h-[220px] w-full">
-      <AreaChart accessibilityLayer data={data} margin={{ left: 4, right: 4 }}>
-        <defs>
-          <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="var(--color-revenue)" stopOpacity={0.6} />
-            <stop offset="95%" stopColor="var(--color-revenue)" stopOpacity={0.05} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid vertical={false} />
-        <XAxis
-          dataKey="t"
-          tickLine={false}
-          axisLine={false}
-          tickMargin={8}
-          minTickGap={28}
-          tickFormatter={tickFormatter(unit)}
-        />
-        <YAxis
-          tickLine={false}
-          axisLine={false}
-          tickMargin={4}
-          width={72}
-          tickFormatter={(v: number) => compactRub(v)}
-        />
-        <ChartTooltip
-          content={
-            <ChartTooltipContent
-              labelFormatter={labelFormatter(unit)}
-              formatter={(value, _name, item) => (
-                <>
-                  <div
-                    className="size-2.5 shrink-0 rounded-[2px]"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  Выручка
-                  <span className="text-foreground ml-auto font-mono font-medium tabular-nums">
-                    {fullRub(Number(value))}
-                  </span>
-                </>
-              )}
-            />
-          }
-        />
-        <Area
-          dataKey="revenue"
-          type="monotone"
-          stroke="var(--color-revenue)"
-          strokeWidth={2}
-          fill="url(#fillRevenue)"
-        />
-      </AreaChart>
-    </ChartContainer>
-  );
-}
 
 // ── Net revenue: gross vs after-commission area chart ────────────────────────
 // Two stacked-look areas: the full revenue (what we take) and the net kept after
@@ -183,17 +91,15 @@ type TooltipPayload = readonly { payload?: SeriesPoint }[];
 function NetRevenueTooltip({
   active,
   payload,
-  unit,
 }: {
   active?: boolean;
   payload?: TooltipPayload;
-  unit: TimeUnit;
 }) {
   const p = payload?.[0]?.payload;
   if (!active || !p) return null;
   return (
     <TooltipBox>
-      <div className="font-medium">{labelFormatter(unit)(undefined, payload!)}</div>
+      <div className="font-medium">{p.label}</div>
       <TooltipRow label="Выручка" value={fullRub(p.revenue)} color="var(--chart-2)" />
       <TooltipRow label="Бустерам" value={fullRub(p.commission)} color="var(--muted-foreground)" />
       <TooltipRow label="Чистыми" value={fullRub(p.net)} color="var(--chart-3)" />
@@ -201,8 +107,10 @@ function NetRevenueTooltip({
   );
 }
 
-export function NetRevenueAreaChart({ data, unit }: { data: SeriesPoint[]; unit: TimeUnit }) {
+export function NetRevenueAreaChart({ data }: { data: SeriesPoint[] }) {
   return (
+    // aspect-auto kills ChartContainer's base aspect-video — without it a
+    // full-width chart forces a 16:9 height (~560px) and the page scrolls.
     <ChartContainer config={netRevenueConfig} className="aspect-auto h-[220px] w-full">
       <AreaChart accessibilityLayer data={data} margin={{ left: 4, right: 4 }}>
         <defs>
@@ -216,14 +124,7 @@ export function NetRevenueAreaChart({ data, unit }: { data: SeriesPoint[]; unit:
           </linearGradient>
         </defs>
         <CartesianGrid vertical={false} />
-        <XAxis
-          dataKey="t"
-          tickLine={false}
-          axisLine={false}
-          tickMargin={8}
-          minTickGap={28}
-          tickFormatter={tickFormatter(unit)}
-        />
+        <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
         <YAxis
           tickLine={false}
           axisLine={false}
@@ -231,7 +132,7 @@ export function NetRevenueAreaChart({ data, unit }: { data: SeriesPoint[]; unit:
           width={72}
           tickFormatter={(v: number) => compactRub(v)}
         />
-        <ChartTooltip content={<NetRevenueTooltip unit={unit} />} />
+        <ChartTooltip content={<NetRevenueTooltip />} />
         {/* Gross drawn first (behind), net on top — the visible band between the
             two strokes is the commission paid to boosters. */}
         <Area
@@ -257,8 +158,8 @@ export function NetRevenueAreaChart({ data, unit }: { data: SeriesPoint[]; unit:
 // ── Booster earnings: total commission over time, top-5 breakdown in tooltip ──
 
 export interface BoosterSeriesPoint {
-  /** Bucket start, epoch milliseconds (UTC). */
-  t: number;
+  /** X-axis label — a quarter of the selected month, e.g. "1–7" or "22–31". */
+  label: string;
   /** Total commission earned by all boosters in this bucket. */
   total: number;
   /** Highest-earning boosters in this bucket (already sorted desc, ≤5). */
@@ -272,24 +173,15 @@ const boosterRevenueConfig = {
 function BoosterRevenueTooltip({
   active,
   payload,
-  unit,
 }: {
   active?: boolean;
   payload?: readonly { payload?: BoosterSeriesPoint }[];
-  unit: TimeUnit;
 }) {
   const p = payload?.[0]?.payload;
   if (!active || !p) return null;
-  const d = new Date(p.t);
-  const label =
-    unit === "hour"
-      ? d.toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
-      : unit === "month"
-        ? d.toLocaleDateString("ru-RU", { month: "long", year: "numeric" })
-        : d.toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" });
   return (
     <TooltipBox>
-      <div className="font-medium">{label}</div>
+      <div className="font-medium">{p.label}</div>
       <TooltipRow label="Всего" value={fullRub(p.total)} color="var(--chart-4)" />
       {p.top.length > 0 && (
         <>
@@ -311,7 +203,7 @@ function BoosterRevenueTooltip({
   );
 }
 
-export function BoosterRevenueChart({ data, unit }: { data: BoosterSeriesPoint[]; unit: TimeUnit }) {
+export function BoosterRevenueChart({ data }: { data: BoosterSeriesPoint[] }) {
   return (
     <ChartContainer config={boosterRevenueConfig} className="aspect-auto h-[220px] w-full">
       <AreaChart accessibilityLayer data={data} margin={{ left: 4, right: 4 }}>
@@ -322,14 +214,7 @@ export function BoosterRevenueChart({ data, unit }: { data: BoosterSeriesPoint[]
           </linearGradient>
         </defs>
         <CartesianGrid vertical={false} />
-        <XAxis
-          dataKey="t"
-          tickLine={false}
-          axisLine={false}
-          tickMargin={8}
-          minTickGap={28}
-          tickFormatter={tickFormatter(unit)}
-        />
+        <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
         <YAxis
           tickLine={false}
           axisLine={false}
@@ -337,7 +222,7 @@ export function BoosterRevenueChart({ data, unit }: { data: BoosterSeriesPoint[]
           width={72}
           tickFormatter={(v: number) => compactRub(v)}
         />
-        <ChartTooltip content={<BoosterRevenueTooltip unit={unit} />} />
+        <ChartTooltip content={<BoosterRevenueTooltip />} />
         <Area
           dataKey="total"
           type="monotone"
@@ -356,7 +241,7 @@ const ordersConfig = {
   orders: { label: "Заказы", color: "var(--chart-1)" },
 } satisfies ChartConfig;
 
-export function OrdersBarChart({ data, unit }: { data: SeriesPoint[]; unit: TimeUnit }) {
+export function OrdersBarChart({ data }: { data: SeriesPoint[] }) {
   return (
     <ChartContainer config={ordersConfig} className="aspect-auto h-[160px] w-full">
       <BarChart accessibilityLayer data={data}>
@@ -367,16 +252,9 @@ export function OrdersBarChart({ data, unit }: { data: SeriesPoint[]; unit: Time
           </linearGradient>
         </defs>
         <CartesianGrid vertical={false} />
-        <XAxis
-          dataKey="t"
-          tickLine={false}
-          axisLine={false}
-          tickMargin={8}
-          minTickGap={28}
-          tickFormatter={tickFormatter(unit)}
-        />
+        <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
         <YAxis tickLine={false} axisLine={false} width={32} allowDecimals={false} />
-        <ChartTooltip content={<ChartTooltipContent labelFormatter={labelFormatter(unit)} />} />
+        <ChartTooltip content={<ChartTooltipContent />} />
         <Bar dataKey="orders" fill="url(#fillOrders)" radius={[6, 6, 0, 0]} maxBarSize={32} />
       </BarChart>
     </ChartContainer>
@@ -389,21 +267,14 @@ const clientsConfig = {
   clients: { label: "Новые клиенты", color: "var(--chart-2)" },
 } satisfies ChartConfig;
 
-export function ClientsLineChart({ data, unit }: { data: SeriesPoint[]; unit: TimeUnit }) {
+export function ClientsLineChart({ data }: { data: SeriesPoint[] }) {
   return (
     <ChartContainer config={clientsConfig} className="aspect-auto h-[160px] w-full">
       <LineChart accessibilityLayer data={data} margin={{ left: 4, right: 4 }}>
         <CartesianGrid vertical={false} />
-        <XAxis
-          dataKey="t"
-          tickLine={false}
-          axisLine={false}
-          tickMargin={8}
-          minTickGap={28}
-          tickFormatter={tickFormatter(unit)}
-        />
+        <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
         <YAxis tickLine={false} axisLine={false} width={32} allowDecimals={false} />
-        <ChartTooltip content={<ChartTooltipContent labelFormatter={labelFormatter(unit)} />} />
+        <ChartTooltip content={<ChartTooltipContent />} />
         <Line
           dataKey="clients"
           type="monotone"

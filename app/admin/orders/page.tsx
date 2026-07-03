@@ -11,6 +11,7 @@ import CustomSelect from "@/components/CustomSelect";
 import Input from "@/components/Input";
 import DataTable from "../_components/DataTable";
 import { buildOrderColumns, type OrderRow } from "../_components/orderColumns";
+import { isLessonOrder, LESSON_ROW_CLASS } from "../_components/lessonOrders";
 
 type Order = OrderRow;
 
@@ -186,6 +187,7 @@ export default function AdminOrdersPage() {
         data={orders}
         totalCount={total}
         getRowKey={(o) => o.id}
+        rowClassName={(o) => (isLessonOrder(o) ? LESSON_ROW_CLASS : "")}
         loading={loading && orders.length === 0}
         emptyMessage="Заказы не найдены"
         page={page}

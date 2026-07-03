@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import DataTable from "./DataTable";
 import { buildOrderColumns, type OrderRow } from "./orderColumns";
+import { isLessonOrder, LESSON_ROW_CLASS } from "./lessonOrders";
 
 /**
  * Dashboard "Последние заказы" table. Thin client wrapper so the server-rendered
@@ -29,6 +30,7 @@ export default function RecentOrdersTable({
       columns={columns}
       data={orders}
       getRowKey={(o) => o.id}
+      rowClassName={(o) => (isLessonOrder(o) ? LESSON_ROW_CLASS : "")}
       emptyMessage="Пока нет заказов."
     />
   );

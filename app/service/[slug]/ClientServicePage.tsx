@@ -11,7 +11,7 @@ import { parseMinAdventureRank } from "@/lib/adventureRank";
 import { UserCircle, Tag, Layers, CheckCircle, Info, ShoppingCart, Gauge, Shield, MonitorPlay } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import Input from "@/components/Input";
+import DateInput from "@/components/DateInput";
 
 interface ClientServicePageProps {
   service: ServiceItem;
@@ -202,24 +202,22 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">
               Дата начала
             </label>
-            <Input
-              type="date"
+            <DateInput
               value={currentStartDate}
               min={todayYMD}
               onChange={(e) => setStartDate(e.target.value)}
-              className="text-slate-700 text-sm"
+              className="text-sm"
             />
           </div>
           <div className="flex-1">
             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">
               Дата окончания
             </label>
-            <Input
-              type="date"
+            <DateInput
               value={currentEndDate}
               min={currentStartDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="text-slate-700 text-sm"
+              className="text-sm"
             />
           </div>
         </div>

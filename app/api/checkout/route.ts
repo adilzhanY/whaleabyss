@@ -12,6 +12,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { validatePromocodeForUser } from '@/lib/promocodeValidation';
 import { enforceRateLimit, RATE_TIERS } from '@/lib/apiRateLimit';
 import { parseMinAdventureRank } from '@/lib/adventureRank';
+import { isPerDayServiceName } from '@/lib/services';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -194,15 +195,29 @@ export async function POST(req: NextRequest) {
     const newOrderId = newOrderRaw[0].id;
 
     // 2. Insert order items (priceAtPurchase = current DB unit price).
-    const insertItems = itemRows.map((r) => ({
-      orderId: newOrderId,
-      serviceId: r.service.id,
-      quantity: r.quantity,
-      priceAtPurchase: r.unit.toFixed(2),
-      ...(r.dates.startDate ? { startDate: new Date(r.dates.startDate) } : {}),
-      ...(r.dates.endDate ? { endDate: new Date(r.dates.endDate) } : {}),
-      ...(r.addonChoice ? { addonChoice: r.addonChoice } : {}),
-    }));
+    const insertItems = itemRows.map((r) => {
+      // Per-day services (account management) must always store their period —
+      // the admin panel and Telegram notification show it. If the client sent
+      // no dates (line added from a service card / stale cart, not the detail
+      // page picker), derive them the same way the picker defaults: start =
+      // today, end = start + (days − 1), where quantity = number of days.
+      let startDate = r.dates.startDate ? new Date(r.dates.startDate) : null;
+      let endDate = r.dates.endDate ? new Date(r.dates.endDate) : null;
+      if ((!startDate || !endDate) && isPerDayServiceName(r.service.subtitle || r.service.title)) {
+        startDate = startDate ?? new Date();
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + r.quantity - 1);
+      }
+      return {
+        orderId: newOrderId,
+        serviceId: r.service.id,
+        quantity: r.quantity,
+        priceAtPurchase: r.unit.toFixed(2),
+        ...(startDate ? { startDate } : {}),
+        ...(endDate ? { endDate } : {}),
+        ...(r.addonChoice ? { addonChoice: r.addonChoice } : {}),
+      };
+    });
     await db.insert(orderItems).values(insertItems);
 
     // 3. Build the payment URL.

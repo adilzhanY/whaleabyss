@@ -24,6 +24,10 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
   const finalPrice = isOnDiscount ? discountedPrice : item.price;
 
   const handleAdd = (e: React.MouseEvent) => {
+    // Per-day services must have their period (startDate/endDate) picked on
+    // the detail page — adding straight from the card would create an order
+    // with no dates. Let the wrapping Link navigate there instead.
+    if (item.isPerDay) return;
     e.preventDefault();
     e.stopPropagation();
     // Opens the quest-addon modal when the service has linked quests,

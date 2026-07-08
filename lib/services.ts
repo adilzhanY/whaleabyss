@@ -27,6 +27,14 @@ export interface ServiceCategory {
   items: ServiceItem[];
 }
 
+// Per-day services (account management) are sold by period: the detail page
+// shows a date picker and `quantity` means "number of days". Shared by the UI
+// enrichment below and the checkout backstop that derives missing dates.
+export function isPerDayServiceName(name: string): boolean {
+  const n = name.toLowerCase();
+  return n.includes('уход за аккаунтом') || n.includes('техническое обслуживание');
+}
+
 const gradients = [
   'linear-gradient(135deg, #74b9ff 0%, #0984e3 50%, #60a5fa 100%)',
   'linear-gradient(135deg, #b2bec3 0%, #636e72 50%, #74b9ff 100%)',
@@ -59,7 +67,7 @@ function enrichItemUI(item: any, index: number): Omit<ServiceItem, 'id' | 'title
   const is_square = nameLower.includes('задание') || is_nod_krai;
   const is_tall = is_plot && !is_nod_krai;
   const is_extra_tall = is_tall && !nameLower.includes('мондштадт');
-  const is_per_day = nameLower.includes('уход за аккаунтом') || nameLower.includes('техническое обслуживание');
+  const is_per_day = isPerDayServiceName(nameLower);
 
   return {
     isWide: is_wide,

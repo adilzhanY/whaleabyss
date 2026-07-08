@@ -45,14 +45,18 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
   const [authOpen, setAuthOpen] = useState(false);
   const addToCartWithAddons = useAddToCartWithAddons();
 
-  // Get today and tomorrow as default dates
+  // Get today and tomorrow as default dates. Format in LOCAL time — for a
+  // UTC+ timezone (all of Russia) toISOString() shifts local midnight to the
+  // previous UTC day, making «сегодня» render as yesterday in the picker.
+  const toLocalYMD = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   const todayDate = new Date();
-  todayDate.setHours(0, 0, 0, 0);
   const tomorrowDate = new Date(todayDate);
   tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const todayYMD = toLocalYMD(todayDate);
 
-  const [startDate, setStartDate] = useState(todayDate.toISOString().split("T")[0]);
-  const [endDate, setEndDate] = useState(tomorrowDate.toISOString().split("T")[0]);
+  const [startDate, setStartDate] = useState(todayYMD);
+  const [endDate, setEndDate] = useState(toLocalYMD(tomorrowDate));
 
   // Calculate days difference (inclusive)
   const start = new Date(startDate);
@@ -201,7 +205,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
             <Input
               type="date"
               value={currentStartDate}
-              min={todayDate.toISOString().split("T")[0]}
+              min={todayYMD}
               onChange={(e) => setStartDate(e.target.value)}
               className="text-slate-700 text-sm"
             />

@@ -61,6 +61,17 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   // Don't advertise the framework.
   poweredByHeader: false,
+  experimental: {
+    // Client router cache: revisiting a recently seen route (e.g. bouncing
+    // between admin tabs) renders instantly from cache instead of re-fetching
+    // the RSC payload. 30s for dynamic pages is a deliberate freshness
+    // trade-off — admin list pages re-fetch their data client-side anyway,
+    // and any page can be hard-refreshed. Static pages cache for 5 min.
+    staleTimes: {
+      dynamic: 30,
+      static: 300,
+    },
+  },
   devIndicators: {
     appIsrStatus: false,
   } as any,

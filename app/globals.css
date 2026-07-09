@@ -759,6 +759,9 @@ body:has(#admin-root.admin-dark) {
   .hover\:bg-slate-900:hover,
   .hover\:bg-slate-800:hover,
   .hover\:bg-slate-700:hover { background-color: #4338ca; }
+  /* Sidebar active pill: elevated grey (not brand indigo) — after the
+     bg-slate-900 remap above so it wins by order. */
+  .admin-nav-pill { background-color: #27272a; }
 
   /* ── Text ──────────────────────────────────────────────────────────────── */
   .text-slate-900 { color: #f5f5f5; }

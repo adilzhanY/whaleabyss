@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { signOut } from "next-auth/react";
 import Image from "next/image";
 import {
@@ -49,17 +49,66 @@ function isActive(item: NavItem, pathname: string): boolean {
 interface AdminShellProps {
   userName: string;
   userEmail: string;
+  userAvatar?: string | null;
   children: React.ReactNode;
 }
 
 const SIDEBAR_STATE_KEY = "whaleabyss:admin:sidebar-collapsed";
 
-export default function AdminShell({ userName, userEmail, children }: AdminShellProps) {
+// useLayoutEffect warns when a client component is server-rendered; the
+// measurement is browser-only anyway.
+const useIsoLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
+export default function AdminShell({ userName, userEmail, userAvatar, children }: AdminShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  // ── Instant navigation ──────────────────────────────────────────────────
+  // `navTarget` is the optimistic active tab: set the moment the user presses
+  // (mousedown, ~100ms before click even fires), so the pill slides and the
+  // tab highlights instantly while Next.js streams the route in. It reconciles
+  // with the real pathname as soon as navigation lands.
+  const [navTarget, setNavTarget] = useState<string | null>(null);
+  const lastNav = useRef<{ href: string; t: number }>({ href: "", t: 0 });
+
+  useEffect(() => {
+    setNavTarget(null);
+  }, [pathname]);
+
+  const go = (href: string) => {
+    // Both mousedown and the follow-up click call go(); dedupe the pair.
+    const now = performance.now();
+    if (lastNav.current.href === href && now - lastNav.current.t < 600) return;
+    lastNav.current = { href, t: now };
+    setNavTarget(href);
+    router.push(href);
+  };
+
+  const activeItem = navTarget
+    ? NAV_ITEMS.find((i) => i.href === navTarget) ?? null
+    : NAV_ITEMS.find((i) => isActive(i, pathname)) ?? null;
+
+  // ── Sliding pill indicator ──────────────────────────────────────────────
+  // One absolutely-positioned pill behind the links, moved with a CSS
+  // transition on top/height — measured from the DOM so it survives any
+  // future item reordering, wrapping, or size changes.
+  const navRef = useRef<HTMLElement>(null);
+  const [pill, setPill] = useState<{ top: number; height: number } | null>(null);
+
+  useIsoLayoutEffect(() => {
+    if (!activeItem) {
+      setPill(null);
+      return;
+    }
+    const el = navRef.current?.querySelector<HTMLElement>(
+      `[data-href="${activeItem.href}"]`
+    );
+    if (el) setPill({ top: el.offsetTop, height: el.offsetHeight });
+  }, [activeItem, collapsed]);
 
   // Persist sidebar collapsed state across page navigations.
   useEffect(() => {
@@ -104,25 +153,29 @@ export default function AdminShell({ userName, userEmail, children }: AdminShell
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         ].join(" ")}
       >
-        {/* Brand */}
+        {/* Admin identity */}
         <div className="h-16 flex items-center gap-3 px-4 border-b border-slate-100">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shrink-0 shadow-sm shadow-indigo-500/20 overflow-hidden">
-            <Image
-              src="/icons/whale_logo_circle.png"
-              alt="Whale Abyss"
-              width={40}
-              height={40}
-              className="w-full h-full object-cover"
-            />
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 text-white text-sm font-semibold flex items-center justify-center shrink-0 overflow-hidden">
+            {userAvatar ? (
+              <Image
+                src={userAvatar}
+                alt={userName}
+                width={40}
+                height={40}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              (userName || "A").slice(0, 1).toUpperCase()
+            )}
           </div>
           <div
             className={[
-              "overflow-hidden transition-[opacity,max-width] duration-200",
+              "min-w-0 overflow-hidden transition-[opacity,max-width] duration-200",
               collapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[160px]",
             ].join(" ")}
           >
-            <div className="text-[15px] font-semibold tracking-tight whitespace-nowrap">
-              Whale Abyss
+            <div className="text-[15px] font-semibold tracking-tight whitespace-nowrap truncate">
+              {userName}
             </div>
             <div className="text-[11px] text-slate-500 font-medium whitespace-nowrap">
               Админ-панель
@@ -130,20 +183,34 @@ export default function AdminShell({ userName, userEmail, children }: AdminShell
           </div>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 p-3 space-y-1">
+        {/* Nav — pill items with one sliding active indicator */}
+        <nav ref={navRef} className="relative flex-1 p-3 space-y-1">
           {NAV_ITEMS.map((item) => {
-            const active = isActive(item, pathname);
+            const active = activeItem?.href === item.href;
             const Icon = item.icon;
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                data-href={item.href}
                 title={collapsed ? item.label : undefined}
+                onMouseEnter={() => router.prefetch(item.href)}
+                onTouchStart={() => router.prefetch(item.href)}
+                onMouseDown={(e) => {
+                  if (e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+                    go(item.href);
+                  }
+                }}
+                onClick={(e) => {
+                  // Let cmd/ctrl/shift-click and middle-click do their browser thing.
+                  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                  e.preventDefault();
+                  go(item.href); // no-op if mousedown already navigated; handles keyboard Enter
+                }}
                 className={[
-                  "group flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors",
+                  "group relative z-10 flex items-center gap-3 rounded-full px-3.5 py-2.5 transition-colors duration-200",
                   active
-                    ? "bg-slate-900 text-white shadow-sm"
+                    ? "text-white"
                     : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
                 ].join(" ")}
               >
@@ -162,6 +229,15 @@ export default function AdminShell({ userName, userEmail, children }: AdminShell
               </Link>
             );
           })}
+          {/* Last in DOM so nav's space-y-1 spacing is unaffected by its
+              mount; z-0 keeps it painted behind the z-10 links. */}
+          {pill && (
+            <div
+              aria-hidden
+              className="admin-nav-pill absolute left-3 right-3 z-0 rounded-full bg-slate-900 shadow-sm transition-[top,height] duration-300 ease-[cubic-bezier(0.35,1.1,0.4,1)]"
+              style={{ top: pill.top, height: pill.height, marginTop: 0 }}
+            />
+          )}
         </nav>
 
         {/* Collapse toggle */}

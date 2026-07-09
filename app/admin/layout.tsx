@@ -29,6 +29,7 @@ export default async function AdminLayout({
       <AdminShell
         userName={user.name ?? "Admin"}
         userEmail={user.email ?? ""}
+        userAvatar={user.image ?? null}
       >
         {children}
       </AdminShell>

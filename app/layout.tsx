@@ -39,7 +39,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru">
+    // data-scroll-behavior tells Next the smooth scroll is intentional so it
+    // can disable it during route transitions (instant scroll-to-top).
+    <html lang="ru" data-scroll-behavior="smooth">
       <head>
         {/* Yandex.Metrika counter — rendered into the HTML so Yandex can verify
             the tag. Standard init params (auto-sends the pageview hit). Loads

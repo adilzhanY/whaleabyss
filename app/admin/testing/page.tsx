@@ -23,9 +23,9 @@ export default async function AdminTestingPage() {
     .limit(1);
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-7xl mx-auto space-y-8">
       {paymentTestService && (
-        <section className="max-w-6xl mx-auto">
+        <section>
           <div className="rounded-3xl border-2 border-blue-200 bg-blue-50/40 p-6 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
             <div className="flex items-start gap-3">
               <div className="w-11 h-11 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
@@ -44,7 +44,7 @@ export default async function AdminTestingPage() {
             </div>
             <Link
               href="/admin/testing/checkout"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors shrink-0"
+              className="btn-primary text-sm shrink-0"
             >
               Открыть оплату
               <ArrowRight className="w-4 h-4" strokeWidth={2.5} />

@@ -19,6 +19,7 @@ import {
   Users,
   Swords,
 } from "lucide-react";
+import ThemeSwitch from "./_components/ThemeSwitch";
 
 interface NavItem {
   href: string;
@@ -240,6 +241,7 @@ export default function AdminShell({ userName, userEmail, children }: AdminShell
               {breadcrumbLabel(pathname)}
             </div>
           </div>
+          <ThemeSwitch />
           <button
             onClick={() => router.push("/")}
             className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"

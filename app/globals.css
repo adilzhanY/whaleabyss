@@ -7,6 +7,7 @@
 @import "@heroui/styles/themes/default";
 @import "@heroui/styles/utilities";
 @import "@heroui/styles/components/tabs.css" layer(components);
+@import "@heroui/styles/components/switch.css" layer(components);
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
@@ -663,4 +664,168 @@ iframe[src*="metrika"] {
   html {
     @apply font-sans;
   }
+}
+/* ---------------------------------------------------------------------------
+ * Admin dark theme.
+ * Toggled by ThemeSwitch: a single `admin-dark` class on the #admin-root
+ * wrapper (see app/admin/layout.tsx). Pure CSS palette remap — no React
+ * re-render, no per-component dark: variants. These rules are intentionally
+ * UNLAYERED so they beat Tailwind's @layer utilities without !important.
+ *
+ * Scope is `body:has(#admin-root.admin-dark)` (not #admin-root itself) because
+ * several admin components (OrderStatusCell / ReviewStatusCell dropdowns,
+ * DocumentViewer) render via createPortal into document.body — outside
+ * #admin-root. The :has() scope covers them while still vanishing the moment
+ * the admin tree unmounts, so the public site is never affected.
+ * ------------------------------------------------------------------------- */
+body:has(#admin-root.admin-dark) {
+  color-scheme: dark;
+
+  /* ── Design tokens ───────────────────────────────────────────────────────
+     Two families feed the admin UI:
+     1. Site tokens (--bg-*, --text-*, --accent-*) — consumed by the flat
+        classes (.input-field, .btn-primary, .checkbox-custom) AND by Tailwind
+        semantic utilities: `@theme inline` maps --color-background →
+        var(--bg-main) and --color-foreground → var(--text-primary), so
+        bg-background / text-foreground resolve THROUGH these, not through
+        the shadcn --background/--foreground vars.
+     2. shadcn tokens (--card, --border, --muted-foreground, …) — consumed by
+        Card, charts, tooltips, badges. */
+  --bg-main: #000000;
+  --bg-card: #0a0a0a;
+  --text-primary: #f5f5f5;
+  --text-secondary: #a3a3a3;
+  --accent-border: #262626;
+  /* Brand blue #1e3a8a is too dim on black — brighten buttons/checkboxes/rings. */
+  --accent-primary: #2563eb;
+  --accent-primary-hover: #1d4ed8;
+
+  --card: #0a0a0a;
+  --card-foreground: #f5f5f5;
+  --popover: #171717;
+  --popover-foreground: #f5f5f5;
+  --secondary: #171717;
+  --secondary-foreground: #f5f5f5;
+  --muted: #171717;
+  --muted-foreground: #a3a3a3;
+  --accent: #171717;
+  --accent-foreground: #f5f5f5;
+  --border: #303030;
+  --input: #303030;
+  /* Brand chart palette, brightened to read on pure black
+     (--chart-1 #0b5191 is too dark against #000). */
+  --chart-1: #3b82f6;
+
+  /* ── Chart tooltips ──────────────────────────────────────────────────────
+     ChartTooltipContent + TooltipBox use bg-background (→ --bg-main = pure
+     black here); give them an elevated grey panel instead so they read
+     against both the black page and the chart fills. Text inside is
+     text-foreground → --text-primary (white) / --muted-foreground (grey). */
+  .bg-background { background-color: #27272a; }
+  .border-border\/50 { border-color: rgba(255, 255, 255, 0.16); }
+
+  /* ── Flat-class components (globals.css primitives) ──────────────────────
+     .input-field backs every Input, search box and date picker. Unlayered
+     rules beat its @layer components definition — including its :focus rule,
+     so the focus treatment must be restated here. */
+  .input-field {
+    background-color: #171717;
+    border-color: #2e2e2e;
+    color: #f5f5f5;
+    caret-color: #60a5fa;
+    box-shadow: none; /* the light theme's inset uses a white highlight */
+  }
+  .input-field:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25);
+  }
+  .input-field::placeholder { color: #737373; }
+  .checkbox-custom-unchecked { border-color: #525252; }
+  .checkbox-custom-unchecked:hover { border-color: #737373; }
+
+  /* ── Surfaces (pure-black neutral scale) ───────────────────────────────── */
+  .bg-slate-50, .bg-slate-50\/80 { background-color: #000000; }
+  .bg-white, .bg-white\/60 { background-color: #0a0a0a; }
+  .bg-slate-100 { background-color: #171717; }
+  .bg-slate-200, .bg-slate-300 { background-color: #262626; }
+  .hover\:bg-white:hover,
+  .hover\:bg-slate-50:hover,
+  .hover\:bg-slate-100:hover { background-color: #171717; }
+  .hover\:bg-slate-200:hover,
+  .hover\:bg-slate-300:hover { background-color: #262626; }
+
+  /* Dark-on-light accents (active nav, dark buttons) → brand indigo */
+  .bg-slate-900, .bg-slate-800 { background-color: #4f46e5; }
+  .hover\:bg-slate-900:hover,
+  .hover\:bg-slate-800:hover,
+  .hover\:bg-slate-700:hover { background-color: #4338ca; }
+
+  /* ── Text ──────────────────────────────────────────────────────────────── */
+  .text-slate-900 { color: #f5f5f5; }
+  .text-slate-800 { color: #e5e5e5; }
+  .text-slate-700 { color: #d4d4d4; }
+  .text-slate-600, .text-slate-500 { color: #a3a3a3; }
+  .text-slate-400 { color: #737373; }
+  .text-slate-300 { color: #525252; }
+  .hover\:text-slate-900:hover, .hover\:text-slate-800:hover { color: #f5f5f5; }
+  .hover\:text-slate-700:hover, .hover\:text-slate-600:hover { color: #d4d4d4; }
+  .text-\[\#1e3a8a\] { color: #60a5fa; }
+  .group:hover .group-hover\:text-blue-800 { color: #93c5fd; }
+
+  /* ── Borders & dividers ────────────────────────────────────────────────── */
+  .border-slate-100 { border-color: #1f1f1f; }
+  .border-slate-200 { border-color: #262626; }
+  .border-slate-300 { border-color: #333333; }
+  .hover\:border-slate-300:hover { border-color: #404040; }
+  .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #1f1f1f; }
+
+  /* ── Colored chips & status accents ──────────────────────────────────────
+     Light pastel -50/-100 backgrounds read as "white" on black; remap to
+     translucent tints of the same hue, with -400-brightness text/borders. */
+  .bg-red-50, .bg-red-100 { background-color: rgba(239, 68, 68, 0.15); }
+  .hover\:bg-red-50:hover, .hover\:bg-red-200:hover { background-color: rgba(239, 68, 68, 0.25); }
+  .bg-rose-50, .bg-rose-100 { background-color: rgba(244, 63, 94, 0.15); }
+  .hover\:bg-rose-50:hover, .hover\:bg-rose-100:hover { background-color: rgba(244, 63, 94, 0.25); }
+  .bg-green-100 { background-color: rgba(34, 197, 94, 0.15); }
+  .hover\:bg-green-50:hover, .hover\:bg-green-200:hover { background-color: rgba(34, 197, 94, 0.25); }
+  .bg-emerald-50, .bg-emerald-100 { background-color: rgba(16, 185, 129, 0.15); }
+  .hover\:bg-emerald-100:hover { background-color: rgba(16, 185, 129, 0.25); }
+  .bg-amber-50, .bg-amber-100 { background-color: rgba(245, 158, 11, 0.15); }
+  .hover\:bg-amber-100:hover { background-color: rgba(245, 158, 11, 0.25); }
+  .bg-yellow-100 { background-color: rgba(234, 179, 8, 0.15); }
+  .hover\:bg-yellow-50:hover, .hover\:bg-yellow-200:hover { background-color: rgba(234, 179, 8, 0.25); }
+  .bg-blue-50, .bg-blue-100, .bg-blue-50\/40 { background-color: rgba(59, 130, 246, 0.15); }
+  .hover\:bg-blue-100:hover { background-color: rgba(59, 130, 246, 0.25); }
+  .bg-sky-100 { background-color: rgba(14, 165, 233, 0.15); }
+  .bg-indigo-50, .bg-indigo-50\/60 { background-color: rgba(99, 102, 241, 0.15); }
+  .bg-purple-100 { background-color: rgba(168, 85, 247, 0.15); }
+  .bg-orange-100 { background-color: rgba(249, 115, 22, 0.15); }
+
+  .border-red-100, .border-red-200, .hover\:border-red-200:hover { border-color: rgba(248, 113, 113, 0.4); }
+  .border-rose-200 { border-color: rgba(251, 113, 133, 0.4); }
+  .border-green-200 { border-color: rgba(74, 222, 128, 0.4); }
+  .border-emerald-200 { border-color: rgba(52, 211, 153, 0.4); }
+  .border-amber-200 { border-color: rgba(251, 191, 36, 0.4); }
+  .border-yellow-200 { border-color: rgba(250, 204, 21, 0.4); }
+  .border-blue-200 { border-color: rgba(96, 165, 250, 0.4); }
+  .border-purple-200 { border-color: rgba(192, 132, 252, 0.4); }
+
+  .text-red-500, .text-red-600, .text-red-700, .hover\:text-red-600:hover { color: #f87171; }
+  .text-rose-500, .text-rose-600, .text-rose-700, .hover\:text-rose-600:hover { color: #fb7185; }
+  .text-green-600, .text-green-700 { color: #4ade80; }
+  .text-emerald-600, .text-emerald-700 { color: #34d399; }
+  .text-amber-500, .text-amber-600, .text-amber-700 { color: #fbbf24; }
+  .text-yellow-700 { color: #facc15; }
+  .text-blue-600, .text-blue-700, .text-blue-900,
+  .hover\:text-blue-800:hover, .hover\:text-blue-900:hover { color: #60a5fa; }
+  .text-sky-500, .text-sky-600 { color: #38bdf8; }
+  .text-indigo-500, .text-indigo-600, .text-indigo-700, .hover\:text-indigo-600:hover { color: #818cf8; }
+  .text-purple-600, .text-purple-700 { color: #c084fc; }
+  .text-orange-600, .text-orange-700 { color: #fb923c; }
+
+  /* CustomSelect trigger focus ring */
+  .focus\:ring-blue-100:focus { --tw-ring-color: rgba(59, 130, 246, 0.3); }
+
+  /* Native inputs / selects pick up color-scheme, but placeholder contrast: */
+  ::placeholder { color: #737373; }
 }

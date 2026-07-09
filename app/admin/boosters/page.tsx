@@ -251,13 +251,11 @@ export default function BoostersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-blue-950" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
-            Качеры
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-2xl font-semibold tracking-tight">Качеры</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Реестр исполнителей. Добавляйте и редактируйте вручную — вход в систему им не нужен.
           </p>
         </div>

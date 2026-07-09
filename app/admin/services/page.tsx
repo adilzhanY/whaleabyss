@@ -200,25 +200,25 @@ export default function AdminServicesPage() {
   ];
 
   return (
-    <div className="p-6" style={{ fontFamily: "Onest, sans-serif" }}>
+    <div className="max-w-7xl mx-auto">
       <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Услуги</h1>
-          <p className="text-sm text-slate-600 mt-1">
+          <h1 className="text-2xl font-semibold tracking-tight">Услуги</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Всего услуг: {rows.length}
           </p>
         </div>
         <div className="flex gap-3">
           <Link
             href="/admin/services/categories"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-600 text-white text-sm font-semibold hover:bg-slate-700 transition-colors"
+            className="btn-primary !px-4 text-sm"
           >
             <Plus className="w-4 h-4" strokeWidth={2.5} />
             Новая категория
           </Link>
           <Link
             href="/admin/services/new"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors"
+            className="btn-primary !px-4 text-sm"
           >
             <Plus className="w-4 h-4" strokeWidth={2.5} />
             Новая услуга

@@ -459,7 +459,7 @@ export default function ServiceForm({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition-colors"
+                className="btn-primary !px-3.5 !py-2 text-sm"
               >
                 <Upload className="w-4 h-4" strokeWidth={2.25} />
                 {displayImage ? "Заменить" : "Выбрать файл"}
@@ -469,7 +469,7 @@ export default function ServiceForm({
                 <button
                   type="button"
                   onClick={clearPickedFile}
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-white border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="btn-primary !px-3.5 !py-2 text-sm"
                 >
                   <X className="w-4 h-4" strokeWidth={2.25} />
                   Отменить выбор
@@ -520,14 +520,14 @@ export default function ServiceForm({
         <button
           type="submit"
           disabled={saving}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+          className="btn-primary text-sm"
         >
           {saving ? "Сохраняю…" : mode === "create" ? "Создать" : "Сохранить"}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-5 py-2.5 rounded-full bg-white border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+          className="btn-primary text-sm"
         >
           Отмена
         </button>

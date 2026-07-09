@@ -217,17 +217,15 @@ export default function CategoriesPage() {
           <ArrowLeft className="w-5 h-5 text-slate-600" />
         </Link>
         <div className="flex-1">
-          <h1 className="text-3xl font-black text-blue-950" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
-            Категории услуг
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-2xl font-semibold tracking-tight">Категории услуг</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Перетаскивайте категории для изменения порядка
           </p>
         </div>
         {!showNewForm && (
           <button
             onClick={() => setShowNewForm(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors"
+            className="btn-primary !px-4 text-sm"
           >
             <Plus className="w-4 h-4" />
             Новая категория
@@ -282,7 +280,7 @@ export default function CategoriesPage() {
               <button
                 onClick={handleCreate}
                 disabled={saving}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
+                className="btn-primary flex-1 !px-4 !py-3"
               >
                 <Check className="w-4 h-4" />
                 {saving ? "Создание..." : "Создать"}

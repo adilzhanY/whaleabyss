@@ -67,13 +67,11 @@ export default function PromocodesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-blue-950" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
-            Промокоды
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-2xl font-semibold tracking-tight">Промокоды</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Управление промокодами и статистика использования
           </p>
         </div>

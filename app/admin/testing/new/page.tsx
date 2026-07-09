@@ -72,7 +72,7 @@ export default function NewTestServicePage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
         <Link
           href="/admin/testing"
@@ -82,7 +82,7 @@ export default function NewTestServicePage() {
         </Link>
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Новая тестовая услуга</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Создайте тестовую услугу для проверки функционала
           </p>
         </div>
@@ -183,7 +183,7 @@ export default function NewTestServicePage() {
           <button
             type="submit"
             disabled={loading || uploading}
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary !px-6 text-sm"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" strokeWidth={2.5} />}
             Создать

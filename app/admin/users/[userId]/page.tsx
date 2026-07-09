@@ -125,7 +125,7 @@ export default function UserDetailPage() {
 
   if (!user) {
     return (
-      <div className="p-6" style={{ fontFamily: "Onest, sans-serif" }}>
+      <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
           <p className="text-slate-500">Пользователь не найден</p>
         </div>
@@ -134,7 +134,7 @@ export default function UserDetailPage() {
   }
 
   return (
-    <div className="p-6" style={{ fontFamily: "Onest, sans-serif" }}>
+    <div className="max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-6 flex items-center gap-4">
         <button
@@ -144,8 +144,8 @@ export default function UserDetailPage() {
           <ArrowLeft className="h-5 w-5 text-slate-600" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Профиль пользователя</h1>
-          <p className="text-sm text-slate-600 mt-1">Детальная информация о пользователе</p>
+          <h1 className="text-2xl font-semibold tracking-tight">Профиль пользователя</h1>
+          <p className="text-sm text-muted-foreground mt-1">Детальная информация о пользователе</p>
         </div>
       </div>
 

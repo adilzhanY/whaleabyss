@@ -169,10 +169,10 @@ export default function AdminUsersPage() {
   ];
 
   return (
-    <div className="p-6" style={{ fontFamily: "Onest, sans-serif" }}>
+    <div className="max-w-7xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Управление пользователями</h1>
-        <p className="text-sm text-slate-600 mt-1">Всего пользователей: {total}</p>
+        <h1 className="text-2xl font-semibold tracking-tight">Управление пользователями</h1>
+        <p className="text-sm text-muted-foreground mt-1">Всего пользователей: {total}</p>
       </div>
 
       {/* Filters */}

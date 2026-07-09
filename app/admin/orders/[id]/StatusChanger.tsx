@@ -96,7 +96,7 @@ export default function StatusChanger({
         className={[
           "w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-colors",
           dirty && !isBusy
-            ? "bg-indigo-600 text-white hover:bg-indigo-700"
+            ? "btn-primary !px-4"
             : "bg-slate-100 text-slate-400 cursor-not-allowed",
         ].join(" ")}
       >

@@ -138,7 +138,7 @@ export default function BoosterDetailPage({
   ];
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="max-w-7xl mx-auto space-y-6">
       <Link href="/admin/boosters" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
         <ArrowLeft className="w-4 h-4" /> К списку качеров
       </Link>
@@ -149,7 +149,7 @@ export default function BoosterDetailPage({
           {b.lastName.charAt(0)}
         </div>
         <div>
-          <h1 className="text-3xl font-black text-blue-950" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
+          <h1 className="text-2xl font-semibold tracking-tight">
             {b.firstName} {b.lastName}
           </h1>
           <span

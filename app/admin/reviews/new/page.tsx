@@ -17,7 +17,7 @@ export default function NewReviewPage() {
 
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Новый фейк отзыв</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Отзыв добавляется сразу как одобренный и появляется на странице отзывов.
         </p>
       </div>

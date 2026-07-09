@@ -25,7 +25,7 @@ export default async function TestingCheckoutPage() {
     .limit(1);
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6">
       <Link href="/admin/testing" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 transition-colors">
         <ArrowLeft className="w-4 h-4" />
         Назад к тестированию

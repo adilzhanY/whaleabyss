@@ -67,7 +67,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
     .where(eq(orderItems.orderId, id));
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6">
       <Link
         href="/admin/orders"
         className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
@@ -87,7 +87,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
               {order.id.slice(8)}
             </span>
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Создан{" "}
             {order.createdAt
               ? new Date(order.createdAt).toLocaleString("ru-RU")

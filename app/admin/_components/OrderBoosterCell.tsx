@@ -62,7 +62,7 @@ export default function OrderBoosterCell({
       ) : (
         <button
           onClick={() => setModalOpen(true)}
-          className="px-3 py-1.5 rounded-full bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors"
+          className="btn-primary !px-3 !py-1.5 text-xs"
         >
           Назначить
         </button>

@@ -91,11 +91,11 @@ export default function AdminOrdersPage() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6" style={{ fontFamily: "Onest, sans-serif" }}>
+    <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Заказы</h1>
-          <p className="text-sm text-slate-600 mt-1">Всего заказов: {total}</p>
+          <h1 className="text-2xl font-semibold tracking-tight">Заказы</h1>
+          <p className="text-sm text-muted-foreground mt-1">Всего заказов: {total}</p>
         </div>
         <Link
           href="/admin/orders/new"

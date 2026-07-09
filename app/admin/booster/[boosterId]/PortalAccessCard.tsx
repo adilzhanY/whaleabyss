@@ -116,7 +116,7 @@ export default function PortalAccessCard({
             type="button"
             onClick={link}
             disabled={busy || !email.trim()}
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition-colors cursor-pointer disabled:opacity-50 shrink-0"
+            className="btn-primary !gap-1.5 !px-4 text-sm shrink-0"
           >
             {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />}
             Привязать

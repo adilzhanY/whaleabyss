@@ -174,7 +174,7 @@ export default function ManualOrderForm({
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6" style={{ fontFamily: "Onest, sans-serif" }}>
+    <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
         <Link
           href="/admin/orders"
@@ -183,8 +183,8 @@ export default function ManualOrderForm({
           <ArrowLeft className="w-5 h-5 text-slate-600" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Ручной заказ</h1>
-          <p className="text-sm text-slate-500 mt-0.5">
+          <h1 className="text-2xl font-semibold tracking-tight">Ручной заказ</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Для оплат вне сайта. Заказ создаётся со статусом «оплачен».
           </p>
         </div>
@@ -364,7 +364,7 @@ export default function ManualOrderForm({
               <button
                 onClick={applyPromo}
                 disabled={!selectedUser || !promoInput.trim() || promoLoading}
-                className="px-5 rounded-full bg-slate-800 text-white text-sm font-semibold hover:bg-slate-900 transition-colors disabled:opacity-40"
+                className="btn-primary text-sm"
               >
                 {promoLoading ? "..." : "Применить"}
               </button>

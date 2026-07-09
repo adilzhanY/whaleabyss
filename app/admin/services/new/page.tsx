@@ -27,7 +27,7 @@ export default async function NewServicePage() {
 
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Новая услуга</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Добавьте услугу в каталог. Slug используется как часть URL — пример:{" "}
           <span className="font-mono text-xs">/service/my-service</span>
         </p>

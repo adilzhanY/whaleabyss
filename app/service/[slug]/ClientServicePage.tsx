@@ -193,7 +193,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
 
   const perDayConfig = service.isPerDay && (
     <div>
-      <label className="text-lg font-bold" style={{ color: "#1e3a8a", fontFamily: "var(--font-primary), sans-serif" }}>
+      <label className="text-lg font-bold" style={{ color: "var(--text-price)", fontFamily: "var(--font-primary), sans-serif" }}>
         Выберите срок обслуживания: {activeDays} дн.
       </label>
       <div className="flex flex-col gap-4 mt-4">

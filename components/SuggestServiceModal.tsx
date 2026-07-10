@@ -48,7 +48,7 @@ export default function SuggestServiceModal({ isOpen, onClose }: SuggestServiceM
 
         <h3
           className="mb-4 text-2xl font-black"
-          style={{ fontFamily: "var(--font-primary), sans-serif", color: "#1e3a8a" }}
+          style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-price)" }}
         >
           Предложить услугу
         </h3>

@@ -15,17 +15,17 @@ export default function InfoPage() {
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
 
-      <main className="flex-1 pt-24 pb-16 px-4 sm:px-6">
+      <main className="flex-1 pt-24 pb-20 px-4 sm:px-6">
         <div className="mx-auto max-w-4xl">
           <Breadcrumb />
-          <div className="mb-10 text-center">
+          <div className="mb-12 text-center">
             <h1
               className="text-4xl sm:text-5xl font-black text-blue-950 mb-4"
               style={{ fontFamily: "var(--font-primary), sans-serif" }}
             >
               О сервисе
             </h1>
-            <p className="text-slate-600 max-w-2xl mx-auto">
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               Правовая информация, условия использования и контакты для связи. Ознакомьтесь перед оформлением заказа.
             </p>
           </div>

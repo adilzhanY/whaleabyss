@@ -14,6 +14,7 @@ import {
 } from "react";
 import LiquidGlassFilter from "./LiquidGlassFilter";
 import SocialIcon from "./SocialIcon";
+import SiteThemeSwitch from "./SiteThemeSwitch";
 
 interface HeaderProps {
   onAuthOpen: () => void;
@@ -153,8 +154,13 @@ export default function Header({ onAuthOpen }: HeaderProps) {
         targetRef={glassPanelRef}
       />
 
-      {/* Floating navbar — fixed, glass, rounded. */}
+      {/* Floating navbar — fixed, glass, rounded.
+          id="site-header" is the scope marker for the public dark theme: the
+          `site-dark` CSS block in globals.css only applies inside
+          `body:has(#site-header)`, so admin/portal (which never mount this
+          Header) are untouched. */}
       <header
+        id="site-header"
         className="fixed top-3 left-3 right-3 md:top-5 md:left-6 md:right-6 z-40"
         style={{ fontFamily: "var(--font-primary), sans-serif" }}
       >
@@ -194,7 +200,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
                   alt="Whale Abyss"
                   className="h-11 w-11 md:h-15 md:w-15 object-contain"
                 />
-                <span className="hidden lg:inline-block font-display tracking-tight">
+                <span className="site-brand-name hidden lg:inline-block font-display tracking-tight">
                   Whale Abyss
                 </span>
               </Link>
@@ -264,6 +270,10 @@ export default function Header({ onAuthOpen }: HeaderProps) {
 
             {/* Right: actions */}
             <div className="flex items-center gap-2">
+              {/* Desktop-only theme switch; on mobile it lives in the drawer. */}
+              <div className="hidden lg:block">
+                <SiteThemeSwitch />
+              </div>
               {session ? (
                 <Link
                   href="/profile"
@@ -372,6 +382,13 @@ export default function Header({ onAuthOpen }: HeaderProps) {
                 {l.label}
               </Link>
             ))}
+          </div>
+
+          <div className="border-t border-slate-100 pt-4 mb-2 flex items-center justify-between px-4">
+            <span className="text-sm font-semibold text-slate-700">
+              Тёмная тема
+            </span>
+            <SiteThemeSwitch />
           </div>
 
           <div className="border-t border-slate-100 pt-4">

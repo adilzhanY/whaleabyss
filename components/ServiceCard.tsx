@@ -48,18 +48,7 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
   return (
     <Link
       href={`/service/${item.id}`}
-      className="group flex flex-col rounded-2xl sm:rounded-3xl cursor-pointer col-span-1 transition-all duration-300 w-full h-full p-3 sm:p-4 border-2 border-transparent relative hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/20"
-      style={{
-        background: "linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(135deg, rgba(30,58,138,0.4) 0%, rgba(96,165,250,0.4) 100%) border-box",
-      }}
-      onMouseEnter={(e) => {
-        const el = e.currentTarget as HTMLAnchorElement;
-        el.style.background = "linear-gradient(#e0f2fe, #e0f2fe) padding-box, linear-gradient(135deg, var(--accent-primary) 0%, #3b82f6 100%) border-box";
-      }}
-      onMouseLeave={(e) => {
-        const el = e.currentTarget as HTMLAnchorElement;
-        el.style.background = "linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(135deg, rgba(30,58,138,0.4) 0%, rgba(96,165,250,0.4) 100%) border-box";
-      }}
+      className="service-card group flex flex-col rounded-2xl sm:rounded-3xl cursor-pointer col-span-1 transition-all duration-300 w-full h-full p-3 sm:p-4 border-2 border-transparent relative hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/20"
     >
       {/* Image placeholder */}
       <div
@@ -115,7 +104,7 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
         </div>
         <button
           onClick={handleAdd}
-          className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg bg-transparent transition-all duration-300 group-hover:bg-blue-600 group-hover:scale-110"
+          className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg bg-transparent cursor-pointer transition-all duration-300 group-hover:bg-blue-600 group-hover:scale-110"
           aria-label={`Добавить ${item.title} в корзину`}
         >
           <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 text-[#8b9fd6] transition-colors duration-300 group-hover:text-white" strokeWidth={1.5} />

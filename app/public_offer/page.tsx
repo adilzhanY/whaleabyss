@@ -21,7 +21,7 @@ export default function PublicOfferPage() {
   return (
     <div
       style={{
-        backgroundColor: "#ffffff",
+        backgroundColor: "var(--bg-card)",
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
@@ -29,7 +29,7 @@ export default function PublicOfferPage() {
     >
       <Header onAuthOpen={() => setAuthOpen(true)} />
 
-      <main className="flex-1 pt-24 pb-16 px-4 sm:px-6">
+      <main className="flex-1 pt-24 pb-20 px-4 sm:px-6">
         <div
           className="mx-auto max-w-4xl bg-white p-8 sm:p-12 text-black"
           style={{ fontFamily: "var(--font-primary), sans-serif" }}
@@ -39,7 +39,7 @@ export default function PublicOfferPage() {
             <h1 className="text-4xl sm:text-5xl font-black text-blue-950 mb-4" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
               АГЕНТСКИЙ ДОГОВОР
             </h1>
-            <p className="text-slate-600 text-lg font-medium">
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               (Публичная оферта)
             </p>
           </div>

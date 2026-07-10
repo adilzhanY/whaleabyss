@@ -29,7 +29,7 @@ export default function NotFound() {
             className="font-black leading-none"
             style={{
               fontFamily: "var(--font-primary), sans-serif",
-              color: "#0B5191",
+              color: "var(--text-price)",
               fontSize: "clamp(6rem, 22vw, 12rem)",
             }}
           >
@@ -50,7 +50,7 @@ export default function NotFound() {
           <Link
             href="/"
             className="mt-8 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm sm:text-base font-bold text-white transition-opacity hover:opacity-90"
-            style={{ backgroundColor: "#0B5191" }}
+            style={{ backgroundColor: "var(--accent-primary)" }}
           >
             <Home size={18} />
             На главную

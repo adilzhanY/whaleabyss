@@ -8,8 +8,8 @@ export default function Footer() {
     <footer
       className="w-full text-slate-800 py-6 px-4 sm:px-6"
       style={{
-        backgroundColor: "#ffffff",
-        borderTop: "1px solid #e2e8f0",
+        backgroundColor: "var(--bg-card)",
+        borderTop: "1px solid var(--accent-border)",
         fontFamily: "var(--font-primary), sans-serif",
       }}
     >

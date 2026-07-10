@@ -149,8 +149,8 @@ export default function QuestAddonModal() {
                       {a.subtitle}
                     </span>
                     <span
-                      className="shrink-0 text-sm font-bold text-[#0B5191]"
-                      style={{ fontFamily: "var(--font-primary), sans-serif" }}
+                      className="shrink-0 text-sm font-bold"
+                      style={{ color: "var(--text-price)", fontFamily: "var(--font-primary), sans-serif" }}
                     >
                       {a.price.toLocaleString("ru-RU")} ₽
                     </span>

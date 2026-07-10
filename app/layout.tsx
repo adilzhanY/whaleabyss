@@ -41,8 +41,20 @@ export default function RootLayout({
   return (
     // data-scroll-behavior tells Next the smooth scroll is intentional so it
     // can disable it during route transitions (instant scroll-to-top).
-    <html lang="ru" data-scroll-behavior="smooth">
+    // suppressHydrationWarning: the pre-paint theme script below may add the
+    // `site-dark` class to <html> before React hydrates.
+    <html lang="ru" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
+        {/* Pre-paint theme restore for the PUBLIC site theme (see
+            components/SiteThemeSwitch.tsx). Runs during HTML parse so a saved
+            dark preference applies before first paint — no light flash. The
+            class is inert on /admin and /portal: the dark CSS in globals.css
+            only activates when #site-header (public Header) is present. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem("whaleabyss:site:theme")==="dark")document.documentElement.classList.add("site-dark")}catch(e){}`,
+          }}
+        />
         {/* Yandex.Metrika counter — rendered into the HTML so Yandex can verify
             the tag. Standard init params (auto-sends the pageview hit). Loads
             for everyone except visitors who explicitly declined cookies

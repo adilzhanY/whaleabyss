@@ -99,7 +99,7 @@ export default function FaqPage() {
             >
               Часто задаваемые вопросы
             </h1>
-            <p className="text-slate-600 max-w-2xl mx-auto">
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               Ответы на популярные вопросы о наших услугах и процессе работы
             </p>
           </div>

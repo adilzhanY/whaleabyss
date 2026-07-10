@@ -453,6 +453,60 @@ h6 {
 }
 
 /* ---------------------------------------------------------------------------
+ * Homepage / service-card decorative backgrounds.
+ * Extracted from inline styles into classes so the public dark theme (end of
+ * this file) can restyle them; values are identical to the old inline ones.
+ * ------------------------------------------------------------------------- */
+
+/* Hero sections on the homepage: white base + pastel radial mesh. */
+.hero-mesh {
+  background-color: #ffffff;
+  background-image:
+    radial-gradient(at 40% 20%, hsla(210, 100%, 74%, 0.3) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, hsla(250, 100%, 79%, 0.3) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, hsla(350, 100%, 89%, 0.3) 0px, transparent 50%),
+    radial-gradient(at 80% 50%, hsla(180, 100%, 74%, 0.3) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(290, 100%, 84%, 0.3) 0px, transparent 50%),
+    radial-gradient(at 80% 100%, hsla(20, 100%, 89%, 0.3) 0px, transparent 50%),
+    radial-gradient(at 0% 0%, hsla(220, 100%, 79%, 0.3) 0px, transparent 50%);
+}
+
+/* Homepage services section: soft blurred corner fog over the white overlay. */
+.services-fog {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(220, 235, 255, 0.5) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(200, 225, 250, 0.4) 0%, transparent 50%);
+  filter: blur(40px);
+}
+
+/* Homepage services section: two-tier graph-paper grid (fine 40px cells +
+ * bolder 200px lines), faded toward the left/right edges via mask. */
+.services-grid {
+  background-image:
+    linear-gradient(to right, rgba(51, 65, 85, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(51, 65, 85, 0.05) 1px, transparent 1px),
+    linear-gradient(to right, rgba(51, 65, 85, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(51, 65, 85, 0.08) 1px, transparent 1px);
+  background-size: 40px 40px, 40px 40px, 200px 200px, 200px 200px;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+}
+
+/* Service card: white body + gradient border via the padding-box/border-box
+ * trick (the card element has border-2 border-transparent). Hover swaps to a
+ * light-blue body and saturated border — previously done with JS handlers. */
+.service-card {
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(135deg, rgba(30, 58, 138, 0.4) 0%, rgba(96, 165, 250, 0.4) 100%) border-box;
+}
+.service-card:hover {
+  background:
+    linear-gradient(#e0f2fe, #e0f2fe) padding-box,
+    linear-gradient(135deg, var(--accent-primary) 0%, #3b82f6 100%) border-box;
+}
+
+/* ---------------------------------------------------------------------------
  * Liquid Glass — наша интерпретация Apple Liquid Glass.
  *
  * Слои (важен порядок):
@@ -831,4 +885,290 @@ body:has(#admin-root.admin-dark) {
 
   /* Native inputs / selects pick up color-scheme, but placeholder contrast: */
   ::placeholder { color: #737373; }
+}
+
+/* ---------------------------------------------------------------------------
+ * Public-site dark theme.
+ * Toggled by components/SiteThemeSwitch.tsx: a `site-dark` class on <html>,
+ * restored pre-paint by the inline script in app/layout.tsx. Independent of
+ * the admin theme above (own localStorage key, own class).
+ *
+ * Scope: the class lives on <html>, but the rules only activate when
+ * #site-header (the public Header, mounted by every public page) is present —
+ * so /admin and /portal are structurally unaffected even though the class is
+ * set globally. A positive marker (instead of :not(#admin-root)) also means
+ * the rules can never mis-match while a page is still streaming.
+ * Same palette as the admin dark theme; same unlayered-rules mechanism.
+ * ------------------------------------------------------------------------- */
+
+/* Root surfaces + native form controls / scrollbars. The explicit html
+   background covers overscroll areas beyond the body. */
+html.site-dark:has(#site-header) {
+  background-color: #000000;
+  color-scheme: dark;
+}
+
+html.site-dark body:has(#site-header) {
+  color-scheme: dark;
+
+  /* ── Site design tokens ──────────────────────────────────────────────────
+     Everything styled with var(--…) — inline styles, .btn-*, .input-field,
+     .card-raised, bg-background/text-foreground utilities — flips through
+     these. Values match the admin dark theme. */
+  --bg-main: #000000;
+  --bg-card: #0a0a0a;
+  --bg-highlight: #171717;
+  --text-primary: #f5f5f5;
+  --text-secondary: #a3a3a3;
+  --text-price: #f5f5f5;
+  --accent-border: #262626;
+  /* Brand blue #1e3a8a is too dim on black — brighten accents. One step
+     lighter than the admin theme (#2563eb): the public pages paint large
+     accent areas (hero title, brand mark, CTAs) straight on pure black. */
+  --accent-primary: #3b82f6;
+  --accent-primary-hover: #2563eb;
+  --accent-icon: #60a5fa;
+
+  /* ── shadcn tokens (Card/badge/HeroUI Tabs+Switch, text-primary etc.) ──── */
+  --card: #0a0a0a;
+  --card-foreground: #f5f5f5;
+  --popover: #171717;
+  --popover-foreground: #f5f5f5;
+  --secondary: #171717;
+  --secondary-foreground: #f5f5f5;
+  --muted: #171717;
+  --muted-foreground: #a3a3a3;
+  --accent: #171717;
+  --accent-foreground: #f5f5f5;
+  --border: #303030;
+  --input: #303030;
+  /* text-primary utilities render brand blue in light mode; brighten it. */
+  --primary: #3b82f6;
+  --ring: #3b82f6;
+
+  /* ── Shadow system ───────────────────────────────────────────────────────
+     The light shadows lean on white inset highlights that read as grey smears
+     on black. Re-derive: darker casts, faint white hairlines, keep the blue
+     CTA glow. .btn-secondary/.btn-icon/.card-raised flip via these alone. */
+  --shadow-input: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-card:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-card-hover:
+    0 0 0 1px rgba(96, 165, 250, 0.18),
+    0 12px 24px rgba(0, 0, 0, 0.6);
+  --shadow-btn:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+  --shadow-btn-hover:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.6),
+    0 8px 16px rgba(0, 0, 0, 0.5);
+  --shadow-btn-primary:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 1px 2px rgba(37, 99, 235, 0.4),
+    0 4px 12px rgba(37, 99, 235, 0.3);
+  --shadow-btn-primary-hover:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(37, 99, 235, 0.5),
+    0 10px 24px rgba(37, 99, 235, 0.4);
+  --shadow-glass:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.6);
+
+  /* ── Flat-class components (globals.css primitives) ──────────────────────
+     Unlayered rules beat .input-field's @layer components definition,
+     including :focus — restate the focus treatment. */
+  .input-field {
+    background-color: #171717;
+    border-color: #2e2e2e;
+    color: #f5f5f5;
+    caret-color: #60a5fa;
+    box-shadow: none;
+  }
+  .input-field:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25);
+  }
+  .input-field::placeholder { color: #737373; }
+  .checkbox-custom-unchecked { border-color: #525252; }
+  .checkbox-custom-unchecked:hover { border-color: #737373; }
+  .btn-icon-danger:hover { background-color: rgba(239, 68, 68, 0.15); }
+
+  /* Brand mark next to the logo: accent blue in light theme (inherited from
+     the logo Link), primary text color on dark so it reads on the dark glass. */
+  .site-brand-name { color: var(--text-primary); }
+
+  /* ── Liquid-glass navbar: dark frost instead of white film ─────────────── */
+  .glass-panel {
+    background-color: rgba(10, 10, 10, 0.55);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+  .glass-panel::before {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.09) 0%,
+        rgba(255, 255, 255, 0.02) 45%,
+        rgba(255, 255, 255, 0) 100%
+      ),
+      radial-gradient(
+        ellipse at 22% 15%,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0) 55%
+      );
+  }
+  .glass-panel::after {
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25),
+      inset 0 3px 8px -3px rgba(255, 255, 255, 0.15),
+      inset 0 -1px 0 rgba(96, 165, 250, 0.2),
+      inset 0 -4px 12px -5px rgba(96, 165, 250, 0.25);
+  }
+
+  /* ── Homepage decorative backgrounds (classes defined earlier) ─────────── */
+  .hero-mesh {
+    background-color: #000000;
+    background-image:
+      radial-gradient(at 40% 20%, hsla(210, 100%, 60%, 0.14) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsla(250, 100%, 65%, 0.14) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsla(350, 100%, 70%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, hsla(180, 100%, 55%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(290, 100%, 65%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 80% 100%, hsla(20, 100%, 70%, 0.08) 0px, transparent 50%),
+      radial-gradient(at 0% 0%, hsla(220, 100%, 62%, 0.14) 0px, transparent 50%);
+  }
+  .services-fog {
+    background:
+      radial-gradient(circle at 0% 0%, rgba(37, 99, 235, 0.12) 0%, transparent 50%),
+      radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+  }
+  .services-grid {
+    background-image:
+      linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+      linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  }
+  .service-card {
+    background:
+      linear-gradient(#0a0a0a, #0a0a0a) padding-box,
+      linear-gradient(135deg, rgba(96, 165, 250, 0.35) 0%, rgba(30, 58, 138, 0.55) 100%) border-box;
+  }
+  .service-card:hover {
+    background:
+      linear-gradient(#101828, #101828) padding-box,
+      linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%) border-box;
+  }
+
+  /* ── Surfaces (pure-black neutral scale) ───────────────────────────────── */
+  .bg-slate-50, .bg-slate-50\/80 { background-color: #000000; }
+  .bg-slate-50\/60 { background-color: rgba(255, 255, 255, 0.04); }
+  .bg-white { background-color: #0a0a0a; }
+  .bg-white\/60 { background-color: rgba(255, 255, 255, 0.06); }
+  .bg-slate-100 { background-color: #171717; }
+  .bg-slate-100\/50 { background-color: rgba(255, 255, 255, 0.06); }
+  .bg-slate-200, .bg-slate-300 { background-color: #262626; }
+  .bg-gray-200, .bg-gray-300 { background-color: #262626; }
+  .hover\:bg-white:hover,
+  .hover\:bg-slate-50:hover,
+  .hover\:bg-slate-100:hover { background-color: #171717; }
+  .hover\:bg-slate-200:hover,
+  .hover\:bg-slate-300:hover { background-color: #262626; }
+
+  /* ── Text ──────────────────────────────────────────────────────────────── */
+  .text-black { color: #f5f5f5; }
+  .text-slate-900 { color: #f5f5f5; }
+  .text-slate-800 { color: #e5e5e5; }
+  .text-slate-700 { color: #d4d4d4; }
+  .text-slate-600, .text-slate-500 { color: #a3a3a3; }
+  .text-slate-400 { color: #737373; }
+  .text-slate-300 { color: #525252; }
+  .hover\:text-slate-900:hover, .hover\:text-slate-800:hover { color: #f5f5f5; }
+  .hover\:text-slate-700:hover, .hover\:text-slate-600:hover { color: #d4d4d4; }
+  .text-gray-700, .text-gray-800, .hover\:text-gray-700:hover { color: #d4d4d4; }
+  .text-gray-500, .text-gray-600 { color: #a3a3a3; }
+
+  /* ── Borders & dividers ────────────────────────────────────────────────── */
+  .border-slate-50 { border-color: #171717; }
+  .border-slate-100 { border-color: #1f1f1f; }
+  .border-slate-200, .border-gray-200 { border-color: #262626; }
+  .border-slate-300 { border-color: #333333; }
+  .hover\:border-slate-300:hover { border-color: #404040; }
+  .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #1f1f1f; }
+
+  /* ── Blue family (headings, links, info chips) ─────────────────────────── */
+  .text-blue-950 { color: #dbeafe; }
+  .hover\:text-blue-950:hover { color: #eff6ff; }
+  .text-blue-500, .text-blue-600, .text-blue-700, .text-blue-800, .text-blue-900 { color: #60a5fa; }
+  .hover\:text-blue-600:hover,
+  .hover\:text-blue-900:hover,
+  .group:hover .group-hover\:text-blue-900 { color: #93c5fd; }
+  /* ServiceCard price hover — prices stay white in dark, even on card hover. */
+  .group:hover .group-hover\:text-blue-800 { color: #f5f5f5; }
+  .bg-blue-50, .bg-blue-50\/60, .bg-blue-100,
+  .group:hover .group-hover\:bg-blue-100 { background-color: rgba(59, 130, 246, 0.15); }
+  .border-blue-100 { border-color: rgba(96, 165, 250, 0.35); }
+  .hover\:border-blue-200:hover, .hover\:border-blue-300:hover { border-color: rgba(96, 165, 250, 0.5); }
+
+  /* ── Colored chips & status accents ────────────────────────────────────── */
+  .bg-red-50, .bg-red-100 { background-color: rgba(239, 68, 68, 0.15); }
+  .hover\:bg-red-50:hover { background-color: rgba(239, 68, 68, 0.25); }
+  .bg-green-50, .bg-green-100 { background-color: rgba(34, 197, 94, 0.15); }
+  .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.15); }
+  .border-red-200 { border-color: rgba(248, 113, 113, 0.4); }
+  .border-green-200 { border-color: rgba(74, 222, 128, 0.4); }
+  .text-red-500, .text-red-600, .text-red-700, .hover\:text-red-500:hover { color: #f87171; }
+  .text-green-500, .text-green-600, .text-green-700, .text-green-800,
+  .hover\:text-green-900:hover,
+  .group:hover .group-hover\:text-green-700 { color: #4ade80; }
+  .text-emerald-700 { color: #34d399; }
+  .text-amber-600 { color: #fbbf24; }
+  .text-sky-600 { color: #38bdf8; }
+
+  /* ── Brand hexes used as arbitrary-value utilities ─────────────────────── */
+  .text-\[\#1e3a8a\] { color: #f5f5f5; }
+  .text-\[\#0B5191\], .hover\:text-\[\#0B5191\]:hover { color: #60a5fa; }
+  .border-\[\#0B5191\], .hover\:border-\[\#0B5191\]:hover { border-color: #3b82f6; }
+  .bg-\[\#0B5191\] { background-color: #3b82f6; }
+  .bg-\[\#E2E8F0\] { background-color: #262626; }
+  .border-\[\#e2e8f0\] { border-color: #262626; }
+
+  /* ── !important utilities (profile-page buttons, AuthModal Yandex btn) ───
+     These compile with !important, so plain remaps lose — match them. */
+  .\!bg-white { background-color: #0a0a0a !important; }
+  .\!text-\[\#1e3a8a\] { color: #60a5fa !important; }
+  .\!border-\[\#1e3a8a\] { border-color: #60a5fa !important; }
+  .hover\:\!bg-\[\#eef2ff\]:hover { background-color: #171717 !important; }
+  .\!bg-\[\#f1f5f9\] { background-color: #171717 !important; }
+  .\!text-\[\#0f172a\] { color: #f5f5f5 !important; }
+  .\!border-\[\#e2e8f0\] { border-color: #303030 !important; }
+  .hover\:\!bg-\[\#e2e8f0\]:hover { background-color: #262626 !important; }
+  .\!bg-\[\#B9E8E8\] { background-color: rgba(20, 184, 166, 0.18) !important; }
+  .\!text-\[\#0B5B5B\] { color: #5eead4 !important; }
+  .\!border-\[\#9ed6d6\] { border-color: rgba(94, 234, 212, 0.4) !important; }
+  .hover\:\!bg-\[\#a5dede\]:hover { background-color: rgba(20, 184, 166, 0.3) !important; }
+  .\!bg-gray-200 { background-color: #262626 !important; }
+  .hover\:\!bg-gray-300:hover { background-color: #333333 !important; }
+  .\!text-gray-800 { color: #e5e5e5 !important; }
+  /* Yandex-ID button is intentionally black; give it a visible edge on dark. */
+  .\!border-black { border-color: #303030 !important; }
+
+  /* CustomSelect trigger focus ring */
+  .focus\:ring-blue-100:focus { --tw-ring-color: rgba(59, 130, 246, 0.3); }
+
+  ::placeholder { color: #737373; }
+  ::selection { background-color: rgba(37, 99, 235, 0.4); }
+}
+
+/* Firefox/Safari fallback (mirrors the light-theme @supports rule): without
+   the SVG backdrop-filter the navbar tint must be denser to stay readable. */
+@supports not (backdrop-filter: url(#test)) {
+  html.site-dark body:has(#site-header) .glass-panel {
+    background-color: rgba(10, 10, 10, 0.7);
+  }
 }

@@ -63,31 +63,10 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
         }}
       >
         <div className="absolute inset-0 pointer-events-none z-0 bg-white">
-          <div
-            className="absolute inset-0 opacity-70"
-            style={{
-              background: `radial-gradient(circle at 0% 0%, rgba(220, 235, 255, 0.5) 0%, transparent 50%), radial-gradient(circle at 100% 100%, rgba(200, 225, 250, 0.4) 0%, transparent 50%)`,
-              filter: "blur(40px)"
-            }}
-          />
+          <div className="services-fog absolute inset-0 opacity-70" />
           {/* Subtle two-tier graph-paper grid: fine 40px cells + bolder 200px
               lines, gently faded toward the left/right edges. */}
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `
-                linear-gradient(to right, rgba(51,65,85,0.05) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(51,65,85,0.05) 1px, transparent 1px),
-                linear-gradient(to right, rgba(51,65,85,0.08) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(51,65,85,0.08) 1px, transparent 1px)
-              `,
-              backgroundSize: "40px 40px, 40px 40px, 200px 200px, 200px 200px",
-              WebkitMaskImage:
-                "linear-gradient(to right, transparent, #000 12%, #000 88%, transparent)",
-              maskImage:
-                "linear-gradient(to right, transparent, #000 12%, #000 88%, transparent)",
-            }}
-          />
+          <div className="services-grid absolute inset-0" />
         </div>
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 relative z-10">
@@ -96,7 +75,7 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
             <h1 className="text-4xl sm:text-5xl font-black text-blue-950 mb-4" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
               Все услуги
             </h1>
-            <p className="text-slate-600 max-w-2xl mx-auto">Полный каталог наших услуг для развития аккаунта и сопровождения в Genshin Impact.</p>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">Полный каталог наших услуг для развития аккаунта и сопровождения в Genshin Impact.</p>
           </div>
 
           <div className="mb-8">
@@ -127,7 +106,7 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
               <div key={category.id} className="flex flex-col gap-6" id={category.slug}>
                 <h3
                   className="text-2xl font-bold"
-                  style={{ fontFamily: "var(--font-primary), sans-serif", color: "black" }}
+                  style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
                 >
                   {category.title}
                 </h3>

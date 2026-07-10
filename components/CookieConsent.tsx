@@ -90,7 +90,7 @@ export default function CookieConsent() {
           <X className="h-4 w-4" />
         </button>
 
-        <h3 className="mb-1.5 pr-6 text-base font-bold" style={{ color: "#0B5191" }}>
+        <h3 className="mb-1.5 pr-6 text-base font-bold" style={{ color: "var(--text-price)" }}>
           Мы используем cookie 🐳
         </h3>
         <p className="mb-4 text-sm leading-relaxed text-slate-600">
@@ -99,7 +99,7 @@ export default function CookieConsent() {
           <Link
             href="/privacy"
             className="font-semibold underline hover:opacity-80"
-            style={{ color: "#0B5191" }}
+            style={{ color: "var(--text-price)" }}
           >
             Политике конфиденциальности
           </Link>

@@ -217,7 +217,7 @@ export default function CartPage() {
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       <DataSecurityModal isOpen={isDataSecurityModalOpen} onClose={() => setIsDataSecurityModalOpen(false)} />
 
-      <main className="mx-auto max-w-6xl px-4 sm:px-6 pt-24 pb-8">
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 pt-24 pb-20">
         <Breadcrumb />
 
         <div className="mb-12 text-center">
@@ -292,7 +292,7 @@ export default function CartPage() {
                         <Plus className="w-3 h-3" />
                       </button>
                     </div>
-                    <p className="text-xl font-bold text-blue-950" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
+                    <p className="text-xl font-bold" style={{ color: "var(--text-price)", fontFamily: "var(--font-primary), sans-serif" }}>
                       {(item.price * item.quantity).toLocaleString("ru-RU")} ₽
                     </p>
                   </div>
@@ -483,7 +483,7 @@ export default function CartPage() {
 
               <div className="border-t border-slate-200 pt-3 flex items-end justify-between">
                 <span className="text-base font-bold text-blue-950">К оплате:</span>
-                <span className="text-2xl font-black text-blue-950" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
+                <span className="text-2xl font-black" style={{ color: "var(--text-price)", fontFamily: "var(--font-primary), sans-serif" }}>
                   {finalTotal.toFixed(0)} ₽
                 </span>
               </div>

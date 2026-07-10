@@ -149,21 +149,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 
 			{/* HERO / DASHBOARD */}
 			{session?.user ? (
-				<section
-					className="relative overflow-hidden pt-24 pb-16 sm:pb-24"
-					style={{
-						backgroundColor: "#ffffff",
-						backgroundImage: `
-							radial-gradient(at 40% 20%, hsla(210,100%,74%,0.3) 0px, transparent 50%),
-							radial-gradient(at 80% 0%, hsla(250,100%,79%,0.3) 0px, transparent 50%),
-							radial-gradient(at 0% 50%, hsla(350,100%,89%,0.3) 0px, transparent 50%),
-							radial-gradient(at 80% 50%, hsla(180,100%,74%,0.3) 0px, transparent 50%),
-							radial-gradient(at 0% 100%, hsla(290,100%,84%,0.3) 0px, transparent 50%),
-							radial-gradient(at 80% 100%, hsla(20,100%,89%,0.3) 0px, transparent 50%),
-							radial-gradient(at 0% 0%, hsla(220,100%,79%,0.3) 0px, transparent 50%)
-						`,
-					}}
-				>
+				<section className="hero-mesh relative overflow-hidden pt-24 pb-16 sm:pb-24">
 					<div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-between gap-8 px-4 sm:px-12 text-center sm:text-left">
 						<div className="w-full">
 							<h1
@@ -312,19 +298,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 			) : (
 				<section
 					id="hero"
-					className="relative overflow-hidden pt-24 pb-24 sm:pb-32"
-					style={{
-						backgroundColor: "#ffffff",
-						backgroundImage: `
-							radial-gradient(at 40% 20%, hsla(210,100%,74%,0.3) 0px, transparent 50%),
-							radial-gradient(at 80% 0%, hsla(250,100%,79%,0.3) 0px, transparent 50%),
-							radial-gradient(at 0% 50%, hsla(350,100%,89%,0.3) 0px, transparent 50%),
-							radial-gradient(at 80% 50%, hsla(180,100%,74%,0.3) 0px, transparent 50%),
-							radial-gradient(at 0% 100%, hsla(290,100%,84%,0.3) 0px, transparent 50%),
-							radial-gradient(at 80% 100%, hsla(20,100%,89%,0.3) 0px, transparent 50%),
-							radial-gradient(at 0% 0%, hsla(220,100%,79%,0.3) 0px, transparent 50%)
-						`,
-					}}
+					className="hero-mesh relative overflow-hidden pt-24 pb-24 sm:pb-32"
 				>
 					<div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-between gap-8 px-4 sm:px-12 lg:flex-row">
 						<div className="text-left w-full sm:w-auto">
@@ -342,7 +316,6 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 								className="mb-6 max-w-3xl text-3xl font-black leading-tight sm:text-5xl lg:text-6xl tracking-tight text-slate-800 wrap-break-word w-full overflow-hidden"
 								style={{
 									fontFamily: "var(--font-primary), sans-serif",
-									color: "#1e293b",
 									wordBreak: "break-word",
 									hyphens: "auto",
 								}}
@@ -496,31 +469,10 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 				}}
 			>
 				<div className="absolute inset-0 pointer-events-none z-0 bg-white">
-					<div
-						className="absolute inset-0 opacity-70"
-						style={{
-							background: `radial-gradient(circle at 0% 0%, rgba(220, 235, 255, 0.5) 0%, transparent 50%), radial-gradient(circle at 100% 100%, rgba(200, 225, 250, 0.4) 0%, transparent 50%)`,
-							filter: "blur(40px)",
-						}}
-					/>
+					<div className="services-fog absolute inset-0 opacity-70" />
 					{/* Subtle two-tier graph-paper grid: fine 40px cells + bolder 200px
 					    lines, gently faded toward the left/right edges. */}
-					<div
-						className="absolute inset-0"
-						style={{
-							backgroundImage: `
-								linear-gradient(to right, rgba(51,65,85,0.05) 1px, transparent 1px),
-								linear-gradient(to bottom, rgba(51,65,85,0.05) 1px, transparent 1px),
-								linear-gradient(to right, rgba(51,65,85,0.08) 1px, transparent 1px),
-								linear-gradient(to bottom, rgba(51,65,85,0.08) 1px, transparent 1px)
-							`,
-							backgroundSize: "40px 40px, 40px 40px, 200px 200px, 200px 200px",
-							WebkitMaskImage:
-								"linear-gradient(to right, transparent, #000 12%, #000 88%, transparent)",
-							maskImage:
-								"linear-gradient(to right, transparent, #000 12%, #000 88%, transparent)",
-						}}
-					/>
+					<div className="services-grid absolute inset-0" />
 				</div>
 
 				<div
@@ -542,7 +494,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 										style={{
 											fontFamily:
 												"var(--font-primary), sans-serif",
-											color: "black",
+											color: "var(--text-primary)",
 										}}
 									>
 										{category.title}

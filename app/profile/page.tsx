@@ -112,8 +112,8 @@ export default function ProfilePage() {
   return (
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
-      <main className="pt-24 pb-10">
-        <div className="mx-auto max-w-4xl px-4 space-y-6">
+      <main className="pt-24 pb-20">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 space-y-6">
           <Breadcrumb />        {/* Profile Header Block */}
           <div
             className="rounded-[2rem] p-6 sm:p-10 shadow-sm flex flex-col md:flex-row items-center md:items-center gap-8 relative overflow-hidden"

@@ -157,7 +157,7 @@ export default function CartModal() {
                         <Plus className="w-3 h-3" />
                       </button>
                     </div>
-                    <p className="text-base font-bold text-blue-950" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
+                    <p className="text-base font-bold" style={{ color: "var(--text-price)", fontFamily: "var(--font-primary), sans-serif" }}>
                       {(item.price * item.quantity).toLocaleString("ru-RU")} ₽
                     </p>
                   </div>

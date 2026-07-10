@@ -16,7 +16,7 @@ export default function PrivacyPage() {
   return (
     <div
       style={{
-        backgroundColor: "#ffffff",
+        backgroundColor: "var(--bg-card)",
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
@@ -24,7 +24,7 @@ export default function PrivacyPage() {
     >
       <Header onAuthOpen={() => setAuthOpen(true)} />
 
-      <main className="flex-1 pt-24 pb-16 px-4 sm:px-6">
+      <main className="flex-1 pt-24 pb-20 px-4 sm:px-6">
         <div
           className="mx-auto max-w-4xl bg-white p-8 sm:p-12 text-black"
           style={{ fontFamily: "var(--font-primary), sans-serif" }}

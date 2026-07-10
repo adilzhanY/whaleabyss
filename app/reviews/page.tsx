@@ -177,7 +177,7 @@ export default function ReviewsPage() {
             >
               Отзывы клиентов
             </h1>
-            <p className="text-slate-600 max-w-2xl mx-auto">
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
               Более 500 довольных игроков по всей России
             </p>
           </div>

@@ -103,7 +103,7 @@ export default function EventsClient() {
       <CartModal />
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-24 pb-16">
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-24 pb-20">
         <Breadcrumb />
         <div className="mb-12 text-center">
           <h1

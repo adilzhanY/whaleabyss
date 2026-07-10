@@ -23,13 +23,26 @@ export default function SiteThemeSwitch() {
   // avoid a hydration mismatch with the pre-paint script's class.
   const [mounted, setMounted] = useState(false);
   const [dark, setDark] = useState(false);
+  // The Header (and this switch) remounts on every page navigation, so the
+  // mount sync would visibly drag the thumb from "off" to the saved position.
+  // Keep transitions disabled until a frame after that sync has painted —
+  // the restored position renders statically; user toggles still animate.
+  const [animate, setAnimate] = useState(false);
 
   useEffect(() => {
     setDark(document.documentElement.classList.contains("site-dark"));
     setMounted(true);
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setAnimate(true));
+    });
     const onSync = (e: Event) => setDark((e as CustomEvent<boolean>).detail);
     window.addEventListener(SYNC_EVENT, onSync);
-    return () => window.removeEventListener(SYNC_EVENT, onSync);
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+      window.removeEventListener(SYNC_EVENT, onSync);
+    };
   }, []);
 
   const toggle = (selected: boolean) => {
@@ -44,27 +57,29 @@ export default function SiteThemeSwitch() {
   };
 
   return (
-    <Switch
-      isSelected={mounted ? dark : false}
-      onChange={toggle}
-      aria-label="Тёмная тема"
-      size="lg"
-    >
-      {({ isSelected }) => (
-        <Switch.Content>
-          <Switch.Control>
-            <Switch.Thumb>
-              <Switch.Icon>
-                {isSelected ? (
-                  <Sun className="size-3 text-inherit opacity-100" />
-                ) : (
-                  <Moon className="size-3 text-inherit opacity-70" />
-                )}
-              </Switch.Icon>
-            </Switch.Thumb>
-          </Switch.Control>
-        </Switch.Content>
-      )}
-    </Switch>
+    <span className={animate ? "inline-flex" : "inline-flex switch-no-anim"}>
+      <Switch
+        isSelected={mounted ? dark : false}
+        onChange={toggle}
+        aria-label="Тёмная тема"
+        size="lg"
+      >
+        {({ isSelected }) => (
+          <Switch.Content>
+            <Switch.Control>
+              <Switch.Thumb>
+                <Switch.Icon>
+                  {isSelected ? (
+                    <Sun className="size-3 text-inherit opacity-100" />
+                  ) : (
+                    <Moon className="size-3 text-inherit opacity-70" />
+                  )}
+                </Switch.Icon>
+              </Switch.Thumb>
+            </Switch.Control>
+          </Switch.Content>
+        )}
+      </Switch>
+    </span>
   );
 }

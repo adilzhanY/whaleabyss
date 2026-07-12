@@ -187,6 +187,32 @@ const result = await db.select().from(services).where(eq(services.id, id));
   since `message.chat.id` comes from the (spoofable) request body. Degrades
   gracefully (warns + proceeds) if the secret isn't configured, for local dev.
 
+**Quest Addon Upsell (exploration services) — flow & incident post-mortem:**
+- Exploration ("map cleaning") services have linked quest services in `service_addons`
+  (admin-managed). Adding such a service to the cart goes through
+  `useAddToCartWithAddons()` (`components/QuestAddonModal.tsx`): it fetches
+  `/api/services/[slug]/addons` and, if non-empty, opens `QuestAddonModal` instead of a
+  plain add. The client's choice — tick quests (added as separate cart lines), «задания
+  уже выполнены», or «пройду их сам» — travels cart → `cart_items.addon_choice` (sync/load)
+  → checkout → `order_items.addon_choice`, and is rendered in the admin panel and the
+  Telegram order notification so the booster knows whether the gating quests are on the client.
+- **Incident (order `f216229e`, 2026-07-12):** a paid order for a quest-gated service
+  arrived with `addon_choice = NULL` and no quest lines — the admin notification showed
+  nothing and there was no way to tell what the client wanted. Diagnosis: code and data
+  were fully intact (addon links present, prod API returning them); the root cause was the
+  add-to-cart flow's *silent fallback* — any single failed `/addons` fetch (mobile network
+  blip, transient 500/429) skipped the modal and did a plain add, losing the declaration
+  with no trace. Lesson: **a graceful degradation on a revenue-relevant path must never be
+  silent** — degrade for the user, but surface the degradation to the operator.
+- Fix (commit `cdebec0`): (1) the addons fetch retries ×3 with backoff before falling back
+  (a definitive empty response still skips the modal instantly); (2) the Freekassa-notify
+  Telegram message now detects the bad shape server-side — ordered service has
+  `service_addons` links but neither an `addon_choice` nor any of its quest services in the
+  order — and appends «❗ Услуга с заданиями, но клиент не сделал выбор — уточните у
+  клиента». The same NULL shape can also be produced legitimately (client ticked quests in
+  the modal, then deleted the quest lines in the cart), which the flag covers too; Metrika
+  Webvisor session replay is the tiebreaker when it matters.
+
 **Boosters (качеры) & Commission Payouts:**
 - `boosters` table is an admin-managed roster at `/admin/boosters` (list with
   filter+search), `/admin/boosters/new`, and `/admin/booster/[boosterId]` (detail + edit

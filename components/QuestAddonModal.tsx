@@ -257,17 +257,24 @@ export function useAddToCartWithAddons() {
       }
     }
 
-    try {
-      const res = await fetch(`/api/services/${encodeURIComponent(item.id)}/addons`);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data.addons) && data.addons.length > 0) {
-          openPrompt(item, data.addons, quantity);
-          return;
+    // A failed addons lookup must not block the sale, but a single transient
+    // blip (mobile network, brief 5xx) silently skipping the modal loses the
+    // client's quest declaration for good — so retry briefly before giving up.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const res = await fetch(`/api/services/${encodeURIComponent(item.id)}/addons`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.addons) && data.addons.length > 0) {
+            openPrompt(item, data.addons, quantity);
+            return;
+          }
+          break; // definitive answer: no addons for this service
         }
+      } catch {
+        // network error — retry below
       }
-    } catch {
-      // fall through to a plain add
+      if (attempt < 2) await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
     }
     addToCart(item, quantity);
     openCart();

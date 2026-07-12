@@ -190,11 +190,12 @@ async function handle(req: NextRequest) {
     // 7. Notify admin via Telegram (best effort — never fail the webhook for this).
     try {
       const { notifyAdminAboutOrder } = await import('@/lib/telegramClient');
-      const { orderItems, services } = await import('@/lib/schema');
-      const { eq: eqInner } = await import('drizzle-orm');
+      const { orderItems, services, serviceAddons } = await import('@/lib/schema');
+      const { eq: eqInner, inArray } = await import('drizzle-orm');
 
       const items = await db
         .select({
+          serviceId: orderItems.serviceId,
           title: services.title,
           quantity: orderItems.quantity,
           price: orderItems.priceAtPurchase,
@@ -205,6 +206,31 @@ async function handle(req: NextRequest) {
         .from(orderItems)
         .leftJoin(services, eqInner(orderItems.serviceId, services.id))
         .where(eqInner(orderItems.orderId, merchantOrderId));
+
+      // Quest-addon links for the ordered services, to detect the "silent"
+      // case: a quest-gated (exploration) service bought with no declaration
+      // and none of its quest services in the order — the upsell modal never
+      // ran (or the client dropped the quests in the cart). The admin must
+      // know to clarify with the client instead of assuming there's nothing.
+      const orderedServiceIds = items
+        .map((i) => i.serviceId)
+        .filter((id): id is string => Boolean(id));
+      const addonLinks = orderedServiceIds.length
+        ? await db
+            .select({
+              parentServiceId: serviceAddons.parentServiceId,
+              addonServiceId: serviceAddons.addonServiceId,
+            })
+            .from(serviceAddons)
+            .where(inArray(serviceAddons.parentServiceId, orderedServiceIds))
+        : [];
+      const addonIdsByParent = new Map<string, string[]>();
+      for (const link of addonLinks) {
+        const list = addonIdsByParent.get(link.parentServiceId) ?? [];
+        list.push(link.addonServiceId);
+        addonIdsByParent.set(link.parentServiceId, list);
+      }
+      const orderedIdSet = new Set(orderedServiceIds);
 
       const itemsDescription = items
         .map((i) => {
@@ -227,6 +253,17 @@ async function handle(req: NextRequest) {
             desc += '\n  ⚠️ Клиент: задания региона уже выполнены';
           } else if (i.addonChoice === 'self') {
             desc += '\n  ⚠️ Клиент: пройдёт задания сам';
+          } else {
+            const linkedAddonIds = i.serviceId
+              ? addonIdsByParent.get(i.serviceId)
+              : undefined;
+            const questsInOrder = linkedAddonIds?.some((id) =>
+              orderedIdSet.has(id)
+            );
+            if (linkedAddonIds && linkedAddonIds.length > 0 && !questsInOrder) {
+              desc +=
+                '\n  ❗ Услуга с заданиями, но клиент не сделал выбор — уточните у клиента';
+            }
           }
           return desc;
         })

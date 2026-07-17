@@ -303,8 +303,7 @@ export default function AdminReviewsPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Управление отзывами</h1>
+      <div className="mb-6 flex items-center justify-end gap-4">
         <Link
           href="/admin/reviews/new"
           className="btn-primary !px-4 !py-2 text-sm whitespace-nowrap"

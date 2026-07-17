@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Input from "@/components/Input";
+import PageHeader from "../../_components/PageHeader";
 
 export default function NewPromocodePage() {
   const router = useRouter();
@@ -73,12 +74,7 @@ export default function NewPromocodePage() {
         >
           <ArrowLeft className="w-5 h-5 text-slate-600" />
         </Link>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Новый промокод</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Создайте промокод для скидки
-          </p>
-        </div>
+        <PageHeader subtitle="Создайте промокод для скидки" />
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">

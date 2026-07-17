@@ -12,6 +12,7 @@ import Input from "@/components/Input";
 import DataTable from "../_components/DataTable";
 import { buildOrderColumns, type OrderRow } from "../_components/orderColumns";
 import { isLessonOrder, LESSON_ROW_CLASS } from "../_components/lessonOrders";
+import PageHeader from "../_components/PageHeader";
 
 type Order = OrderRow;
 
@@ -92,19 +93,18 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Заказы</h1>
-          <p className="text-sm text-muted-foreground mt-1">Всего заказов: {total}</p>
-        </div>
-        <Link
-          href="/admin/orders/new"
-          className="btn-primary inline-flex items-center gap-2 !py-2.5 !px-4 !rounded-full shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          Добавить вручную
-        </Link>
-      </div>
+      <PageHeader
+        subtitle={`Всего заказов: ${total}`}
+        actions={
+          <Link
+            href="/admin/orders/new"
+            className="btn-primary inline-flex items-center gap-2 !py-2 !px-4 !rounded-full shrink-0 text-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Добавить вручную</span>
+          </Link>
+        }
+      />
 
       {/* Filters */}
       <div className="bg-white rounded-xl border border-slate-200 p-4">

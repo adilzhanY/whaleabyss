@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import PageHeader from "../_components/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -63,13 +64,8 @@ export default function AdminTestingPage({ services: testServices }: { services:
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Тестирование</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Тестовые услуги для проверки функционала
-          </p>
-        </div>
+      <PageHeader subtitle="Тестовые услуги для проверки функционала" />
+      <div className="flex items-start justify-end gap-4 flex-wrap">
         <Link
           href="/admin/testing/new"
           className="btn-primary !px-4 text-sm"

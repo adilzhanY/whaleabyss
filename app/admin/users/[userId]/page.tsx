@@ -6,6 +6,7 @@ import Image from "next/image";
 import { ArrowLeft, Mail, User, Calendar, DollarSign, ShoppingBag, Star } from "lucide-react";
 import OrderStatusBadge from "../../_components/OrderStatusBadge";
 import CopyableText from "../../_components/CopyableText";
+import PageHeader from "../../_components/PageHeader";
 import TelegramIcon from "@/components/TelegramIcon";
 
 interface UserDetails {
@@ -143,10 +144,7 @@ export default function UserDetailPage() {
         >
           <ArrowLeft className="h-5 w-5 text-slate-600" />
         </button>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Профиль пользователя</h1>
-          <p className="text-sm text-muted-foreground mt-1">Детальная информация о пользователе</p>
-        </div>
+        <PageHeader subtitle="Детальная информация о пользователе" />
       </div>
 
       {/* User Info Card */}
@@ -194,6 +192,8 @@ export default function UserDetailPage() {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
                     })}
                   </p>
                 </div>

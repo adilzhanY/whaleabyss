@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import PageHeader from "../../_components/PageHeader";
 import {
   ArrowLeft,
   Search,
@@ -182,12 +183,7 @@ export default function ManualOrderForm({
         >
           <ArrowLeft className="w-5 h-5 text-slate-600" />
         </Link>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Ручной заказ</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Для оплат вне сайта. Заказ создаётся со статусом «оплачен».
-          </p>
-        </div>
+        <PageHeader subtitle="Для оплат вне сайта. Заказ создаётся со статусом «оплачен»." />
       </div>
 
       {/* Customer */}

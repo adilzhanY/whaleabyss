@@ -7,6 +7,7 @@ import Link from "next/link";
 import Checkbox from "@/components/Checkbox";
 import Input from "@/components/Input";
 import Textarea from "@/components/Textarea";
+import PageHeader from "../../_components/PageHeader";
 
 interface Service {
   id: string;
@@ -171,12 +172,7 @@ export default function EditEventPage() {
         >
           <ArrowLeft className="w-5 h-5 text-slate-600" />
         </Link>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Редактировать событие</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Изменение параметров события
-          </p>
-        </div>
+        <PageHeader subtitle="Изменение параметров события" />
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">

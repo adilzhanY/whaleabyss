@@ -7,6 +7,7 @@ import TelegramIcon from "@/components/TelegramIcon";
 import CustomSelect from "@/components/CustomSelect";
 import Input from "@/components/Input";
 import DataTable, { type Column } from "../_components/DataTable";
+import PageHeader from "../_components/PageHeader";
 
 const BOOSTERS_PER_PAGE = 10;
 
@@ -252,13 +253,8 @@ export default function BoostersPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Качеры</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Реестр исполнителей. Добавляйте и редактируйте вручную — вход в систему им не нужен.
-          </p>
-        </div>
+      <PageHeader subtitle="Реестр исполнителей. Добавляйте и редактируйте вручную — вход в систему им не нужен." />
+      <div className="flex items-center justify-end">
         <Link
           href="/admin/boosters/new"
           className="btn-primary inline-flex items-center gap-2 !py-2.5 !px-4 !rounded-full"

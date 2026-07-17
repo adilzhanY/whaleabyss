@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Trash2, Calendar, Percent } from "lucide-react";
 import Link from "next/link";
+import PageHeader from "../_components/PageHeader";
 
 interface Promocode {
   id: string;
@@ -68,13 +69,8 @@ export default function PromocodesPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Промокоды</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Управление промокодами и статистика использования
-          </p>
-        </div>
+      <PageHeader subtitle="Управление промокодами и статистика использования" />
+      <div className="flex items-center justify-end">
         <Link
           href="/admin/promocodes/new"
           className="btn-primary inline-flex items-center gap-2 !py-2.5 !px-4 !rounded-full"

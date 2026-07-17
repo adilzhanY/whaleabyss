@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Input from "@/components/Input";
 import Textarea from "@/components/Textarea";
+import PageHeader from "../../_components/PageHeader";
 
 export default function NewBoosterPage() {
   const router = useRouter();
@@ -75,10 +76,7 @@ export default function NewBoosterPage() {
         >
           <ArrowLeft className="w-5 h-5 text-slate-600" />
         </Link>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Новый качер</h1>
-          <p className="text-sm text-muted-foreground mt-1">Добавьте исполнителя в реестр</p>
-        </div>
+        <PageHeader subtitle="Добавьте исполнителя в реестр" />
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">

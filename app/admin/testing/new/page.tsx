@@ -6,6 +6,7 @@ import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Input from "@/components/Input";
 import Textarea from "@/components/Textarea";
+import PageHeader from "../../_components/PageHeader";
 
 export default function NewTestServicePage() {
   const router = useRouter();
@@ -80,12 +81,7 @@ export default function NewTestServicePage() {
         >
           <ArrowLeft className="w-5 h-5" strokeWidth={2.25} />
         </Link>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Новая тестовая услуга</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Создайте тестовую услугу для проверки функционала
-          </p>
-        </div>
+        <PageHeader subtitle="Создайте тестовую услугу для проверки функционала" />
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-slate-200 p-6 space-y-6">

@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import RecentOrdersTable from "./_components/RecentOrdersTable";
 import type { OrderRow } from "./_components/orderColumns";
 import MonthSelect from "./_components/MonthSelect";
+import PageHeader from "./_components/PageHeader";
 import { LESSON_CUTOFF, OWNER_BOOSTER_ID } from "./_components/lessonOrders";
 import {
   NetRevenueAreaChart,
@@ -435,14 +436,8 @@ export default async function AdminDashboardPage({
 
   return (
     <div className="max-w-7xl mx-auto flex flex-col gap-4">
-      {/* Greeting */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Обзор</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Быстрая сводка по магазину {suffix}
-          </p>
-        </div>
+      <PageHeader subtitle={`Быстрая сводка по магазину ${suffix}`} />
+      <div className="flex items-start justify-end gap-4 flex-wrap">
         <MonthSelect month={monthKey} isCurrent={monthKey === currentMonthKey()} />
       </div>
 

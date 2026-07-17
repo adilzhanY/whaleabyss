@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import OrderStatusBadge from "../../_components/OrderStatusBadge";
 import OrderBoosterCell from "../../_components/OrderBoosterCell";
 import OrderOnlineToggle from "../../_components/OrderOnlineToggle";
+import PageHeader from "../../_components/PageHeader";
 import StatusChanger from "./StatusChanger";
 import RefundButton from "./RefundButton";
 import DeleteOrderButton from "./DeleteOrderButton";
@@ -77,16 +78,9 @@ export default async function OrderDetailPage({ params }: PageProps) {
       </Link>
 
       <div className="flex items-start justify-between gap-4 flex-wrap">
+        <PageHeader title={`Заказ ${order.id.slice(0, 8)}`} />
         <div>
-          <div className="text-xs uppercase tracking-wider text-slate-400 font-medium">
-            Заказ
-          </div>
-          <h1 className="text-2xl font-mono tracking-tight mt-1">
-            {order.id.slice(0, 8)}
-            <span className="text-slate-300">
-              {order.id.slice(8)}
-            </span>
-          </h1>
+          <p className="text-xs font-mono text-slate-400">{order.id}</p>
           <p className="text-sm text-muted-foreground mt-1">
             Создан{" "}
             {order.createdAt

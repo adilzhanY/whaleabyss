@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { CreditCard } from "lucide-react";
 import Input from "@/components/Input";
+import PageHeader from "../../_components/PageHeader";
 
 interface TestService {
   slug: string;
@@ -83,13 +84,14 @@ export default function TestingCheckoutClient({ service }: { service: TestServic
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Тест оплаты</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Это реальная оплата (реальное списание) для проверки нового способа оплаты.
-          Возврат — через <span className="font-medium">/admin/orders</span>.
-        </p>
-      </div>
+      <PageHeader
+        subtitle={
+          <>
+            Это реальная оплата (реальное списание) для проверки нового способа оплаты.
+            Возврат — через <span className="font-medium">/admin/orders</span>.
+          </>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Item */}

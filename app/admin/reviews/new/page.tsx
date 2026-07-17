@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import ReviewForm from "../ReviewForm";
+import PageHeader from "../../_components/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -15,12 +16,7 @@ export default function NewReviewPage() {
         Отзывы
       </Link>
 
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Новый фейк отзыв</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Отзыв добавляется сразу как одобренный и появляется на странице отзывов.
-        </p>
-      </div>
+      <PageHeader subtitle="Отзыв добавляется сразу как одобренный и появляется на странице отзывов." />
 
       <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8">
         <ReviewForm />

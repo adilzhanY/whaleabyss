@@ -20,6 +20,7 @@ import {
   Swords,
 } from "lucide-react";
 import ThemeSwitch from "./_components/ThemeSwitch";
+import { useAdminHeader } from "./_components/PageHeader";
 
 interface NavItem {
   href: string;
@@ -63,6 +64,11 @@ const useIsoLayoutEffect =
 export default function AdminShell({ userName, userEmail, userAvatar, children }: AdminShellProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const {
+    title: headerTitle,
+    subtitle: headerSubtitle,
+    actions: headerActions,
+  } = useAdminHeader();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -310,13 +316,16 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
             <MenuIcon className="w-5 h-5" strokeWidth={2.25} />
           </button>
           <div className="flex-1 min-w-0">
-            <div className="text-[12px] uppercase tracking-wider text-slate-400 font-medium">
-              Whale Abyss Admin
+            <div className="text-lg font-semibold tracking-tight leading-tight truncate">
+              {headerTitle ?? pageTitle(pathname)}
             </div>
-            <div className="text-sm font-semibold truncate">
-              {breadcrumbLabel(pathname)}
-            </div>
+            {headerSubtitle != null && (
+              <div className="text-xs text-slate-500 truncate">
+                {headerSubtitle}
+              </div>
+            )}
           </div>
+          {headerActions}
           <ThemeSwitch />
           <button
             onClick={() => router.push("/")}
@@ -333,20 +342,31 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
   );
 }
 
-function breadcrumbLabel(pathname: string): string {
-  if (pathname === "/admin") return "Дашборд";
+// Static page titles by route; pages with dynamic titles (order number,
+// booster name…) override via <PageHeader title=… /> → useAdminHeader.
+function pageTitle(pathname: string): string {
+  if (pathname === "/admin") return "Обзор";
+  if (pathname === "/admin/orders/new") return "Ручной заказ";
+  if (pathname.startsWith("/admin/orders/")) return "Заказ";
   if (pathname.startsWith("/admin/orders")) return "Заказы";
-  if (pathname.startsWith("/admin/users/") && pathname !== "/admin/users") return "Юзеры · Профиль";
-  if (pathname.startsWith("/admin/users")) return "Юзеры";
-  if (pathname === "/admin/services/new") return "Услуги · Новая услуга";
-  if (pathname.startsWith("/admin/services/")) return "Услуги · Редактирование";
+  if (pathname.startsWith("/admin/users/") && pathname !== "/admin/users") return "Профиль пользователя";
+  if (pathname.startsWith("/admin/users")) return "Управление пользователями";
+  if (pathname === "/admin/boosters/new") return "Новый качер";
+  if (pathname.startsWith("/admin/boosters")) return "Качеры";
+  if (pathname.startsWith("/admin/booster/")) return "Качер";
+  if (pathname === "/admin/services/new") return "Новая услуга";
+  if (pathname === "/admin/services/categories") return "Категории услуг";
+  if (pathname.startsWith("/admin/services/")) return "Редактирование услуги";
   if (pathname.startsWith("/admin/services")) return "Услуги";
-  if (pathname === "/admin/promocodes/new") return "Промокоды · Новый промокод";
+  if (pathname === "/admin/promocodes/new") return "Новый промокод";
   if (pathname.startsWith("/admin/promocodes")) return "Промокоды";
-  if (pathname === "/admin/events/new") return "События · Новое событие";
-  if (pathname.startsWith("/admin/events/")) return "События · Редактирование";
+  if (pathname === "/admin/events/new") return "Новое событие";
+  if (pathname.startsWith("/admin/events/")) return "Редактировать событие";
   if (pathname.startsWith("/admin/events")) return "События";
-  if (pathname.startsWith("/admin/reviews")) return "Отзывы";
+  if (pathname === "/admin/reviews/new") return "Новый фейк отзыв";
+  if (pathname.startsWith("/admin/reviews")) return "Управление отзывами";
+  if (pathname === "/admin/testing/new") return "Новая тестовая услуга";
+  if (pathname === "/admin/testing/checkout") return "Тест оплаты";
   if (pathname.startsWith("/admin/testing")) return "Тестирование";
-  return pathname.replace(/^\/admin\/?/, "") || "Admin";
+  return "Админ-панель";
 }

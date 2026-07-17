@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 /**
  * Column definition for {@link DataTable}.
@@ -87,37 +88,45 @@ export default function DataTable<T>({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 flex items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+      <div className="bg-slate-200/60 rounded-[20px] border border-slate-200 p-2">
+        <div className="bg-white rounded-xl flex items-center justify-center py-16">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+        </div>
       </div>
     );
   }
 
   if (data.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
-        <p className="text-slate-500">{emptyMessage}</p>
+      <div className="bg-slate-200/60 rounded-[20px] border border-slate-200 p-2">
+        <div className="bg-white rounded-xl p-8 text-center">
+          <p className="text-slate-500">{emptyMessage}</p>
+        </div>
       </div>
     );
   }
 
   const mobileColumns = columns.filter((c) => !c.hideOnMobile);
 
+  const rangeStart = rowCount === 0 ? 0 : startIndex + 1;
+  const rangeEnd = paginated ? Math.min(startIndex + pageSize, rowCount) : rowCount;
+
   return (
-    <div className="space-y-4">
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        {/* Desktop: real table. `table-auto w-full` sizes columns to fit the
-            card, so the horizontal scrollbar only appears on genuinely narrow
-            viewports — no empty scrollbar strip pinned to the card footer. */}
-        <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-sm table-auto">
+    // Concentric "hugging" corners: the gray frame's radius (20px) = inner
+    // card radius (12px) + frame padding (8px), so the corners stay parallel.
+    <div className="bg-slate-200/60 rounded-[20px] border border-slate-200 p-2">
+      {/* Desktop: real table. The header row sits directly on the gray frame;
+          the white "card" is formed by the body cells themselves (corner cells
+          carry the radius), matching the reference design. */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full text-sm table-auto border-separate border-spacing-0">
           <thead>
-            <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+            <tr className="text-slate-500 text-[13px]">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={[
-                    `font-medium ${padX} py-3`,
+                    `font-medium ${padX} pt-1 pb-1.5 leading-tight`,
                     alignClass[col.align ?? "left"],
                     col.width ?? "",
                     col.headerClassName ?? "",
@@ -131,23 +140,30 @@ export default function DataTable<T>({
           <tbody>
             {rows.map((row, i) => {
               const globalIndex = startIndex + i;
+              const isFirstRow = i === 0;
+              const isLastRow = i === rows.length - 1;
               return (
                 <tr
                   key={getRowKey(row)}
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
-                  className={[
-                    "border-t border-slate-100 transition-colors hover:bg-slate-50",
-                    onRowClick ? "cursor-pointer" : "",
-                    rowClassName?.(row) ?? "",
-                  ].join(" ")}
+                  className={["group", onRowClick ? "cursor-pointer" : ""].join(" ")}
                 >
-                  {columns.map((col) => (
+                  {columns.map((col, ci) => (
                     <td
                       key={col.key}
                       className={[
                         `${padX} py-3 align-top`,
+                        "bg-white transition-colors group-hover:bg-slate-50",
                         alignClass[col.align ?? "left"],
+                        isFirstRow ? "" : "border-t border-slate-100",
+                        isFirstRow && ci === 0 ? "rounded-tl-xl" : "",
+                        isFirstRow && ci === columns.length - 1 ? "rounded-tr-xl" : "",
+                        isLastRow && ci === 0 ? "rounded-bl-xl" : "",
+                        isLastRow && ci === columns.length - 1 ? "rounded-br-xl" : "",
                         col.cellClassName ?? "",
+                        // Row tints (e.g. lesson orders' !bg-…) must live on the
+                        // cells now — an opaque cell bg would hide a tr-level bg.
+                        rowClassName?.(row) ?? "",
                       ].join(" ")}
                     >
                       {col.render(row, globalIndex)}
@@ -158,72 +174,114 @@ export default function DataTable<T>({
             })}
           </tbody>
         </table>
-        </div>
-
-        {/* Mobile: each row becomes a stacked label→value card — no horizontal scroll. */}
-        <div className="md:hidden divide-y divide-slate-100">
-          {rows.map((row, i) => {
-            const globalIndex = startIndex + i;
-            return (
-              <div
-                key={getRowKey(row)}
-                onClick={onRowClick ? () => onRowClick(row) : undefined}
-                className={[
-                  "p-4 space-y-2 transition-colors",
-                  onRowClick ? "cursor-pointer active:bg-slate-50" : "",
-                  rowClassName?.(row) ?? "",
-                ].join(" ")}
-              >
-                {mobileColumns.map((col) =>
-                  col.mobileFullWidth ? (
-                    <div key={col.key} className="min-w-0">
-                      {col.render(row, globalIndex)}
-                    </div>
-                  ) : (
-                    <div
-                      key={col.key}
-                      className="flex items-start justify-between gap-3 text-sm"
-                    >
-                      <span className="text-xs font-medium text-slate-500 shrink-0 pt-0.5">
-                        {col.mobileLabel ?? col.header}
-                      </span>
-                      <span className="min-w-0 text-right">
-                        {col.render(row, globalIndex)}
-                      </span>
-                    </div>
-                  )
-                )}
-              </div>
-            );
-          })}
-        </div>
       </div>
 
-      {paginated && onPageChange && totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-600">
-            Страница {currentPage} из {totalPages}
+      {/* Mobile: each row becomes a stacked label→value card — no horizontal scroll. */}
+      <div className="md:hidden bg-white rounded-xl overflow-hidden divide-y divide-slate-100">
+        {rows.map((row, i) => {
+          const globalIndex = startIndex + i;
+          return (
+            <div
+              key={getRowKey(row)}
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
+              className={[
+                "p-4 space-y-2 transition-colors",
+                onRowClick ? "cursor-pointer active:bg-slate-50" : "",
+                rowClassName?.(row) ?? "",
+              ].join(" ")}
+            >
+              {mobileColumns.map((col) =>
+                col.mobileFullWidth ? (
+                  <div key={col.key} className="min-w-0">
+                    {col.render(row, globalIndex)}
+                  </div>
+                ) : (
+                  <div
+                    key={col.key}
+                    className="flex items-start justify-between gap-3 text-sm"
+                  >
+                    <span className="text-xs font-medium text-slate-500 shrink-0 pt-0.5">
+                      {col.mobileLabel ?? col.header}
+                    </span>
+                    <span className="min-w-0 text-right">
+                      {col.render(row, globalIndex)}
+                    </span>
+                  </div>
+                )
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Footer lives on the frame itself, like the reference design. */}
+      {paginated && (
+        <div className="flex items-center justify-between gap-3 px-3 pt-2 pb-1 min-h-[40px]">
+          <span className="text-sm text-slate-500">
+            {rangeStart}–{rangeEnd} из {rowCount}
           </span>
-          <div className="flex gap-2">
-            {currentPage > 1 && (
+
+          {onPageChange && totalPages > 1 && (
+            <div className="flex items-center gap-0.5">
               <button
                 onClick={() => onPageChange(currentPage - 1)}
-                className="px-4 py-2 bg-slate-200 text-slate-700 rounded-full font-semibold hover:bg-slate-300 transition-colors"
+                disabled={currentPage === 1}
+                className="flex items-center gap-1 pl-1.5 pr-2.5 h-8 rounded-full text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-white/70 disabled:opacity-40 disabled:pointer-events-none transition-colors"
               >
+                <ChevronLeft className="w-4 h-4" strokeWidth={2.25} />
                 Назад
               </button>
-            )}
-            {currentPage < totalPages && (
+
+              {pageItems(currentPage, totalPages).map((it, i) =>
+                it === "…" ? (
+                  <span key={`gap-${i}`} className="w-8 text-center text-sm text-slate-400 select-none">
+                    …
+                  </span>
+                ) : (
+                  <button
+                    key={it}
+                    onClick={() => onPageChange(it)}
+                    className={[
+                      "w-8 h-8 rounded-full text-sm font-medium transition-colors",
+                      it === currentPage
+                        ? "bg-white text-slate-900"
+                        : "text-slate-500 hover:text-slate-900 hover:bg-white/70",
+                    ].join(" ")}
+                  >
+                    {it}
+                  </button>
+                )
+              )}
+
               <button
                 onClick={() => onPageChange(currentPage + 1)}
-                className="btn-primary !px-4 !py-2 text-sm"
+                disabled={currentPage === totalPages}
+                className="flex items-center gap-1 pl-2.5 pr-1.5 h-8 rounded-full text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-white/70 disabled:opacity-40 disabled:pointer-events-none transition-colors"
               >
-                Следующая
+                Вперёд
+                <ChevronRight className="w-4 h-4" strokeWidth={2.25} />
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </div>
   );
+}
+
+/** Windowed page list: 1 … around current … last (all pages when ≤ 7). */
+function pageItems(current: number, total: number): (number | "…")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const wanted = [1, current - 1, current, current + 1, total]
+    .filter((p) => p >= 1 && p <= total)
+    .sort((a, b) => a - b);
+  const out: (number | "…")[] = [];
+  let prev = 0;
+  for (const p of wanted) {
+    if (p === prev) continue;
+    if (p - prev > 1) out.push("…");
+    out.push(p);
+    prev = p;
+  }
+  return out;
 }

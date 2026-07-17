@@ -1,16 +1,21 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { Search } from "lucide-react";
 import CustomSelect from "@/components/CustomSelect";
 import Input from "@/components/Input";
 import DataTable, { type Column } from "../_components/DataTable";
+import PageHeader from "../_components/PageHeader";
+import CopyableText from "../_components/CopyableText";
+import CopyableTelegram from "../_components/CopyableTelegram";
 
 interface User {
   id: string;
   username: string;
   email: string;
   role: string;
+  avatarUrl: string | null;
   telegramUsername: string | null;
   adventureRank: number | null;
   createdAt: string;
@@ -111,33 +116,50 @@ export default function AdminUsersPage() {
       header: "ID",
       width: "w-32",
       render: (u) => (
-        <span className="text-xs text-slate-500 font-mono">
-          {u.id.slice(0, 8)}...
-        </span>
+        <div onClick={(e) => e.stopPropagation()} className="inline-flex">
+          <CopyableText value={u.id} className="text-xs text-slate-500">
+            <span className="font-mono">{u.id.slice(0, 8)}...</span>
+          </CopyableText>
+        </div>
       ),
     },
     {
-      key: "username",
-      header: "Имя пользователя",
+      key: "user",
+      header: "Пользователь",
       render: (u) => (
-        <span className="text-slate-700 font-medium">{u.username}</span>
+        <div className="flex items-center gap-3 min-w-0">
+          {u.avatarUrl ? (
+            <Image
+              src={u.avatarUrl}
+              alt={u.username}
+              width={36}
+              height={36}
+              className="h-9 w-9 rounded-full object-cover flex-shrink-0"
+            />
+          ) : (
+            <div className="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 text-sm font-bold uppercase select-none text-[#1e3a8a]">
+              {u.username?.charAt(0) || "?"}
+            </div>
+          )}
+          <div className="min-w-0">
+            <div className="text-slate-700 font-medium truncate">{u.username}</div>
+            <div className="text-xs text-slate-500 truncate">{u.email}</div>
+          </div>
+        </div>
       ),
-    },
-    {
-      key: "email",
-      header: "Email",
-      render: (u) => <span className="text-slate-600 break-all">{u.email}</span>,
     },
     {
       key: "telegram",
       header: "Telegram",
       render: (u) => (
-        <span className="text-slate-600">{u.telegramUsername || "—"}</span>
+        <div onClick={(e) => e.stopPropagation()} className="inline-flex">
+          <CopyableTelegram username={u.telegramUsername} />
+        </div>
       ),
     },
     {
       key: "adventureRank",
-      header: "Ранг прикл.",
+      header: "Ранг",
       width: "w-24",
       hideOnMobile: true,
       render: (u) => (
@@ -146,17 +168,11 @@ export default function AdminUsersPage() {
     },
     {
       key: "createdAt",
-      header: "Дата регистрации",
+      header: "Дата",
       width: "w-32",
       render: (u) => (
-        <span className="text-xs text-slate-500">
-          {new Date(u.createdAt).toLocaleString("ru-RU", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
+        <span className="text-xs text-slate-500 whitespace-nowrap">
+          {new Date(u.createdAt).toLocaleDateString("en-GB")}
         </span>
       ),
     },
@@ -170,10 +186,7 @@ export default function AdminUsersPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Управление пользователями</h1>
-        <p className="text-sm text-muted-foreground mt-1">Всего пользователей: {total}</p>
-      </div>
+      <PageHeader subtitle={`Всего пользователей: ${total}`} />
 
       {/* Filters */}
       <div className="mb-6 bg-white rounded-xl border border-slate-200 p-4">

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Trash2, Calendar as CalendarIcon, Percent, Edit } from "lucide-react";
 import Link from "next/link";
+import PageHeader from "../_components/PageHeader";
 
 interface Event {
   id: string;
@@ -75,13 +76,8 @@ export default function EventsPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">События</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Управление событиями и скидками на услуги
-          </p>
-        </div>
+      <PageHeader subtitle="Управление событиями и скидками на услуги" />
+      <div className="flex items-center justify-end">
         <Link
           href="/admin/events/new"
           className="btn-primary inline-flex items-center gap-2 !py-2.5 !px-4 !rounded-full"

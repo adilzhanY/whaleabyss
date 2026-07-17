@@ -4,6 +4,7 @@ import { categories } from "@/lib/schema";
 import { asc } from "drizzle-orm";
 import { ArrowLeft } from "lucide-react";
 import ServiceForm from "../ServiceForm";
+import PageHeader from "../../_components/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -25,13 +26,14 @@ export default async function NewServicePage() {
         Услуги
       </Link>
 
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Новая услуга</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Добавьте услугу в каталог. Slug используется как часть URL — пример:{" "}
-          <span className="font-mono text-xs">/service/my-service</span>
-        </p>
-      </div>
+      <PageHeader
+        subtitle={
+          <>
+            Добавьте услугу в каталог. Slug используется как часть URL — пример:{" "}
+            <span className="font-mono text-xs">/service/my-service</span>
+          </>
+        }
+      />
 
       <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8">
         <ServiceForm

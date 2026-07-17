@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, Plus, GripVertical, Trash2, Check, X } from "lucide-react";
 import Link from "next/link";
+import PageHeader from "../../_components/PageHeader";
 import {
   DndContext,
   closestCenter,
@@ -216,12 +217,8 @@ export default function CategoriesPage() {
         >
           <ArrowLeft className="w-5 h-5 text-slate-600" />
         </Link>
-        <div className="flex-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Категории услуг</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Перетаскивайте категории для изменения порядка
-          </p>
-        </div>
+        <PageHeader subtitle="Перетаскивайте категории для изменения порядка" />
+        <div className="flex-1" />
         {!showNewForm && (
           <button
             onClick={() => setShowNewForm(true)}

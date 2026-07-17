@@ -6,6 +6,7 @@ import { Search, Plus, Sparkles } from "lucide-react";
 import CustomSelect from "@/components/CustomSelect";
 import Input from "@/components/Input";
 import DataTable, { type Column } from "../_components/DataTable";
+import PageHeader from "../_components/PageHeader";
 
 interface ServiceRow {
   id: string;
@@ -201,13 +202,8 @@ export default function AdminServicesPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Услуги</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Всего услуг: {rows.length}
-          </p>
-        </div>
+      <PageHeader subtitle={`Всего услуг: ${rows.length}`} />
+      <div className="mb-6 flex items-start justify-end gap-4 flex-wrap">
         <div className="flex gap-3">
           <Link
             href="/admin/services/categories"

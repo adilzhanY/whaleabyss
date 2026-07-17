@@ -5,6 +5,7 @@ import { services, categories, serviceAddons } from "@/lib/schema";
 import { asc, eq } from "drizzle-orm";
 import { ArrowLeft } from "lucide-react";
 import ServiceForm from "../ServiceForm";
+import PageHeader from "../../_components/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -65,14 +66,7 @@ export default async function EditServicePage({ params }: PageProps) {
         Услуги
       </Link>
 
-      <div>
-        <div className="text-xs uppercase tracking-wider text-slate-400 font-medium">
-          Редактирование
-        </div>
-        <h1 className="text-2xl font-semibold tracking-tight mt-1">
-          {service.title}
-        </h1>
-      </div>
+      <PageHeader subtitle={service.title} />
 
       <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8">
         <ServiceForm

@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Trash2, Search, Star, Plus } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
+import { SearchField } from "@heroui/react";
 import CustomSelect from "@/components/CustomSelect";
-import Input from "@/components/Input";
 import DataTable, { type Column } from "../_components/DataTable";
 import ReviewStatusCell from "../_components/ReviewStatusCell";
+import PageHeader from "../_components/PageHeader";
+import OrderDateRangePicker from "../_components/OrderDateRangePicker";
 
 interface Review {
   id: string;
@@ -17,14 +19,6 @@ interface Review {
   createdAt: string;
   userName: string | null;
   userAvatar: string | null;
-}
-
-interface Stats {
-  1: number;
-  2: number;
-  3: number;
-  4: number;
-  5: number;
 }
 
 const REVIEWS_PER_PAGE = 10;
@@ -165,24 +159,6 @@ export default function AdminReviewsPage() {
     return result;
   }, [reviews, sortBy, startDate, endDate, ratingFilter, statusFilter, debouncedSearch]);
 
-  const stats: Stats = useMemo(() => {
-    const counts: Stats = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    reviews.forEach((r) => {
-      const rating = parseFloat(r.rating);
-      const roundedDown = Math.floor(rating) as 1 | 2 | 3 | 4 | 5;
-      if (roundedDown >= 1 && roundedDown <= 5) {
-        counts[roundedDown]++;
-      }
-    });
-    return counts;
-  }, [reviews]);
-
-  const totalReviews = reviews.length;
-  const averageRating = useMemo(() => {
-    if (reviews.length === 0) return 0;
-    const sum = reviews.reduce((acc, r) => acc + parseFloat(r.rating), 0);
-    return sum / reviews.length;
-  }, [reviews]);
 
   const columns: Column<Review>[] = [
     {
@@ -303,115 +279,22 @@ export default function AdminReviewsPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-6 flex items-center justify-end gap-4">
-        <Link
-          href="/admin/reviews/new"
-          className="btn-primary !px-4 !py-2 text-sm whitespace-nowrap"
-        >
-          <Plus className="h-4 w-4" strokeWidth={2.5} />
-          Добавить фейк отзыв
-        </Link>
-      </div>
+      <PageHeader
+        actions={
+          <Link
+            href="/admin/reviews/new"
+            className="btn-primary inline-flex items-center gap-2 !py-2 !px-4 !rounded-full shrink-0 text-sm"
+          >
+            <Plus className="h-4 w-4" strokeWidth={2.5} />
+            <span className="hidden sm:inline">Добавить фейк отзыв</span>
+          </Link>
+        }
+      />
 
-      {/* Statistics */}
-      <div className="mb-6 bg-white rounded-xl border border-slate-200 p-6">
-        <div className="flex items-center gap-8">
-          {/* Left side - Bars */}
-          <div className="flex-1 max-w-2xl">
-            <div className="mb-6">
-              <h2 className="text-lg font-bold text-slate-900 mb-1">Статистика отзывов</h2>
-              <div className="flex items-center gap-2">
-                <div className="text-3xl font-black text-slate-900">{averageRating.toFixed(1)}</div>
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="h-4 w-4 fill-current"
-                      style={{ color: i < Math.floor(averageRating) ? "#f59e0b" : "#e5e7eb" }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {[5, 4, 3, 2, 1].map((star) => {
-                const count = stats[star as keyof Stats];
-                const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
-                return (
-                  <div key={star} className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 w-12">
-                      <span className="text-sm font-semibold text-slate-700">{star}</span>
-                      <Star className="h-3.5 w-3.5 fill-current text-amber-500" />
-                    </div>
-                    <div className="flex-1 h-6 bg-slate-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-amber-500 transition-all duration-300 rounded-full"
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                    <div className="w-16 text-right">
-                      <span className="text-sm font-semibold text-slate-700">{percentage.toFixed(0)}%</span>
-                    </div>
-                    <div className="w-12 text-right">
-                      <span className="text-sm text-slate-500">{count}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Right side - Status Circle */}
-          <div className="flex items-center justify-center self-center px-8 py-4">
-            {averageRating >= 4 ? (
-              <div className="flex flex-col items-center">
-                <div className="w-44 h-44 rounded-full bg-green-100 border-8 border-green-500 flex items-center justify-center mb-4">
-                  <div className="text-center">
-                    <div className="text-5xl font-black text-green-700">{averageRating.toFixed(1)}</div>
-                    <div className="text-sm font-semibold text-green-600">из 5</div>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold text-green-700">Отлично!</div>
-                  <div className="text-sm text-slate-600">Клиенты довольны</div>
-                </div>
-              </div>
-            ) : averageRating >= 3 ? (
-              <div className="flex flex-col items-center">
-                <div className="w-44 h-44 rounded-full bg-orange-100 border-8 border-orange-500 flex items-center justify-center mb-4">
-                  <div className="text-center">
-                    <div className="text-5xl font-black text-orange-700">{averageRating.toFixed(1)}</div>
-                    <div className="text-sm font-semibold text-orange-600">из 5</div>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold text-orange-700">Хорошо</div>
-                  <div className="text-sm text-slate-600">Есть что улучшить</div>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center">
-                <div className="w-44 h-44 rounded-full bg-red-100 border-8 border-red-500 flex items-center justify-center mb-4">
-                  <div className="text-center">
-                    <div className="text-5xl font-black text-red-700">{averageRating.toFixed(1)}</div>
-                    <div className="text-sm font-semibold text-red-600">из 5</div>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold text-red-700">Требует внимания</div>
-                  <div className="text-sm text-slate-600">Нужны улучшения</div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="mb-6 bg-white rounded-xl border border-slate-200 p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
-          <div>
+      {/* Filters — single row on desktop, wrapping down to stacked on mobile. */}
+      <div className="mb-3 bg-white rounded-xl border border-slate-200 px-4 pt-1 pb-3">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="w-full sm:w-44">
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Сортировка
             </label>
@@ -419,7 +302,9 @@ export default function AdminReviewsPage() {
               value={sortBy}
               onChange={(v) => setSortBy(v as "newest" | "oldest")}
               className="w-full"
-              buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+              buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
+              menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
+              optionClassName="rounded-2xl"
               options={[
                 { value: "newest", label: "Сначала новые" },
                 { value: "oldest", label: "Сначала старые" },
@@ -427,31 +312,19 @@ export default function AdminReviewsPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
-              Дата от
-            </label>
-            <Input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="text-sm"
+          <div className="w-full sm:w-72">
+            <OrderDateRangePicker
+              label="Период"
+              startDate={startDate}
+              endDate={endDate}
+              onChange={(start, end) => {
+                setStartDate(start);
+                setEndDate(end);
+              }}
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
-              Дата до
-            </label>
-            <Input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="text-sm"
-            />
-          </div>
-
-          <div>
+          <div className="w-full sm:w-40">
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Рейтинг
             </label>
@@ -459,7 +332,9 @@ export default function AdminReviewsPage() {
               value={ratingFilter}
               onChange={setRatingFilter}
               className="w-full"
-              buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+              buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
+              menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
+              optionClassName="rounded-2xl"
               options={[
                 { value: "all", label: "Все" },
                 { value: "5", label: "5 звёзд" },
@@ -471,7 +346,7 @@ export default function AdminReviewsPage() {
             />
           </div>
 
-          <div>
+          <div className="w-full sm:w-44">
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Статус
             </label>
@@ -479,7 +354,9 @@ export default function AdminReviewsPage() {
               value={statusFilter}
               onChange={setStatusFilter}
               className="w-full"
-              buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+              buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
+              menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
+              optionClassName="rounded-2xl"
               options={[
                 { value: "all", label: "Все" },
                 { value: "pending", label: "На модерации" },
@@ -488,17 +365,19 @@ export default function AdminReviewsPage() {
               ]}
             />
           </div>
-        </div>
 
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            type="text"
+          <SearchField
+            aria-label="Поиск"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Поиск по ID, имени пользователя, тексту отзыва..."
-            className="pl-10 text-sm"
-          />
+            onChange={setSearchQuery}
+            className="flex-1 min-w-[220px]"
+          >
+            <SearchField.Group className="w-full">
+              <SearchField.SearchIcon />
+              <SearchField.Input placeholder="Поиск по ID, имени, тексту отзыва..." />
+              <SearchField.ClearButton />
+            </SearchField.Group>
+          </SearchField>
         </div>
       </div>
 

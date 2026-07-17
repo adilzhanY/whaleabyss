@@ -13,6 +13,7 @@ import DataTable from "../_components/DataTable";
 import { buildOrderColumns, type OrderRow } from "../_components/orderColumns";
 import { isLessonOrder, LESSON_ROW_CLASS } from "../_components/lessonOrders";
 import PageHeader from "../_components/PageHeader";
+import OrderDateRangePicker from "../_components/OrderDateRangePicker";
 
 type Order = OrderRow;
 
@@ -125,27 +126,15 @@ export default function AdminOrdersPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
-              Дата от
-            </label>
-            <Input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="text-sm"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
-              Дата до
-            </label>
-            <Input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="text-sm"
+          <div className="md:col-span-2">
+            <OrderDateRangePicker
+              label="Период"
+              startDate={startDate}
+              endDate={endDate}
+              onChange={(start, end) => {
+                setStartDate(start);
+                setEndDate(end);
+              }}
             />
           </div>
 

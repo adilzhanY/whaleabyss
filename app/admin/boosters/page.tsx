@@ -252,7 +252,7 @@ export default function BoostersPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-3">
       <PageHeader
         subtitle="Реестр исполнителей. Добавляйте и редактируйте вручную — вход в систему им не нужен."
         actions={

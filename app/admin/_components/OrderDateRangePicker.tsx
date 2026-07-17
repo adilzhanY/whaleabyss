@@ -43,7 +43,7 @@ export default function OrderDateRangePicker({
         onChange(range?.start?.toString() ?? "", range?.end?.toString() ?? "")
       }
     >
-      <Label className="block text-xs font-semibold text-slate-600 mb-1">
+      <Label className="block text-xs font-semibold text-slate-600">
         {label}
       </Label>
       <DateField.Group fullWidth>

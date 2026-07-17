@@ -919,6 +919,17 @@ body:has(#admin-root.admin-dark) {
  * Unlayered on purpose so these rules beat the layer(components) imports.
  * Light theme first; admin-dark overrides at the bottom mirror the dark block.
  * ------------------------------------------------------------------------- */
+/* Reserve the scrollbar gutter in admin: long pages (orders/users) scroll,
+   short ones (boosters) may not — without this the centered layout shifts
+   horizontally when switching between them. */
+html:has(#admin-root) { scrollbar-gutter: stable; }
+
+#admin-root .date-range-picker {
+  /* Block-level flex: the default inline-level box leaves a ~6px line-box
+     gap under the picker inside its column wrapper, making the column taller
+     than the selects' and pushing them down (items-end row). */
+  display: flex;
+}
 #admin-root .date-input-group {
   background-color: #f1f5f9; /* filled, borderless — like the select triggers */
   border: none;

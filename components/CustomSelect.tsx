@@ -16,12 +16,19 @@ interface CustomSelectProps {
   className?: string;
   /** Classes for the trigger button — use this to control its look (bg, border, padding). */
   buttonClassName?: string;
+  /** Classes for the dropdown panel — use this to control its look (bg, radius, shadow). */
+  menuClassName?: string;
+  /** Classes for each option row — use this to control its rounding. */
+  optionClassName?: string;
   placeholder?: string;
   disabled?: boolean;
 }
 
 const DEFAULT_BUTTON_CLASS =
   "bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-slate-300";
+
+const DEFAULT_MENU_CLASS =
+  "bg-white rounded-xl border border-slate-200 shadow-lg shadow-slate-900/5";
 
 /**
  * A modern, accessible dropdown that replaces the native <select>.
@@ -35,6 +42,8 @@ export default function CustomSelect({
   options,
   className = "",
   buttonClassName = DEFAULT_BUTTON_CLASS,
+  menuClassName = DEFAULT_MENU_CLASS,
+  optionClassName = "rounded-lg",
   placeholder = "Выберите...",
   disabled = false,
 }: CustomSelectProps) {
@@ -107,14 +116,14 @@ export default function CustomSelect({
         <div
           className={`${
             isClosing ? "cs-dropdown-exit" : "cs-dropdown-enter"
-          } absolute z-50 min-w-full mt-2 bg-white rounded-xl border border-slate-200 shadow-lg shadow-slate-900/5 overflow-hidden`}
+          } absolute z-50 min-w-full mt-2 overflow-hidden ${menuClassName}`}
         >
           <div className="max-h-60 overflow-y-auto py-1.5">
             {options.map((option) => (
               <div
                 key={option.value}
                 onClick={() => handleSelect(option.value)}
-                className={`mx-1.5 my-0.5 px-3 py-2 rounded-lg cursor-pointer text-sm transition-colors select-none whitespace-nowrap ${
+                className={`mx-1.5 my-0.5 px-3 py-2 ${optionClassName} cursor-pointer text-sm transition-colors select-none whitespace-nowrap ${
                   option.value === value
                     ? "bg-blue-50 text-blue-900 font-semibold"
                     : "text-slate-700 hover:bg-slate-100"

@@ -2,13 +2,13 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { Search } from "lucide-react";
+import { SearchField } from "@heroui/react";
 import CustomSelect from "@/components/CustomSelect";
-import Input from "@/components/Input";
 import DataTable, { type Column } from "../_components/DataTable";
 import PageHeader from "../_components/PageHeader";
 import CopyableText from "../_components/CopyableText";
 import CopyableTelegram from "../_components/CopyableTelegram";
+import OrderDateRangePicker from "../_components/OrderDateRangePicker";
 
 interface User {
   id: string;
@@ -32,6 +32,8 @@ export default function AdminUsersPage() {
   // Filters
   const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -43,7 +45,7 @@ export default function AdminUsersPage() {
   useEffect(() => {
     fetchUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, sortBy, roleFilter, debouncedSearch]);
+  }, [page, sortBy, roleFilter, startDate, endDate, debouncedSearch]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -54,7 +56,7 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [sortBy, roleFilter, debouncedSearch]);
+  }, [sortBy, roleFilter, startDate, endDate, debouncedSearch]);
 
   const fetchUsers = async () => {
     const reqId = ++reqIdRef.current;
@@ -66,6 +68,8 @@ export default function AdminUsersPage() {
         sort: sortBy,
         role: roleFilter,
       });
+      if (startDate) params.set("startDate", startDate);
+      if (endDate) params.set("endDate", endDate);
       if (debouncedSearch.trim()) params.set("search", debouncedSearch.trim());
 
       const res = await fetch(`/api/admin/users?${params.toString()}`);
@@ -188,10 +192,10 @@ export default function AdminUsersPage() {
     <div className="max-w-7xl mx-auto">
       <PageHeader subtitle={`Всего пользователей: ${total}`} />
 
-      {/* Filters */}
-      <div className="mb-6 bg-white rounded-xl border border-slate-200 p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
+      {/* Filters — single row on desktop, wrapping down to stacked on mobile. */}
+      <div className="mb-3 bg-white rounded-xl border border-slate-200 px-4 pt-1 pb-3">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="w-full sm:w-44">
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Сортировка
             </label>
@@ -199,7 +203,9 @@ export default function AdminUsersPage() {
               value={sortBy}
               onChange={(v) => setSortBy(v as "newest" | "oldest")}
               className="w-full"
-              buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+              buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
+              menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
+              optionClassName="rounded-2xl"
               options={[
                 { value: "newest", label: "Сначала новые" },
                 { value: "oldest", label: "Сначала старые" },
@@ -207,7 +213,7 @@ export default function AdminUsersPage() {
             />
           </div>
 
-          <div>
+          <div className="w-full sm:w-44">
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Роль
             </label>
@@ -215,7 +221,9 @@ export default function AdminUsersPage() {
               value={roleFilter}
               onChange={setRoleFilter}
               className="w-full"
-              buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+              buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
+              menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
+              optionClassName="rounded-2xl"
               options={[
                 { value: "all", label: "Все" },
                 { value: "user", label: "Пользователь" },
@@ -224,17 +232,31 @@ export default function AdminUsersPage() {
               ]}
             />
           </div>
-        </div>
 
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            type="text"
+          <div className="w-full sm:w-72">
+            <OrderDateRangePicker
+              label="Период регистрации"
+              startDate={startDate}
+              endDate={endDate}
+              onChange={(start, end) => {
+                setStartDate(start);
+                setEndDate(end);
+              }}
+            />
+          </div>
+
+          <SearchField
+            aria-label="Поиск"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Поиск по ID, имени, email, Telegram..."
-            className="pl-10 text-sm"
-          />
+            onChange={setSearchQuery}
+            className="flex-1 min-w-[220px]"
+          >
+            <SearchField.Group className="w-full">
+              <SearchField.SearchIcon />
+              <SearchField.Input placeholder="Поиск по ID, имени, email..." />
+              <SearchField.ClearButton />
+            </SearchField.Group>
+          </SearchField>
         </div>
       </div>
 

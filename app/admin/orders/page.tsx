@@ -2,13 +2,13 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
-import { Search, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
+import { SearchField } from "@heroui/react";
 import {
   ORDER_STATUSES,
   orderStatusLabel,
 } from "../_components/OrderStatusBadge";
 import CustomSelect from "@/components/CustomSelect";
-import Input from "@/components/Input";
 import DataTable from "../_components/DataTable";
 import { buildOrderColumns, type OrderRow } from "../_components/orderColumns";
 import { isLessonOrder, LESSON_ROW_CLASS } from "../_components/lessonOrders";
@@ -93,7 +93,7 @@ export default function AdminOrdersPage() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-3">
       <PageHeader
         subtitle={`Всего заказов: ${total}`}
         actions={
@@ -107,10 +107,10 @@ export default function AdminOrdersPage() {
         }
       />
 
-      {/* Filters */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-          <div>
+      {/* Filters — single row on desktop, wrapping down to stacked on mobile. */}
+      <div className="bg-white rounded-xl border border-slate-200 px-4 pt-1 pb-3">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="w-full sm:w-44">
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Сортировка
             </label>
@@ -118,7 +118,9 @@ export default function AdminOrdersPage() {
               value={sortBy}
               onChange={(v) => setSortBy(v as "newest" | "oldest")}
               className="w-full"
-              buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+              buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
+              menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
+              optionClassName="rounded-2xl"
               options={[
                 { value: "newest", label: "Сначала новые" },
                 { value: "oldest", label: "Сначала старые" },
@@ -126,7 +128,28 @@ export default function AdminOrdersPage() {
             />
           </div>
 
-          <div className="md:col-span-2">
+          <div className="w-full sm:w-44">
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
+              Статус
+            </label>
+            <CustomSelect
+              value={statusFilter}
+              onChange={setStatusFilter}
+              className="w-full"
+              buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
+              menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
+              optionClassName="rounded-2xl"
+              options={[
+                { value: "all", label: "Все" },
+                ...ORDER_STATUSES.map((status) => ({
+                  value: status,
+                  label: orderStatusLabel(status),
+                })),
+              ]}
+            />
+          </div>
+
+          <div className="w-full sm:w-72">
             <OrderDateRangePicker
               label="Период"
               startDate={startDate}
@@ -138,35 +161,18 @@ export default function AdminOrdersPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
-              Статус
-            </label>
-            <CustomSelect
-              value={statusFilter}
-              onChange={setStatusFilter}
-              className="w-full"
-              buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
-              options={[
-                { value: "all", label: "Все" },
-                ...ORDER_STATUSES.map((status) => ({
-                  value: status,
-                  label: orderStatusLabel(status),
-                })),
-              ]}
-            />
-          </div>
-        </div>
-
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            type="text"
+          <SearchField
+            aria-label="Поиск"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Поиск по ID заказа, ID платежа, имени, email..."
-            className="pl-10 text-sm"
-          />
+            onChange={setSearchQuery}
+            className="flex-1 min-w-[220px]"
+          >
+            <SearchField.Group className="w-full">
+              <SearchField.SearchIcon />
+              <SearchField.Input placeholder="Поиск по ID, имени, email..." />
+              <SearchField.ClearButton />
+            </SearchField.Group>
+          </SearchField>
         </div>
       </div>
 

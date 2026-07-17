@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Plus, Trash2, Power, Search } from "lucide-react";
+import { Plus, Trash2, Power } from "lucide-react";
 import Link from "next/link";
+import { SearchField } from "@heroui/react";
 import TelegramIcon from "@/components/TelegramIcon";
 import CustomSelect from "@/components/CustomSelect";
-import Input from "@/components/Input";
 import DataTable, { type Column } from "../_components/DataTable";
 import PageHeader from "../_components/PageHeader";
 
@@ -253,16 +253,18 @@ export default function BoostersPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <PageHeader subtitle="Реестр исполнителей. Добавляйте и редактируйте вручную — вход в систему им не нужен." />
-      <div className="flex items-center justify-end">
-        <Link
-          href="/admin/boosters/new"
-          className="btn-primary inline-flex items-center gap-2 !py-2.5 !px-4 !rounded-full"
-        >
-          <Plus className="w-4 h-4" />
-          Добавить качера
-        </Link>
-      </div>
+      <PageHeader
+        subtitle="Реестр исполнителей. Добавляйте и редактируйте вручную — вход в систему им не нужен."
+        actions={
+          <Link
+            href="/admin/boosters/new"
+            className="btn-primary inline-flex items-center gap-2 !py-2 !px-4 !rounded-full shrink-0 text-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Добавить качера</span>
+          </Link>
+        }
+      />
 
       {boosters.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-slate-100">
@@ -277,10 +279,10 @@ export default function BoostersPage() {
         </div>
       ) : (
         <>
-          {/* Filters */}
-          <div className="bg-white rounded-xl border border-slate-200 p-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
+          {/* Filters — single row on desktop, wrapping down to stacked on mobile. */}
+          <div className="bg-white rounded-xl border border-slate-200 px-4 pt-1 pb-3">
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="w-full sm:w-44">
                 <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Сортировка
                 </label>
@@ -288,7 +290,9 @@ export default function BoostersPage() {
                   value={sortBy}
                   onChange={(v) => setSortBy(v as "newest" | "oldest")}
                   className="w-full"
-                  buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+                  buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
+                  menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
+                  optionClassName="rounded-2xl"
                   options={[
                     { value: "newest", label: "Сначала новые" },
                     { value: "oldest", label: "Сначала старые" },
@@ -296,7 +300,7 @@ export default function BoostersPage() {
                 />
               </div>
 
-              <div>
+              <div className="w-full sm:w-44">
                 <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Статус
                 </label>
@@ -304,7 +308,9 @@ export default function BoostersPage() {
                   value={statusFilter}
                   onChange={setStatusFilter}
                   className="w-full"
-                  buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+                  buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
+                  menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
+                  optionClassName="rounded-2xl"
                   options={[
                     { value: "all", label: "Все" },
                     { value: "active", label: "Активен" },
@@ -312,17 +318,19 @@ export default function BoostersPage() {
                   ]}
                 />
               </div>
-            </div>
 
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                type="text"
+              <SearchField
+                aria-label="Поиск"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Поиск по ID, имени, Telegram, ИНН..."
-                className="pl-10 text-sm"
-              />
+                onChange={setSearchQuery}
+                className="flex-1 min-w-[220px]"
+              >
+                <SearchField.Group className="w-full">
+                  <SearchField.SearchIcon />
+                  <SearchField.Input placeholder="Поиск по ID, имени, Telegram, ИНН..." />
+                  <SearchField.ClearButton />
+                </SearchField.Group>
+              </SearchField>
             </div>
           </div>
 

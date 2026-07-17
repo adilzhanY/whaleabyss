@@ -336,7 +336,7 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
           </button>
         </header>
 
-        <main className="flex-1 p-4 lg:p-8">{children}</main>
+        <main className="flex-1 p-4 lg:px-8 lg:py-4">{children}</main>
       </div>
     </div>
   );

@@ -17,6 +17,7 @@
 @import "@heroui/styles/components/calendar.css" layer(components);
 @import "@heroui/styles/components/range-calendar.css" layer(components);
 @import "@heroui/styles/components/calendar-year-picker.css" layer(components);
+@import "@heroui/styles/components/search-field.css" layer(components);
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
@@ -821,6 +822,10 @@ body:has(#admin-root.admin-dark) {
   .bg-white, .bg-white\/60 { background-color: #0a0a0a; }
   .bg-slate-100 { background-color: #171717; }
   .bg-slate-200, .bg-slate-300 { background-color: #262626; }
+  /* DataTable framed redesign: gray frame + cell-level hover + footer buttons */
+  .bg-slate-200\/60 { background-color: #171717; }
+  .group:hover .group-hover\:bg-slate-50 { background-color: #171717; }
+  .hover\:bg-white\/70:hover { background-color: #262626; }
   .hover\:bg-white:hover,
   .hover\:bg-slate-50:hover,
   .hover\:bg-slate-100:hover { background-color: #171717; }
@@ -915,17 +920,16 @@ body:has(#admin-root.admin-dark) {
  * Light theme first; admin-dark overrides at the bottom mirror the dark block.
  * ------------------------------------------------------------------------- */
 #admin-root .date-input-group {
-  background-color: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 0.5rem;
-  padding: 0.45rem 0.75rem;
-  min-height: 38px;
+  background-color: #f1f5f9; /* filled, borderless — like the select triggers */
+  border: none;
+  border-radius: 1rem; /* matches the rounded-2xl select triggers */
+  padding: 0 0.875rem;
+  height: 2rem; /* = Tailwind h-8, tracks the root font size like the selects */
   font-size: 0.875rem;
   color: #334155;
   box-shadow: none;
 }
 #admin-root .date-input-group:focus-within {
-  border-color: #2563eb;
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
 }
 #admin-root .date-input-group__segment {
@@ -961,6 +965,13 @@ body:has(#admin-root.admin-dark) {
 #admin-root .date-range-picker__trigger:hover {
   color: #0f172a;
   background-color: #f1f5f9;
+}
+/* The indicator carries its own (token-broken) text class — pin it. */
+#admin-root .date-range-picker__trigger-indicator {
+  color: #64748b;
+}
+#admin-root .date-range-picker__trigger:hover .date-range-picker__trigger-indicator {
+  color: #0f172a;
 }
 
 /* Popover + calendar (rendered in a portal, but inside #admin-root's body
@@ -1038,14 +1049,74 @@ body:has(#admin-root.admin-dark) {
   background-color: #ffffff;
 }
 
+/* HeroUI SearchField (admin orders filter) — same palette alignment. */
+#admin-root .search-field__group {
+  background-color: #f1f5f9; /* filled, borderless — like the select triggers */
+  border: none;
+  border-radius: 1rem; /* matches the rounded-2xl select triggers */
+  padding: 0 0.875rem;
+  height: 2rem; /* = Tailwind h-8, tracks the root font size like the selects */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: none;
+}
+#admin-root .search-field__group:focus-within {
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+#admin-root .search-field__input {
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 0.875rem;
+  color: #334155;
+}
+#admin-root .search-field__input::placeholder {
+  color: #94a3b8;
+}
+#admin-root .search-field__search-icon {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+#admin-root .search-field__clear-button {
+  color: #94a3b8;
+  cursor: pointer;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  transition: color 120ms ease;
+}
+#admin-root .search-field__clear-button:hover {
+  color: #334155;
+}
+
 /* Dark theme (mirrors the admin-dark palette above). */
+body:has(#admin-root.admin-dark) .search-field__group {
+  background-color: #171717;
+}
+body:has(#admin-root.admin-dark) .search-field__group:focus-within {
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25);
+}
+body:has(#admin-root.admin-dark) .search-field__input {
+  color: #f5f5f5;
+}
+body:has(#admin-root.admin-dark) .search-field__input::placeholder {
+  color: #737373;
+}
+body:has(#admin-root.admin-dark) .search-field__search-icon {
+  color: #737373;
+}
+body:has(#admin-root.admin-dark) .search-field__clear-button {
+  color: #a3a3a3;
+}
+body:has(#admin-root.admin-dark) .search-field__clear-button:hover {
+  color: #f5f5f5;
+}
 body:has(#admin-root.admin-dark) .date-input-group {
   background-color: #171717;
-  border-color: #2e2e2e;
   color: #f5f5f5;
 }
 body:has(#admin-root.admin-dark) .date-input-group:focus-within {
-  border-color: #2563eb;
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25);
 }
 body:has(#admin-root.admin-dark) .date-input-group__segment {
@@ -1071,6 +1142,12 @@ body:has(#admin-root.admin-dark) .date-range-picker__trigger {
 body:has(#admin-root.admin-dark) .date-range-picker__trigger:hover {
   color: #f5f5f5;
   background-color: #262626;
+}
+body:has(#admin-root.admin-dark) .date-range-picker__trigger-indicator {
+  color: #a3a3a3;
+}
+body:has(#admin-root.admin-dark) .date-range-picker__trigger:hover .date-range-picker__trigger-indicator {
+  color: #f5f5f5;
 }
 body:has(#admin-root.admin-dark) .date-range-picker__popover {
   background-color: #171717;

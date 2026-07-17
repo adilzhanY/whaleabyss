@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users } from '@/lib/schema';
-import { and, asc, desc, ilike, or, sql, type SQL } from 'drizzle-orm';
+import { and, asc, desc, gte, ilike, lte, or, sql, type SQL } from 'drizzle-orm';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
@@ -24,11 +24,25 @@ export async function GET(req: NextRequest) {
     const pageSize = Math.min(100, Math.max(1, parseInt(sp.get('pageSize') || '10', 10) || 10));
     const sort = sp.get('sort') === 'oldest' ? 'oldest' : 'newest';
     const role = sp.get('role') || 'all';
+    const startDate = sp.get('startDate') || '';
+    const endDate = sp.get('endDate') || '';
     const search = (sp.get('search') || '').trim();
 
     const conditions: SQL[] = [];
     if (role !== 'all' && VALID_ROLES.has(role)) {
       conditions.push(sql`${users.role}::text = ${role}`);
+    }
+    // Registration-date range (mirrors the orders API: end day inclusive).
+    if (startDate) {
+      const start = new Date(startDate);
+      if (!Number.isNaN(start.getTime())) conditions.push(gte(users.createdAt, start));
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      if (!Number.isNaN(end.getTime())) {
+        end.setHours(23, 59, 59, 999);
+        conditions.push(lte(users.createdAt, end));
+      }
     }
     if (search) {
       const like = `%${search}%`;

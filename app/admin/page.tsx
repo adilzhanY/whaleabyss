@@ -437,7 +437,7 @@ export default async function AdminDashboardPage({
   return (
     <div className="max-w-7xl mx-auto flex flex-col gap-4">
       <PageHeader subtitle={`Быстрая сводка по магазину ${suffix}`} />
-      <div className="flex items-start justify-end gap-4 flex-wrap">
+      <div className="flex items-start justify-start gap-4 flex-wrap">
         <MonthSelect month={monthKey} isCurrent={monthKey === currentMonthKey()} />
       </div>
 

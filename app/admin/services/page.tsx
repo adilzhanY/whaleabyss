@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Search, Plus, Sparkles } from "lucide-react";
+import { Plus, Sparkles } from "lucide-react";
+import { SearchField } from "@heroui/react";
 import CustomSelect from "@/components/CustomSelect";
-import Input from "@/components/Input";
 import DataTable, { type Column } from "../_components/DataTable";
 import PageHeader from "../_components/PageHeader";
 
@@ -202,30 +202,32 @@ export default function AdminServicesPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <PageHeader subtitle={`Всего услуг: ${rows.length}`} />
-      <div className="mb-6 flex items-start justify-end gap-4 flex-wrap">
-        <div className="flex gap-3">
-          <Link
-            href="/admin/services/categories"
-            className="btn-primary !px-4 text-sm"
-          >
-            <Plus className="w-4 h-4" strokeWidth={2.5} />
-            Новая категория
-          </Link>
-          <Link
-            href="/admin/services/new"
-            className="btn-primary !px-4 text-sm"
-          >
-            <Plus className="w-4 h-4" strokeWidth={2.5} />
-            Новая услуга
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        subtitle={`Всего услуг: ${rows.length}`}
+        actions={
+          <div className="flex gap-2">
+            <Link
+              href="/admin/services/categories"
+              className="btn-primary inline-flex items-center gap-2 !py-2 !px-4 !rounded-full shrink-0 text-sm"
+            >
+              <Plus className="w-4 h-4" strokeWidth={2.5} />
+              <span className="hidden sm:inline">Новая категория</span>
+            </Link>
+            <Link
+              href="/admin/services/new"
+              className="btn-primary inline-flex items-center gap-2 !py-2 !px-4 !rounded-full shrink-0 text-sm"
+            >
+              <Plus className="w-4 h-4" strokeWidth={2.5} />
+              <span className="hidden sm:inline">Новая услуга</span>
+            </Link>
+          </div>
+        }
+      />
 
-      {/* Filters */}
-      <div className="mb-6 bg-white rounded-xl border border-slate-200 p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
+      {/* Filters — single row on desktop, wrapping down to stacked on mobile. */}
+      <div className="mb-3 bg-white rounded-xl border border-slate-200 px-4 pt-1 pb-3">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="w-full sm:w-44">
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Категория
             </label>
@@ -233,7 +235,9 @@ export default function AdminServicesPage() {
               value={categoryFilter}
               onChange={setCategoryFilter}
               className="w-full"
-              buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+              buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
+              menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
+              optionClassName="rounded-2xl"
               options={[
                 { value: "all", label: "Все" },
                 ...categoryOptions.map((c) => ({ value: c, label: c })),
@@ -241,7 +245,7 @@ export default function AdminServicesPage() {
             />
           </div>
 
-          <div>
+          <div className="w-full sm:w-44">
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Регион
             </label>
@@ -249,24 +253,28 @@ export default function AdminServicesPage() {
               value={regionFilter}
               onChange={setRegionFilter}
               className="w-full"
-              buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+              buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
+              menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
+              optionClassName="rounded-2xl"
               options={[
                 { value: "all", label: "Все" },
                 ...regionOptions.map((r) => ({ value: r, label: r })),
               ]}
             />
           </div>
-        </div>
 
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            type="text"
+          <SearchField
+            aria-label="Поиск"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Поиск по названию, slug, региону..."
-            className="pl-10 text-sm"
-          />
+            onChange={setSearchQuery}
+            className="flex-1 min-w-[220px]"
+          >
+            <SearchField.Group className="w-full">
+              <SearchField.SearchIcon />
+              <SearchField.Input placeholder="Поиск по названию, slug, региону..." />
+              <SearchField.ClearButton />
+            </SearchField.Group>
+          </SearchField>
         </div>
       </div>
 

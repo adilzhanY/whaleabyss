@@ -71,6 +71,82 @@ npm run bot:dev
 - **Telegram webhook is registered out-of-band**, not by the deploy. After
   changing `TELEGRAM_WEBHOOK_SECRET` (or the domain), re-run
   `node scripts/telegram/set_telegram_webhook.mjs` on prod.
+- **Pushing `deploy.yml` (or any `.github/workflows/*`) needs a token with the
+  `workflow` scope.** A plain Personal Access Token is rejected by GitHub
+  (`refusing to allow a Personal Access Token to ... workflow without workflow scope`).
+  Add the scope at github.com/settings/tokens, or push those files with SSH-based
+  git auth.
+
+## Production VM & Infrastructure (Yandex Cloud)
+
+**Host:** Yandex Compute Cloud, folder `default` (`cloud-uid-inaiu7wc`), zone
+`ru-central1-a`.
+
+**Production VM `waubu`:**
+- **Static public IP `93.77.188.163`** (Kind: Static, zone `ru-central1-a`) — this
+  is what the domain A-record and `deploy.yml` `host:` point at. A Yandex static IP
+  is **zonal**: it only attaches to a VM in its own zone, and it stays reserved when
+  the VM is deleted (so you can move it to a replacement VM).
+- **Shared-core `2 vCPU @ 20% guaranteed, 4 GB RAM`**, 20 GB SSD boot disk, Ubuntu
+  24.04. Shared-core (burstable) is deliberate — the site idles and only needs CPU
+  bursts for page loads/builds; it's ~1/3 the price of dedicated cores (~10–11k ₸/mo,
+  ≈ $20). vCPU/RAM/core-fraction are all changeable later by **stopping** the VM and
+  editing (nothing here is permanent).
+- App lives at **`/var/www/whaleabyss`**, run by **pm2 (fork mode)** as process
+  `whaleabyss` (`next start`, port 3000); **nginx** reverse-proxies to `127.0.0.1:3000`.
+  `pm2 save` persists the process list to `~/.pm2/dump.pm2`; the **`pm2-qantr` systemd
+  service is enabled** so the app auto-starts on reboot.
+
+**SSH access (user `qantr`, UID 1000):**
+- `ssh qantr@93.77.188.163`. Local fish aliases (`~/.config/fish/config.fish`):
+  `ssh_connect_wa_vm` = login; `ssh_connect_wa` = the DB tunnel
+  `ssh -N -L 5432:127.0.0.1:5432 qantr@93.77.188.163` (the remote Postgres is only
+  reachable through this tunnel).
+- Two authorized keys on the VM (`/home/qantr/.ssh/authorized_keys`): `wopler@pc`
+  (`~/.ssh/id_ed25519`, the everyday dev key) and `qantr@adarch` (`~/.ssh/id_adarch`,
+  the laptop that created the VM). **The GitHub Actions deploy uses `qantr@adarch`**
+  (stored as the `SSH_PRIVATE_KEY` repo secret), so that key must stay in
+  `authorized_keys` or auto-deploy breaks with "Permission denied".
+- The keys also live in the **VM metadata** (Access → SSH keys). On a fresh boot
+  cloud-init *appends* metadata keys to `authorized_keys` (it does not truncate), so
+  keys baked into the image survive.
+
+**Swap is mandatory:** a 4 GB `/swapfile` (in `/etc/fstab`, `vm.swappiness=10`). With
+4 GB RAM and **no** swap, `npm run build` (the on-VM deploy step) gets OOM-killed. If
+you ever rebuild the VM, recreate the swapfile before the first deploy.
+
+**Full-disk lockout incident (2026-07-18) — root cause & recovery runbook:**
+- **Symptom:** site down (502), SSH refused/`Permission denied`, serial console showed
+  `cloud-init OSError [Errno 28] No space left on device`.
+- **Root-cause chain:** the boot disk had been resized 10→20 GB, but the **partition
+  was never grown** (`vdb1` stayed ~9.4 GB while the disk was 20 GB) → filesystem hit
+  100% → the deploy `npm run build` OOM'd/filled the last bytes → **cloud-init
+  truncated `authorized_keys` to 0 bytes** on the full disk → SSH auth impossible.
+- **Why the "easy" fixes don't work here:** Yandex has **no GRUB-catch** (serial GRUB
+  needs `console=ttyS0` pre-baked in the image + `serial-port-enable=1` — the stock
+  image has neither, and you can't add them without disk access). Single-user mode
+  wouldn't help anyway — you can't write to a 100%-full disk. And **Yandex boot disks
+  cannot be detached** from their VM.
+- **The professional recovery (offline disk repair via a rescue VM) — the runbook:**
+  1. **Snapshot** the broken boot disk (only way to get a detachable copy).
+  2. Create a **rescue VM** (plain Ubuntu) with a **new disk created *from that
+     snapshot* attached as a secondary** drive (leave "delete with VM" unchecked).
+  3. SSH into rescue; the broken disk is `/dev/vdb` (unmounted). Repair from outside:
+     `sudo growpart /dev/vdb 1` → `sudo e2fsck -fy /dev/vdb1` → `sudo resize2fs
+     /dev/vdb1` (fills the disk). Then `mount /dev/vdb1 /mnt/wa`, free space if needed,
+     and **rewrite `/mnt/wa/home/qantr/.ssh/authorized_keys`** with both public keys
+     (`chown 1000:1000`, `chmod 600`). `umount`.
+  4. Detach the fixed disk; **Create image** from it (image is region-wide, so it can
+     boot a VM in *any* zone — this is how you get back to `ru-central1-a`).
+  5. **Create the new prod VM** from that image in `ru-central1-a`, Login `qantr` +
+     both keys, and assign the freed static IP `93.77.188.163` (delete the old VM first
+     to release the IP — it stays reserved because it's Static).
+  6. On the new VM: recreate **swap**, `cd /var/www/whaleabyss && npm install && npm run
+     build`, `pm2 restart whaleabyss && pm2 save`, verify `curl localhost:3000` and
+     `https://whaleabyss.ru` → 200. Then delete the rescue VM (keep the snapshot/image
+     as backups for a while).
+- **Note:** `e2fsck` exits non-zero (code 1) when it *corrects* errors — that's success,
+  not failure; don't let `set -e` abort the script before `resize2fs` runs.
 
 ## Database Management
 

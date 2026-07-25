@@ -221,6 +221,25 @@ const result = await db.select().from(services).where(eq(services.id, id));
 - Zustand store with localStorage persistence (`store/useCart.ts`)
 - Cart syncs to database `cart_items` table for authenticated users
 - Cart persists across sessions via `persist` middleware
+- **`loadFromDb` merges on the login transition, replaces otherwise.** `components/CartSync.tsx`
+  calls it with `merge: true` exactly once per signed-in account; `mergeCarts` unions the local
+  cart into the DB copy (DB wins on quantity/dates, a browser-only line is kept, a quest
+  declaration on either side survives) and pushes the union back up if the browser contributed.
+  A plain `loadFromDb()` still replaces, so deletions stay authoritative.
+  - **Why:** signing in used to overwrite the local cart with the DB copy, and nothing uploaded a
+    guest cart first — so building a cart while signed out and then logging in to pay destroyed
+    it. «Войти с Яндексом» made it deterministic (full-page redirect away and back → customer
+    returns to an empty `/cart`). Don't revert to an unconditional replace.
+  - **Effect deps matter:** `CartSync` keys on `session.user.id`, **not** the `session` object.
+    next-auth returns a new session object on every refetch (including on window focus), so
+    keying on the object re-ran the load on every tab/app switch and each run overwrote the cart
+    — silently reverting it whenever a `syncToDb` had quietly failed.
+  - A module-scope revision counter in `store/useCart.ts` is bumped by every mutator;
+    `loadFromDb` captures it before its request and discards the response if the cart changed
+    meanwhile, so a slow read issued before an add can't land after it and revert the line.
+  - Known trade-off: an item deleted on another device can reappear after login. Accepted — a
+    stale line is visible and one tap to remove; silently losing the cart is a lost sale. Strict
+    cross-device last-write-wins would need per-line timestamps in `cart_items`.
 
 **Payment Flow:**
 - Public checkout (`/api/checkout`) recomputes every line price and the order
@@ -296,9 +315,9 @@ const result = await db.select().from(services).where(eq(services.id, id));
     reads as plain text; don't reuse it.
 - **The client modal is an ADD-TIME gate only** and must never be treated as sufficient: a line
   restored from `cart_items` by `loadFromDb` bypasses it entirely, and a failed `/addons` fetch
-  still degrades to a plain add. The server gate is what actually holds. (Client-side hardening —
-  in-flight guard, fetch timeouts, no silent fallthrough, merge-instead-of-replace in
-  `loadFromDb` — remains a known TODO.)
+  still degrades to a plain add. The server gate is what actually holds. (Remaining client-side
+  hardening — an in-flight guard on the add buttons, fetch timeouts, and no silent fallthrough —
+  is still a known TODO. `loadFromDb`'s replace-vs-merge hole is fixed; see Cart Management.)
 - **Incident (order `f216229e`, 2026-07-12):** a paid order for a quest-gated service
   arrived with `addon_choice = NULL` and no quest lines — the admin notification showed
   nothing and there was no way to tell what the client wanted. Diagnosis: code and data

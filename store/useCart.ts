@@ -31,6 +31,51 @@ const dedupeById = (items: CartItem[]): CartItem[] => {
   return [...seen.values()];
 };
 
+// Bumped by every local cart mutation. loadFromDb captures it before its request
+// and throws the response away if the user touched the cart meanwhile —
+// otherwise a slow GET issued before an add can land after it and silently
+// revert the line (including a just-made quest declaration).
+let cartRevision = 0;
+const bumpRevision = () => {
+  cartRevision += 1;
+};
+
+/**
+ * Union of the DB cart and the local one, used ONLY on the login transition.
+ *
+ * Signing in used to replace the local cart with the DB copy outright, so a
+ * cart built while signed out was destroyed the moment the user logged in to
+ * pay — and for «Войти с Яндексом» that is a full-page redirect, making the
+ * loss deterministic. Nothing ever pushed the guest cart up first, so the
+ * customer landed back on /cart with nothing in it.
+ *
+ * DB rows win on quantity/dates (they're authoritative for an existing
+ * account), but a line only the browser has is kept, and a quest declaration
+ * present on either side survives. Trade-off: an item deleted on another device
+ * can reappear here. That is a visible, one-tap annoyance; silently losing the
+ * whole cart is a lost sale.
+ */
+const mergeCarts = (
+  dbItems: CartItem[],
+  localItems: CartItem[]
+): { items: CartItem[]; localContributed: boolean } => {
+  const byId = new Map(dbItems.map((i) => [i.id, i]));
+  let localContributed = false;
+  for (const local of localItems) {
+    const existing = byId.get(local.id);
+    if (!existing) {
+      byId.set(local.id, local);
+      localContributed = true;
+      continue;
+    }
+    if (!existing.addonChoice && local.addonChoice) {
+      byId.set(local.id, { ...existing, addonChoice: local.addonChoice });
+      localContributed = true;
+    }
+  }
+  return { items: [...byId.values()], localContributed };
+};
+
 interface CartState {
   items: CartItem[];
   isOpen: boolean;
@@ -51,7 +96,11 @@ interface CartState {
   cartTotal: () => number;
   cartCount: () => number;
   syncToDb: () => Promise<void>;
-  loadFromDb: () => Promise<void>;
+  /**
+   * @param merge when true (the login transition), the local cart is unioned
+   * into the DB copy instead of being overwritten by it — see mergeCarts.
+   */
+  loadFromDb: (options?: { merge?: boolean }) => Promise<void>;
 }
 
 export const useCart = create<CartState>()(
@@ -73,6 +122,7 @@ export const useCart = create<CartState>()(
           return { items: [...state.items, { ...item, quantity }] };
         });
         // Sync to DB after adding (fire and forget)
+        bumpRevision();
         get().syncToDb().catch(err => console.error('Failed to sync cart:', err));
       },
 
@@ -95,6 +145,7 @@ export const useCart = create<CartState>()(
           }
           return { items };
         });
+        bumpRevision();
         get().syncToDb().catch(err => console.error('Failed to sync cart:', err));
       },
 
@@ -120,12 +171,14 @@ export const useCart = create<CartState>()(
           }
           return { items };
         });
+        bumpRevision();
         get().syncToDb().catch(err => console.error('Failed to sync cart:', err));
       },
 
       removeFromCart: (id) => {
         set((state) => ({ items: state.items.filter((i) => i.id !== id) }));
         // Sync to DB after removing
+        bumpRevision();
         get().syncToDb().catch(err => console.error('Failed to sync cart:', err));
       },
 
@@ -158,12 +211,14 @@ export const useCart = create<CartState>()(
           };
         });
         // Sync to DB after updating
+        bumpRevision();
         get().syncToDb().catch(err => console.error('Failed to sync cart:', err));
       },
 
       clearCart: () => {
         set({ items: [] });
         // Sync to DB after clearing
+        bumpRevision();
         get().syncToDb().catch(err => console.error('Failed to sync cart:', err));
       },
 
@@ -203,8 +258,14 @@ export const useCart = create<CartState>()(
         }
       },
 
-      // Load cart from database and replace localStorage
-      loadFromDb: async () => {
+      // Load the cart from the database for a logged-in user.
+      //
+      // Default (merge: false) keeps the original replace strategy — the DB is
+      // the source of truth, so deletions are respected. On the login
+      // transition CartSync passes merge: true, which unions the local cart in
+      // instead, so a cart built while signed out survives signing in.
+      loadFromDb: async ({ merge = false } = {}) => {
+        const revisionAtStart = cartRevision;
         try {
           const res = await fetch('/api/cart/load');
 
@@ -217,11 +278,25 @@ export const useCart = create<CartState>()(
           }
 
           const data = await res.json();
-          const dbItems: CartItem[] = data.items || [];
+          const dbItems: CartItem[] = dedupeById(data.items || []);
 
-          // Replace strategy: DB is the source of truth for logged-in users
-          // This ensures deletions are respected
-          set({ items: dedupeById(dbItems) });
+          // The user changed the cart while this request was in flight — their
+          // action is newer than this snapshot, so honour it and drop the read.
+          if (cartRevision !== revisionAtStart) return;
+
+          if (!merge) {
+            set({ items: dbItems });
+            return;
+          }
+
+          const { items, localContributed } = mergeCarts(dbItems, get().items);
+          set({ items });
+          // Push the union up so the DB stops being a stale, smaller copy —
+          // without this the very next non-merging load would drop the lines
+          // the browser just contributed.
+          if (localContributed) {
+            get().syncToDb().catch(err => console.error('Failed to sync merged cart:', err));
+          }
         } catch (error) {
           console.error('Failed to load cart from DB:', error);
         }

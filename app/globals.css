@@ -1363,6 +1363,53 @@ html.site-dark body:has(#site-header) {
       radial-gradient(at 0% 0%, hsla(220, 100%, 62%, 0.14) 0px, transparent 50%);
   }
   .services-fog {
+/* ---------------------------------------------------------------------------
+ * Theme-paired logo lockup (components/Header.tsx).
+ *
+ * The header ships both colourways as <img> and shows exactly one: the ink
+ * lockup on the light theme, the white one on dark. Done here rather than with
+ * Tailwind's `dark:` variant because the public site toggles `site-dark` on
+ * <html>, while `dark:` is wired to `.dark` (see @custom-variant at the top of
+ * this file) — `dark:` utilities would silently never match.
+ *
+ * Scoped to `body:has(#site-header)` so it covers the header AND the mobile
+ * drawer (a sibling of <header>, whose `bg-white` is itself flipped dark
+ * below), while leaving /admin and /portal untouched.
+ *
+ * Responsive switching — full lockup on desktop, mark alone below lg — lives on
+ * the wrapper <span>, deliberately kept off these elements so the two rules
+ * can never fight over `display`.
+ * ------------------------------------------------------------------------- */
+body:has(#site-header) .logo-light { display: block; }
+body:has(#site-header) .logo-dark { display: none; }
+html.site-dark body:has(#site-header) .logo-light { display: none; }
+html.site-dark body:has(#site-header) .logo-dark { display: block; }
+
+/* ---------------------------------------------------------------------------
+ * Fixed-header offsets.
+ *
+ * The header is a floating pill with transparent gutters, so two things broke:
+ * anchor jumps (#category) landed underneath it, and scrolled content showed
+ * through the gaps beside and above the pill — section titles and prices
+ * literally reading "through" the navbar.
+ *
+ * scroll-padding-top fixes every in-page anchor at once (the browser offsets
+ * the scroll target itself, no per-element scroll-mt needed). .site-header-scrim
+ * is the full-bleed fade that sits behind the pill so nothing shows through.
+ * ------------------------------------------------------------------------- */
+html {
+  scroll-padding-top: 7rem;
+}
+.site-header-scrim {
+  background: linear-gradient(
+    to bottom,
+    var(--bg-main) 0%,
+    var(--bg-main) 45%,
+    color-mix(in srgb, var(--bg-main) 72%, transparent) 72%,
+    transparent 100%
+  );
+}
+
     background:
       radial-gradient(circle at 0% 0%, rgba(37, 99, 235, 0.12) 0%, transparent 50%),
       radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);

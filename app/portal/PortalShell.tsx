@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
-import Image from "next/image";
 import {
   LayoutDashboard,
   UserRound,
@@ -100,12 +99,17 @@ export default function PortalShell({
         {/* Brand */}
         <div className="h-16 flex items-center gap-3 px-4 border-b border-slate-100">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shrink-0 shadow-sm shadow-indigo-500/20 overflow-hidden">
-            <Image
-              src="/icons/whale_logo_circle.png"
+            {/* Always the white mark: the tile behind it is a fixed dark
+                gradient, and /portal is outside the site-dark scope anyway.
+                Plain <img>, not next/image — the optimizer rejects SVG unless
+                `dangerouslyAllowSVG` is enabled, which would relax that setting
+                for every image on the site. */}
+            <img
+              src="/images/whaleabyss-mark-white.svg"
               alt="Whale Abyss"
               width={40}
               height={40}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain p-1.5"
             />
           </div>
           <div

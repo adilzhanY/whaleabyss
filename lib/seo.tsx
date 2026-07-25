@@ -18,7 +18,7 @@ export function generateMetadata({
   title,
   description,
   keywords,
-  ogImage = '/icons/whaleabyss_new_logo_clean.png',
+  ogImage = '/icons/whaleabyss_og_logo.png',
   ogType = 'website',
   canonical,
   noindex = false,
@@ -75,8 +75,8 @@ export function generateLocalBusinessSchema() {
     name: 'Whale Abyss',
     description: 'Профессиональные услуги прокачки аккаунтов Genshin Impact',
     url: 'https://whaleabyss.ru',
-    logo: 'https://whaleabyss.ru/icons/whaleabyss_new_logo_clean.png',
-    image: 'https://whaleabyss.ru/icons/whaleabyss_new_logo_clean.png',
+    logo: 'https://whaleabyss.ru/icons/whaleabyss_og_logo.png',
+    image: 'https://whaleabyss.ru/icons/whaleabyss_og_logo.png',
     telephone: '+7 (XXX) XXX-XX-XX',
     priceRange: '₽₽',
     address: {
@@ -120,7 +120,7 @@ export function generateServiceSchema(service: {
       availability: 'https://schema.org/InStock',
       url: `https://whaleabyss.ru/service/${service.id}`,
     },
-    image: service.imageUrl || 'https://whaleabyss.ru/icons/whaleabyss_new_logo_clean.png',
+    image: service.imageUrl || 'https://whaleabyss.ru/icons/whaleabyss_og_logo.png',
   };
 }
 

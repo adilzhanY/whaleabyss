@@ -135,10 +135,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
     : hover
       ? "translateY(-1px)"
       : "translateY(0)";
-  const pillShadow =
-    hover && !pressed
-      ? "var(--shadow-btn-primary-hover)"
-      : "var(--shadow-btn-primary)";
+  // (the active indicator is a 2px rule now, so it carries no shadow)
 
   const pillTransition = shouldAnimate
     ? "left 0.45s cubic-bezier(0.4,0,0.2,1), top 0.45s cubic-bezier(0.4,0,0.2,1), width 0.45s cubic-bezier(0.4,0,0.2,1), height 0.45s cubic-bezier(0.4,0,0.2,1), transform 0.18s ease, box-shadow 0.18s ease, opacity 0.2s ease"
@@ -164,6 +161,14 @@ export default function Header({ onAuthOpen }: HeaderProps) {
         className="fixed top-3 left-3 right-3 md:top-5 md:left-6 md:right-6 z-40"
         style={{ fontFamily: "var(--font-primary), sans-serif" }}
       >
+        {/* Full-bleed scrim behind the floating pill. Without it, content
+            scrolling past showed through the transparent gutters beside and
+            above the pill — titles and prices appeared to run through the
+            navbar. Sits behind the pill inside the header's stacking context. */}
+        <div
+          aria-hidden="true"
+          className="site-header-scrim pointer-events-none fixed inset-x-0 top-0 h-24 md:h-28 -z-10"
+        />
         <div
           ref={glassPanelRef}
           className="mx-auto w-full max-w-[75rem] glass-panel liquid-glass rounded-[28px] md:rounded-[32px]"
@@ -190,18 +195,36 @@ export default function Header({ onAuthOpen }: HeaderProps) {
                 </button>
               </div>
 
-              <Link
-                href="/"
-                className="flex items-center gap-1 font-bold text-[28px]"
-                style={{ color: "var(--accent-primary)" }}
-              >
-                <img
-                  src="/icons/whaleabyss_new_logo_clean.png"
-                  alt="Whale Abyss"
-                  className="h-11 w-11 md:h-15 md:w-15 object-contain"
-                />
-                <span className="site-brand-name hidden lg:inline-block font-display tracking-tight">
-                  Whale Abyss
+              {/* Logo lockup. The wordmark is part of the artwork now (Onest
+                  ExtraBold, outlined + optically kerned in the brand file), so
+                  there is no live text beside it any more. Full lockup from lg
+                  up, mark alone below that — the lockup is far too wide for a
+                  phone header. .logo-light/.logo-dark are swapped by theme in
+                  globals.css (the site uses `site-dark`, not Tailwind `dark:`). */}
+              <Link href="/" className="flex items-center" aria-label="Whale Abyss — на главную">
+                <span className="hidden lg:block">
+                  <img
+                    src="/images/whaleabyss-lockup-ink.svg"
+                    alt="Whale Abyss"
+                    className="logo-light h-9 w-auto"
+                  />
+                  <img
+                    src="/images/whaleabyss-lockup-white.svg"
+                    alt="Whale Abyss"
+                    className="logo-dark h-9 w-auto"
+                  />
+                </span>
+                <span className="lg:hidden">
+                  <img
+                    src="/images/whaleabyss-mark-ink.svg"
+                    alt="Whale Abyss"
+                    className="logo-light h-10 w-auto"
+                  />
+                  <img
+                    src="/images/whaleabyss-mark-white.svg"
+                    alt="Whale Abyss"
+                    className="logo-dark h-10 w-auto"
+                  />
                 </span>
               </Link>
             </div>
@@ -217,15 +240,16 @@ export default function Header({ onAuthOpen }: HeaderProps) {
                 aria-hidden="true"
                 className="absolute pointer-events-none"
                 style={{
+                  // 2px underline rather than a filled pill: the nav was one
+                  // more max-radius shape in a layout where everything was a
+                  // pill, so radius carried no hierarchy. Active state now
+                  // reads through weight + rule, never opacity.
                   left: pill.left,
-                  top: pill.top,
+                  top: pill.top + pill.height - 2,
                   width: pill.width,
-                  height: pill.height,
+                  height: 2,
                   backgroundColor: "var(--accent-primary)",
-                  border:
-                    "1px solid color-mix(in srgb, var(--accent-primary) 88%, #000)",
-                  borderRadius: 9999,
-                  boxShadow: pillShadow,
+                  borderRadius: 2,
                   opacity: pillVisible ? 1 : 0,
                   transform: pillTransform,
                   transition: pillTransition,
@@ -242,9 +266,11 @@ export default function Header({ onAuthOpen }: HeaderProps) {
                     ref={(el) => {
                       linksRef.current[i] = el;
                     }}
-                    className="relative z-10 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-300 select-none"
+                    className={`relative z-10 px-4 py-2 text-sm transition-colors duration-300 select-none ${
+                      isActive ? "font-bold" : "font-medium"
+                    }`}
                     style={{
-                      color: isActive ? "#fff" : undefined,
+                      color: isActive ? "var(--accent-primary)" : undefined,
                     }}
                     onMouseEnter={() => {
                       if (isActive) setHover(true);
@@ -268,12 +294,18 @@ export default function Header({ onAuthOpen }: HeaderProps) {
               })}
             </nav>
 
-            {/* Right: actions */}
+            {/* Right: actions. The theme switch is a preference, not a feature —
+                it sits first, quiet and scaled down, so it stops competing with
+                the primary CTA. Cart + auth are one group behind a divider. */}
             <div className="flex items-center gap-2">
-              {/* Desktop-only theme switch; on mobile it lives in the drawer. */}
-              <div className="hidden lg:block">
+              <div className="hidden lg:block opacity-55 transition-opacity hover:opacity-100 scale-90">
                 <SiteThemeSwitch />
               </div>
+              <span
+                aria-hidden="true"
+                className="hidden lg:block h-6 w-px"
+                style={{ backgroundColor: "color-mix(in srgb, currentColor 18%, transparent)" }}
+              />
               {session ? (
                 <Link
                   href="/profile"
@@ -309,23 +341,40 @@ export default function Header({ onAuthOpen }: HeaderProps) {
                 </button>
               )}
 
+              {/* Cart. Was a lone outlined circle with a badge that only existed
+                  when the cart was non-empty — so at rest it was an unlabelled
+                  icon, and on a services site users can't tell a basket from a
+                  shop or an order history. Now it carries a word from md up and
+                  always shows a count (including 0), and it uses the control
+                  radius so the pill next to it clearly reads as the primary. */}
               <button
                 onClick={openCart}
-                className="btn-icon !rounded-full relative"
-                aria-label="Корзина"
+                className="btn-icon !w-auto !rounded-lg flex items-center gap-2 !px-2.5 md:!px-3"
+                aria-label={
+                  isMounted && count > 0
+                    ? `Корзина, товаров: ${count}`
+                    : "Корзина, пусто"
+                }
               >
-                <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
-                {isMounted && count > 0 && (
-                  <span
-                    className="absolute -right-1 -top-1 flex h-4 w-4 md:h-5 md:w-5 items-center justify-center rounded-full text-[9px] md:text-[10px] font-bold text-white"
-                    style={{
-                      backgroundColor: "var(--accent-primary)",
-                      boxShadow: "var(--shadow-btn-primary)",
-                    }}
-                  >
-                    {count > 9 ? "9+" : count}
-                  </span>
-                )}
+                <ShoppingCart className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
+                <span className="hidden md:inline text-sm font-medium">Корзина</span>
+                <span
+                  className="flex h-5 min-w-5 items-center justify-center rounded px-1 text-[11px] font-bold tabular-nums"
+                  style={
+                    isMounted && count > 0
+                      ? {
+                          backgroundColor: "var(--accent-primary)",
+                          color: "#fff",
+                        }
+                      : {
+                          backgroundColor:
+                            "color-mix(in srgb, currentColor 12%, transparent)",
+                          color: "var(--text-secondary)",
+                        }
+                  }
+                >
+                  {isMounted && count > 9 ? "9+" : isMounted ? count : 0}
+                </span>
               </button>
             </div>
           </div>
@@ -352,9 +401,14 @@ export default function Header({ onAuthOpen }: HeaderProps) {
         <div className="flex items-center justify-between p-4 border-b border-slate-100">
           <div className="flex items-center gap-2">
             <img
-              src="/icons/whaleabyss_new_logo_clean.png"
-              alt="Whale Abyss Logo"
-              className="h-10 w-10 object-contain"
+              src="/images/whaleabyss-mark-ink.svg"
+              alt="Whale Abyss"
+              className="logo-light h-10 w-auto"
+            />
+            <img
+              src="/images/whaleabyss-mark-white.svg"
+              alt="Whale Abyss"
+              className="logo-dark h-10 w-auto"
             />
             <span className="font-bold text-slate-800 text-lg">Меню</span>
           </div>

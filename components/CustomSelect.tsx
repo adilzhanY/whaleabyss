@@ -25,10 +25,10 @@ interface CustomSelectProps {
 }
 
 const DEFAULT_BUTTON_CLASS =
-  "bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-slate-300";
+  "bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-slate-300";
 
 const DEFAULT_MENU_CLASS =
-  "bg-white rounded-xl border border-slate-200 shadow-lg shadow-slate-900/5";
+  "bg-white rounded-[14px] border border-slate-200 shadow-lg shadow-slate-900/5";
 
 /**
  * A modern, accessible dropdown that replaces the native <select>.

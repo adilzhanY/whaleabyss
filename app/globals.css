@@ -37,7 +37,21 @@
   --accent-icon: #1e3a8a;
   --accent-border: #e2e8f0;
 
-  --card-radius: 1rem;
+  /* ── Radius scale ──────────────────────────────────────────────────────
+     Radius has to mean something. Nearly every surface used to be maximally
+     round — nav, badges, both buttons, text inputs, the cart — so radius
+     carried no hierarchy and the layout read soft and toy-like, wrong for a
+     service handling someone's account and money.
+       --r-control   8px  inputs, chips, selects, secondary + icon buttons
+       --r-card     14px  cards, panels, dropdowns
+       --r-surface  24px  large surfaces (nav bar, modals)
+       9999px             RESERVED for the primary CTA. True circles
+                          (avatars, spinners, dots) are images/indicators,
+                          not radius decisions, and stay round. */
+  --r-control: 0.5rem;
+  --r-card: 0.875rem;
+  --r-surface: 1.5rem;
+  --card-radius: var(--r-card);
   --card-padding: 1rem;
   --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
@@ -376,7 +390,7 @@ h6 {
   justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
-  border-radius: 0.875rem;
+  border-radius: var(--r-control);
   background-color: var(--bg-card);
   color: var(--accent-primary);
   border: 1px solid var(--accent-border);
@@ -415,7 +429,7 @@ h6 {
     padding: 0.75rem 1.25rem;
     background-color: var(--bg-card);
     color: var(--text-primary);
-    border-radius: 9999px;
+    border-radius: var(--r-control);
     border: 2px solid var(--accent-border);
     outline: none;
     caret-color: var(--accent-primary);
@@ -968,7 +982,7 @@ html:has(#admin-root) { scrollbar-gutter: stable; }
 #admin-root .date-input-group {
   background-color: #f1f5f9; /* filled, borderless — like the select triggers */
   border: none;
-  border-radius: 1rem; /* matches the rounded-2xl select triggers */
+  border-radius: var(--r-card); /* matches the select triggers */
   padding: 0 0.875rem;
   height: 2rem; /* = Tailwind h-8, tracks the root font size like the selects */
   font-size: 0.875rem;
@@ -1099,7 +1113,7 @@ html:has(#admin-root) { scrollbar-gutter: stable; }
 #admin-root .search-field__group {
   background-color: #f1f5f9; /* filled, borderless — like the select triggers */
   border: none;
-  border-radius: 1rem; /* matches the rounded-2xl select triggers */
+  border-radius: var(--r-card); /* matches the select triggers */
   padding: 0 0.875rem;
   height: 2rem; /* = Tailwind h-8, tracks the root font size like the selects */
   display: flex;

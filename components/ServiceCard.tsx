@@ -52,7 +52,7 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
   return (
     <Link
       href={`/service/${item.id}`}
-      className="service-card group flex flex-col rounded-2xl sm:rounded-3xl cursor-pointer col-span-1 transition-all duration-300 w-full h-full p-3 sm:p-4 border-2 border-transparent relative hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/20"
+      className="service-card group flex flex-col rounded-[14px] cursor-pointer col-span-1 transition-all duration-300 w-full h-full p-3 sm:p-4 border-2 border-transparent relative hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/20"
     >
       {/* Image placeholder */}
       <div

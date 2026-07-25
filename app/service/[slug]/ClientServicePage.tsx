@@ -8,7 +8,7 @@ import AuthModal from "@/components/AuthModal";
 import { ServiceItem } from "@/lib/services";
 import { useAddToCartWithAddons } from "@/components/QuestAddonModal";
 import { parseMinAdventureRank } from "@/lib/adventureRank";
-import { UserCircle, Tag, Layers, CheckCircle, Info, ShoppingCart, Gauge, Shield, MonitorPlay, Loader2 } from "lucide-react";
+import { UserCircle, Tag, Layers, CheckCircle, Info, ShoppingCart, Gauge, Loader2, AlertTriangle, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import DateInput from "@/components/DateInput";
@@ -17,24 +17,53 @@ interface ClientServicePageProps {
   service: ServiceItem;
 }
 
-function getInfoPoint(desc: string | undefined) {
-  if (!desc) return { mainText: "", infoPoint: null };
-  const match = desc.match(/([^.]*доступн[оа]?\s+с\s+\d+\s+ранга[^.]*\.?)/i);
-  if (match) {
-    const originalSentence = match[1];
+/**
+ * Split a service description into three parts.
+ *
+ * Priorities used to be inverted: the Adventure Rank requirement got the
+ * highlighted callout while "стоимость услуги может измениться, если не
+ * пройдены мировые квесты" — the single most commercially important sentence
+ * on the page — sat buried in grey body copy. The price condition is now the
+ * callout; the rank becomes a plain requirements row.
+ */
+function splitDescription(desc: string | undefined) {
+	if (!desc) return { mainText: "", rankNote: null as string | null, priceNote: null as string | null };
+	let rest = desc;
 
-    let infoText = originalSentence.replace(/\.$/, "").trim();
-    if (!infoText.endsWith(".")) infoText += ".";
-    // Capitalize first letter
-    infoText = infoText.charAt(0).toUpperCase() + infoText.slice(1);
+	const tidy = (t: string) => {
+		let out = t.replace(/\.$/, "").trim();
+		if (!out.endsWith(".")) out += ".";
+		return out.charAt(0).toUpperCase() + out.slice(1);
+	};
 
-    let mainText = desc.replace(originalSentence, "").trim();
-    // Cleanup any stray periods left after removing the sentence
-    mainText = mainText.replace(/^\.\s*/, "").replace(/\s*\.\s*$/, ".").replace(/\s+/g, " ");
+	// Rank requirement, e.g. "Исследование территорий доступно с 50 ранга."
+	let rankNote: string | null = null;
+	const rankMatch = rest.match(/([^.]*доступн[оа]?\s+с\s+\d+\s+ранга[^.]*\.?)/i);
+	if (rankMatch) {
+		rankNote = tidy(rankMatch[1]);
+		rest = rest.replace(rankMatch[1], " ");
+	}
 
-    return { mainText: mainText, infoPoint: infoText };
-  }
-  return { mainText: desc, infoPoint: null };
+	// Price condition — the sentence a buyer must not miss.
+	let priceNote: string | null = null;
+	const priceMatch = rest.match(/([^.]*стоимость[^.]*(измен|уточня)[^.]*\.?)/i);
+	if (priceMatch) {
+		priceNote = tidy(priceMatch[1]);
+		rest = rest.replace(priceMatch[1], " ");
+	}
+	// The clarification that usually trails it ("Уточняйте в поддержке…").
+	const followUp = rest.match(/([^.]*уточняйте[^.]*\.?)/i);
+	if (followUp) {
+		if (priceNote) priceNote += " " + tidy(followUp[1]);
+		rest = rest.replace(followUp[1], " ");
+	}
+
+	const mainText = rest
+		.replace(/^[\s.]+/, "")
+		.replace(/\s+/g, " ")
+		.replace(/\s+\./g, ".")
+		.trim();
+	return { mainText, rankNote, priceNote };
 }
 
 function escapeRegex(string: string) {
@@ -86,7 +115,11 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
   const currentStartDate = startDate;
   const currentEndDate = endDate;
 
-  const { mainText, infoPoint } = getInfoPoint(service.description);
+  const { mainText, rankNote, priceNote } = splitDescription(service.description);
+  // Real category title from the data — slugs are admin-editable, so a
+  // hardcoded slug→label map silently renders nothing the moment one changes
+  // (which is exactly what happened on the first pass).
+  const categoryLabel = service.categoryTitle ?? null;
 
   // Services in the "actual" category get a natural-size image layout instead of
   // the fixed 16/10 cover hero. We measure the image's intrinsic size on load and
@@ -147,45 +180,60 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
 
   // Shared building blocks so the vertical card and the two-column "stack" card
   // (used when an actual-category image is too wide) stay in sync.
+  // Was the generic label "Детали Услуги" (also mis-capitalised — Russian
+  // sentence case is «Детали услуги»). The best line on the page now carries
+  // the service name and its category.
   const heading = (
-    <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-6" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
-      Детали Услуги
-    </h2>
+    <div className="mb-6">
+      {categoryLabel && (
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] mb-2" style={{ color: "var(--accent-primary)" }}>
+          {categoryLabel}
+        </p>
+      )}
+      <h2 className="text-2xl sm:text-3xl font-bold text-slate-900" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
+        {service.subtitle || service.title}
+      </h2>
+    </div>
   );
 
   const descriptionBlock = (
     <>
-      <div className="text-slate-600 leading-relaxed text-sm sm:text-base mb-6 space-y-4">
+      <div className="text-slate-600 leading-relaxed text-sm sm:text-base mb-5 space-y-4">
         {mainText ? (
           <p>{mainText}</p>
         ) : (
-          <p>В данную услугу входит профессиональное выполнение "{service.subtitle}". Наши опытные специалисты обеспечат быстрый и качественный результат с гарантией безопасности аккаунта.</p>
+          <p>В данную услугу входит профессиональное выполнение «{service.subtitle}». Наши опытные специалисты обеспечат качественный результат с гарантией безопасности аккаунта.</p>
         )}
       </div>
 
-      {infoPoint && (
+      {/* Price condition — the sentence that actually costs the buyer money if
+          they miss it, so it gets the callout. Icon + tint, no left accent bar:
+          that bar is the single most overused generated-UI pattern going. */}
+      {priceNote && (
         <div
-          className="flex items-center gap-4 px-6 py-4 rounded-xl shadow-sm"
+          className="flex items-start gap-3 px-4 py-3.5 mb-5"
           style={{
-            backgroundColor: "var(--bg-highlight)",
-            borderLeft: "6px solid var(--accent-primary)",
+            backgroundColor: "rgba(234,179,8,0.10)",
+            border: "1px solid rgba(234,179,8,0.35)",
+            borderRadius: "var(--r-card)",
           }}
         >
-          <div
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-white"
-            style={{ backgroundColor: "var(--accent-primary)" }}
-          >
-            <span className="font-bold text-sm italic" style={{ fontFamily: "serif" }}>i</span>
-          </div>
-          <span
-            className="font-bold sm:text-lg text-base"
-            style={{
-              fontFamily: "var(--font-primary), sans-serif",
-              color: "var(--text-primary)",
-            }}
-          >
-            {infoPoint}
-          </span>
+          <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600 mt-0.5" />
+          <p className="text-sm leading-snug text-slate-700">{priceNote}</p>
+        </div>
+      )}
+
+      {/* Requirements as a plain list rather than a highlighted box — a rank
+          floor is a fact to check, not a warning. */}
+      {rankNote && (
+        <div className="mb-5">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Требования</p>
+          <ul className="space-y-1.5">
+            <li className="flex items-start gap-2 text-sm text-slate-600">
+              <Gauge className="h-4 w-4 shrink-0 text-slate-400 mt-0.5" />
+              <span>{rankNote}</span>
+            </li>
+          </ul>
         </div>
       )}
     </>
@@ -253,7 +301,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
       onClick={handleAdd}
       disabled={addPending}
       aria-busy={addPending}
-      className="btn-primary w-full !px-6 !py-4 !rounded-full !text-base flex items-center justify-center gap-2 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
+      className="btn-primary w-full !px-6 !py-4 !text-base flex items-center justify-center gap-2 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
     >
       {addPending ? (
         <Loader2 className="w-5 h-5 animate-spin" />
@@ -264,6 +312,22 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
     </button>
   );
 
+  /* The page used to dead-end at one button. A hesitant buyer with a question
+     had nowhere to go, and «уточняйте в поддержке» in the price callout above
+     pointed at no actual contact. @whaleabyss_official is the support account
+     (same one the footer and the suggest-service modal use). */
+  const askButton = (
+    <a
+      href="https://t.me/whaleabyss_official"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-800"
+    >
+      <MessageCircle className="h-4 w-4" />
+      Спросить в Telegram
+    </a>
+  );
+
   // Default vertical layout: description, then per-day config, price and button.
   const detailsCard = (
     <div className="w-full bg-white rounded-4xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] p-8 sm:p-10 flex flex-col border border-slate-50">
@@ -272,6 +336,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
       {perDayConfig && <div className="mb-6 border-t border-slate-100 pt-6">{perDayConfig}</div>}
       <div className="mt-2 border-t border-slate-100 pt-6 flex items-end justify-between mb-6">{priceRow}</div>
       {buyButton}
+      {askButton}
     </div>
   );
 
@@ -289,6 +354,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
         {perDayConfig && <div className="mb-6 w-full">{perDayConfig}</div>}
         <div className="mb-6">{priceRow}</div>
         {buyButton}
+        {askButton}
       </div>
     </div>
   );
@@ -327,42 +393,49 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
 
             {/* Main Visual & Details Column */}
             <div className="flex flex-col gap-6 w-full">
-              {/* Wider Hero Image with title overlaid at bottom */}
+              {/* Real, high-contrast heading above the art. It used to be white
+                  text overlaid on a bright sky at poor contrast, which also
+                  broke whenever the image changed; and its subline was a slogan
+                  ("Whale Abyss Premium Service") sitting in the slot where the
+                  category belongs. */}
+              <div>
+                {categoryLabel && (
+                  <p
+                    className="text-[11px] font-bold uppercase tracking-[0.14em] mb-2"
+                    style={{ color: "var(--accent-primary)" }}
+                  >
+                    {categoryLabel}
+                  </p>
+                )}
+                <h1
+                  className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900"
+                  style={{ fontFamily: "var(--font-primary), sans-serif", textWrap: "balance" }}
+                >
+                  {service.subtitle || service.title}
+                </h1>
+              </div>
               <div
-                className="w-full rounded-4xl overflow-hidden relative shadow-sm"
+                className="w-full rounded-[14px] overflow-hidden relative shadow-sm"
                 style={{
                   aspectRatio: "16/10",
                   background: `url('${service.background || "/images/genshin_background.jpg"}') center/cover no-repeat`,
                 }}
               >
-                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/10 to-transparent flex flex-col justify-end p-8 sm:p-10">
-                  <h1
-                    className="text-white font-bold text-3xl sm:text-4xl md:text-5xl drop-shadow-md mb-2"
-                    style={{ fontFamily: "var(--font-primary), sans-serif" }}
-                  >
-                    {service.subtitle || service.title}
-                  </h1>
-                  <p className="text-white/90 text-sm sm:text-base font-medium drop-shadow-md">Whale Abyss Premium Service</p>
-                </div>
+                {/* No text over the art. The H1 used to sit white-on-bright-sky
+                    at poor contrast and broke whenever the image changed; and
+                    the subline was a slogan ("Whale Abyss Premium Service") in
+                    the slot where the category belongs. Both now live above the
+                    image as real, high-contrast text. */}
               </div>
 
-              {/* Feature Cards below image */}
-              <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Card 1 */}
-                <div className="bg-white rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] p-6 flex flex-col items-center justify-center text-center">
-                  <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-3 text-blue-800 shadow-sm border border-blue-100">
-                    <Gauge className="w-6 h-6" />
-                  </div>
-                  <p className="font-bold text-slate-800 text-sm">Быстрое выполнение</p>
-                </div>
-                {/* Card 2 */}
-                <div className="bg-white rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] p-6 flex flex-col items-center justify-center text-center">
-                  <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-3 text-blue-800 shadow-sm border border-blue-100">
-                    <Shield className="w-6 h-6" />
-                  </div>
-                  <p className="font-bold text-slate-800 text-sm">Безопасность</p>
-                </div>
-              </div>
+              {/* The two "feature" cards that used to sit here — «Быстрое
+                  выполнение» and «Безопасность» — were an icon and a label with
+                  no sentence, no number and no proof, costing ~180px and
+                  teaching the buyer nothing. Removed rather than restated:
+                  an unquantified speed claim is worse than silence, and we have
+                  no delivery-time data to back one. See the notes in the PR —
+                  bringing them back needs real numbers (start time, срок,
+                  guarantee terms) from the business, not filler. */}
             </div>
 
             {/* Details & Checkout Right Column */}

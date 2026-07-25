@@ -31,6 +31,10 @@ export interface ServiceItem {
    * by the /api/checkout gate, which rejects undeclared quest-gated lines.
    */
   hasQuestAddons?: boolean;
+  /** Display name of the owning category, for the breadcrumb chip on the
+   *  service page. Slugs are admin-editable, so never hardcode a slug→label
+   *  map in the UI — carry the real title through. */
+  categoryTitle?: string;
 }
 
 export interface ServiceCategory {
@@ -125,6 +129,7 @@ export const getServiceCategories = cache(async (): Promise<ServiceCategory[]> =
   // Native category slug per service id, so a service featured into «Актуальное»
   // keeps its real category on the detail page / for discounts.
   const catSlugById = new Map(allCategories.map(c => [c.id, c.slug]));
+  const catTitleById = new Map(allCategories.map(c => [c.id, c.title]));
 
   return allCategories.map(cat => {
     // The «actual» category also gathers services flagged featuredInActual,
@@ -161,6 +166,7 @@ export const getServiceCategories = cache(async (): Promise<ServiceCategory[]> =
           description: s.description || '',
           background: s.imageUrl || '',
           categorySlug: (s.categoryId && catSlugById.get(s.categoryId)) || cat.slug,
+          categoryTitle: (s.categoryId && catTitleById.get(s.categoryId)) || cat.title,
           hasQuestAddons: questGatedIds.has(s.id),
           ...enrichItemUI(s, idx)
         };

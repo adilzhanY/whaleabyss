@@ -114,7 +114,7 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
               className={`text-sm sm:text-base font-bold whitespace-nowrap transition-colors duration-300 ${
                 isOnDiscount
                   ? "text-green-600 group-hover:text-green-700"
-                  : "text-[#1e3a8a] group-hover:text-blue-800"
+                  : "text-slate-700 group-hover:text-blue-800"
               }`}
               style={{ fontFamily: "var(--font-primary), sans-serif" }}
             >

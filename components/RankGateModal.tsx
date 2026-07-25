@@ -112,7 +112,7 @@ export default function RankGateModal() {
           <Link
             href="/profile"
             onClick={close}
-            className="btn-primary w-full !py-3 !rounded-full !text-sm flex items-center justify-center gap-2"
+            className="btn-primary w-full !py-3 !text-sm flex items-center justify-center gap-2"
           >
             <UserCog className="w-4 h-4" />
             <span>Перейти в профиль</span>

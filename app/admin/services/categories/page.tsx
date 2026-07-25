@@ -303,7 +303,7 @@ export default function CategoriesPage() {
           <p className="text-slate-500 mb-4">Категорий пока нет</p>
           <button
             onClick={() => setShowNewForm(true)}
-            className="btn-primary inline-flex items-center gap-2 !py-2 !px-4 !rounded-full"
+            className="btn-primary inline-flex items-center gap-2 !py-2 !px-4"
           >
             <Plus className="w-4 h-4" />
             Создать первую категорию

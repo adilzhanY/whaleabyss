@@ -193,7 +193,7 @@ export default function EditBoosterModal({ booster, onClose, onSaved }: EditBoos
           >
             Отмена
           </button>
-          <button onClick={handleSave} disabled={saving} className="btn-primary !py-2.5 !px-6 !rounded-full disabled:opacity-50">
+          <button onClick={handleSave} disabled={saving} className="btn-primary !py-2.5 !px-6 disabled:opacity-50">
             {saving ? "Сохранение..." : "Сохранить"}
           </button>
         </div>

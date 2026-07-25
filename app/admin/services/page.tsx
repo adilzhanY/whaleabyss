@@ -208,14 +208,14 @@ export default function AdminServicesPage() {
           <div className="flex gap-2">
             <Link
               href="/admin/services/categories"
-              className="btn-primary inline-flex items-center gap-2 !py-2 !px-4 !rounded-full shrink-0 text-sm"
+              className="btn-primary inline-flex items-center gap-2 !py-2 !px-4 shrink-0 text-sm"
             >
               <Plus className="w-4 h-4" strokeWidth={2.5} />
               <span className="hidden sm:inline">Новая категория</span>
             </Link>
             <Link
               href="/admin/services/new"
-              className="btn-primary inline-flex items-center gap-2 !py-2 !px-4 !rounded-full shrink-0 text-sm"
+              className="btn-primary inline-flex items-center gap-2 !py-2 !px-4 shrink-0 text-sm"
             >
               <Plus className="w-4 h-4" strokeWidth={2.5} />
               <span className="hidden sm:inline">Новая услуга</span>

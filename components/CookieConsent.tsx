@@ -108,7 +108,7 @@ export default function CookieConsent() {
         <div className="flex gap-2">
           <button
             onClick={accept}
-            className="btn-primary flex-1 !rounded-full !py-2.5 !text-sm"
+            className="btn-primary flex-1 !py-2.5 !text-sm"
           >
             Принять
           </button>

@@ -173,7 +173,7 @@ function ResetPasswordForm() {
             <button
               type="submit"
               disabled={isLoading || !token}
-              className="btn-primary w-full !py-3 !rounded-full"
+              className="btn-primary w-full !py-3"
             >
               {isLoading ? "Сохранение..." : "Сохранить новый пароль"}
             </button>

@@ -350,7 +350,7 @@ export default function EditEventPage() {
             <button
               type="submit"
               disabled={saving}
-              className="btn-primary flex-1 !py-3 !rounded-full !shadow-lg hover:!shadow-xl transition-shadow"
+              className="btn-primary flex-1 !py-3 !shadow-lg hover:!shadow-xl transition-shadow"
             >
               {saving ? "Сохранение..." : "Сохранить изменения"}
             </button>

@@ -194,7 +194,7 @@ export default function QuestAddonModal() {
           <button
             onClick={addWithQuests}
             disabled={selectedAddons.length === 0}
-            className="btn-primary w-full !py-3 !rounded-full !text-sm flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="btn-primary w-full !py-3 !text-sm flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <ListChecks className="w-4 h-4" />
             <span>

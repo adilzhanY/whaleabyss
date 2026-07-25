@@ -144,7 +144,7 @@ export default function CartModal() {
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="btn-primary w-8 h-8 flex items-center justify-center !rounded-full !py-0 !px-0 cursor-pointer"
+                        className="btn-primary w-8 h-8 flex items-center justify-center !py-0 !px-0 cursor-pointer"
                         aria-label="Уменьшить"
                       >
                         <Minus className="w-3 h-3" />
@@ -152,7 +152,7 @@ export default function CartModal() {
                       <span className="text-sm font-medium w-6 text-center">{item.quantity} шт.</span>
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="btn-primary w-8 h-8 flex items-center justify-center !rounded-full !py-0 !px-0 cursor-pointer"
+                        className="btn-primary w-8 h-8 flex items-center justify-center !py-0 !px-0 cursor-pointer"
                         aria-label="Увеличить"
                       >
                         <Plus className="w-3 h-3" />

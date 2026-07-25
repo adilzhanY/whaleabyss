@@ -154,7 +154,7 @@ export default function NewBoosterPage() {
           )}
 
           <div className="flex gap-3 pt-4">
-            <button type="submit" disabled={loading} className="btn-primary flex-1 !py-3 !rounded-full !shadow-lg hover:!shadow-xl transition-shadow">
+            <button type="submit" disabled={loading} className="btn-primary flex-1 !py-3 !shadow-lg hover:!shadow-xl transition-shadow">
               {loading ? "Добавление..." : "Добавить качера"}
             </button>
             <Link

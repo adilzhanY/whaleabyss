@@ -194,7 +194,7 @@ export default function AssignBoosterModal({
             <button
               onClick={handleAssign}
               disabled={!selectedId || submitting || (isReassign && selectedId === currentBoosterId)}
-              className="btn-primary !py-2.5 !px-6 !rounded-full disabled:opacity-50"
+              className="btn-primary !py-2.5 !px-6 disabled:opacity-50"
             >
               {submitting
                 ? isReassign

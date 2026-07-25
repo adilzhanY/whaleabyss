@@ -105,7 +105,7 @@ export default function CustomerNotesSection({
             <button
               onClick={save}
               disabled={saving}
-              className="btn-primary !rounded-full !px-5 !py-2.5 !text-sm disabled:opacity-50"
+              className="btn-primary !px-5 !py-2.5 !text-sm disabled:opacity-50"
             >
               {saving ? "Сохранение..." : "Сохранить"}
             </button>

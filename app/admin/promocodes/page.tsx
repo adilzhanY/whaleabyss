@@ -73,7 +73,7 @@ export default function PromocodesPage() {
       <div className="flex items-center justify-end">
         <Link
           href="/admin/promocodes/new"
-          className="btn-primary inline-flex items-center gap-2 !py-2.5 !px-4 !rounded-full"
+          className="btn-primary inline-flex items-center gap-2 !py-2.5 !px-4"
         >
           <Plus className="w-4 h-4" />
           Создать промокод
@@ -85,7 +85,7 @@ export default function PromocodesPage() {
           <p className="text-slate-500 mb-4">Промокодов пока нет</p>
           <Link
             href="/admin/promocodes/new"
-            className="btn-primary inline-flex items-center gap-2 !py-2 !px-4 !rounded-full"
+            className="btn-primary inline-flex items-center gap-2 !py-2 !px-4"
           >
             <Plus className="w-4 h-4" />
             Создать первый промокод

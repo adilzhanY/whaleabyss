@@ -275,7 +275,7 @@ export default function CartPage() {
             {items.length === 0 ? (
               <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-slate-100">
                 <p className="text-slate-500 mb-4">Ваша корзина пуста</p>
-                <Link href="/" className="btn-primary inline-flex !py-2 !px-6 !rounded-full !font-bold">
+                <Link href="/" className="btn-primary inline-flex !py-2 !px-6 !font-bold">
                   Вернуться к услугам
                 </Link>
               </div>
@@ -327,11 +327,11 @@ export default function CartPage() {
                       <Trash2 className="w-4 h-4" />
                     </button>
                     <div className="flex items-center gap-3">
-                      <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="btn-primary w-8 h-8 flex items-center justify-center !rounded-full !py-0 !px-0 cursor-pointer">
+                      <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="btn-primary w-8 h-8 flex items-center justify-center !py-0 !px-0 cursor-pointer">
                         <Minus className="w-3 h-3" />
                       </button>
                       <span className="text-sm font-medium w-6 text-center">{item.quantity} шт.</span>
-                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="btn-primary w-8 h-8 flex items-center justify-center !rounded-full !py-0 !px-0 cursor-pointer">
+                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="btn-primary w-8 h-8 flex items-center justify-center !py-0 !px-0 cursor-pointer">
                         <Plus className="w-3 h-3" />
                       </button>
                     </div>
@@ -434,7 +434,7 @@ export default function CartPage() {
                   <button
                     onClick={handleValidatePromocode}
                     disabled={isValidatingPromocode || !promocode.trim()}
-                    className="btn-primary w-full !py-3 !rounded-full"
+                    className="btn-secondary w-full !py-3"
                   >
                     {isValidatingPromocode ? "..." : "Применить"}
                   </button>
@@ -559,7 +559,7 @@ export default function CartPage() {
               <button
                 disabled={isLoading || items.length === 0}
                 onClick={handleCheckout}
-                className="btn-primary w-full mt-4 !py-4 !rounded-full"
+                className="btn-primary w-full mt-4 !py-4"
               >
                 {isLoading ? "Обработка..." : "Перейти к оплате"}
               </button>

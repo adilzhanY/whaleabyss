@@ -80,7 +80,7 @@ export default function EventsPage() {
       <div className="flex items-center justify-end">
         <Link
           href="/admin/events/new"
-          className="btn-primary inline-flex items-center gap-2 !py-2.5 !px-4 !rounded-full"
+          className="btn-primary inline-flex items-center gap-2 !py-2.5 !px-4"
         >
           <Plus className="w-4 h-4" />
           Создать событие
@@ -92,7 +92,7 @@ export default function EventsPage() {
           <p className="text-slate-500 mb-4">Событий пока нет</p>
           <Link
             href="/admin/events/new"
-            className="btn-primary inline-flex items-center gap-2 !py-2 !px-4 !rounded-full"
+            className="btn-primary inline-flex items-center gap-2 !py-2 !px-4"
           >
             <Plus className="w-4 h-4" />
             Создать первое событие

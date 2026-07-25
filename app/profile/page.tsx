@@ -140,13 +140,13 @@ export default function ProfilePage() {
               <div className="flex gap-3 flex-wrap justify-center md:justify-start">
                 <button
                   onClick={() => { setIsEditing(!isEditing); setIsSettingsOpen(false); }}
-                  className="btn-primary !px-6 !py-2.5 !rounded-full !font-semibold flex items-center gap-2"
+                  className="btn-primary !px-6 !py-2.5 !font-semibold flex items-center gap-2"
                 >
                   Редактировать профиль
                 </button>
                 <button
                   onClick={() => { setIsSettingsOpen(!isSettingsOpen); setIsEditing(false); }}
-                  className="btn-primary !px-6 !py-2.5 !rounded-full !font-semibold flex items-center gap-2 !bg-[#B9E8E8] !text-[#0B5B5B] !border-[#9ed6d6] hover:!bg-[#a5dede]"
+                  className="btn-primary !px-6 !py-2.5 !font-semibold flex items-center gap-2 !bg-[#B9E8E8] !text-[#0B5B5B] !border-[#9ed6d6] hover:!bg-[#a5dede]"
                 >
                   Настройки аккаунта
                 </button>
@@ -219,14 +219,14 @@ export default function ProfilePage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="btn-primary flex-1 !rounded-full !px-4 !py-3 !font-semibold"
+                    className="btn-primary flex-1 !px-4 !py-3 !font-semibold"
                   >
                     {loading ? "Сохранение..." : "Сохранить изменения"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
-                    className="btn-primary !rounded-full !px-4 !py-3 !font-semibold !bg-white !text-[#1e3a8a] !border-[#1e3a8a] hover:!bg-[#eef2ff]"
+                    className="btn-outline"
                   >
                     Отмена
                   </button>
@@ -245,7 +245,7 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={() => signOut({ callbackUrl: '/' })}
-                    className="btn-primary flex-1 !rounded-full !px-4 !py-3 !font-semibold !bg-[#f1f5f9] !text-[#0f172a] !border-[#e2e8f0] hover:!bg-[#e2e8f0]"
+                    className="btn-tertiary flex-1"
                   >
                     Выйти из аккаунта
                   </button>
@@ -253,7 +253,7 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={() => setDeleteWarningOpen(true)}
-                    className="btn-primary flex-1 !rounded-full !px-4 !py-3 !font-semibold !bg-[#dc2626] hover:!bg-[#b91c1c]"
+                    className="btn-danger flex-1"
                     style={{ backgroundColor: "#dc2626" }}
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#b91c1c"}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#dc2626"}
@@ -297,14 +297,14 @@ export default function ProfilePage() {
                       setDeleteConfirmationText("");
                       setDeleteMessage("");
                     }}
-                    className="btn-primary flex-1 !rounded-full !px-4 !py-3 !font-semibold !bg-gray-200 !text-gray-800 hover:!bg-gray-300"
+                    className="btn-primary flex-1 !px-4 !py-3 !font-semibold !bg-gray-200 !text-gray-800 hover:!bg-gray-300"
                   >
                     Отмена
                   </button>
                   <button
                     onClick={handleDeleteConfirm}
                     disabled={isDeleting || deleteConfirmationText !== "удалить"}
-                    className="btn-primary flex-1 !rounded-full !px-4 !py-3 !font-semibold !bg-[#dc2626] hover:!bg-[#b91c1c]"
+                    className="btn-danger flex-1"
                     style={{ backgroundColor: "#dc2626" }}
                     onMouseEnter={(e) => { if (!isDeleting && deleteConfirmationText === "удалить") e.currentTarget.style.backgroundColor = "#b91c1c" }}
                     onMouseLeave={(e) => { if (!isDeleting) e.currentTarget.style.backgroundColor = "#dc2626" }}

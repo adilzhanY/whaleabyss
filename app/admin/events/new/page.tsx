@@ -262,7 +262,7 @@ export default function NewEventPage() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary flex-1 !py-3 !rounded-full !shadow-lg hover:!shadow-xl transition-shadow"
+              className="btn-primary flex-1 !py-3 !shadow-lg hover:!shadow-xl transition-shadow"
             >
               {loading ? "Создание..." : "Создать событие"}
             </button>

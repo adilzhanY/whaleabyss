@@ -116,7 +116,7 @@ export default function ReviewPrompt() {
             </p>
             <button
               onClick={() => setOpen(false)}
-              className="btn-primary w-full !rounded-full !px-6 !py-3 !font-bold"
+              className="btn-primary w-full !px-6 !py-3 !font-bold"
             >
               Закрыть
             </button>
@@ -182,7 +182,7 @@ export default function ReviewPrompt() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="btn-primary flex-1 !rounded-full !px-6 !py-3 !font-bold disabled:opacity-50"
+                className="btn-primary flex-1 !px-6 !py-3 !font-bold disabled:opacity-50"
               >
                 {submitting ? "Отправка..." : "Отправить отзыв"}
               </button>

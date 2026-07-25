@@ -249,73 +249,180 @@ h6 {
  * Tailwind `className` strings without additional @apply plumbing.
  * ------------------------------------------------------------------------- */
 
-.btn-primary {
+/* ---------------------------------------------------------------------------
+ * Buttons — HeroUI's button spec, ported to the Whale Abyss palette.
+ *
+ * Geometry, motion and variant structure follow @heroui/styles (which is
+ * already a dependency): fixed height rather than vertical padding, 24px
+ * radius (NOT a pill — HeroUI uses rounded-3xl), 14px medium text, flat by
+ * default, and a scale(0.97) press. Colour comes from our tokens, so the
+ * primary stays --accent-primary in both themes.
+ *
+ * Variants mirror HeroUI's exactly: primary · secondary · tertiary · outline ·
+ * ghost · danger · danger-soft. Each one only re-points the --btn-* custom
+ * properties; the base rule does all the layout and motion.
+ * ------------------------------------------------------------------------- */
+.btn-primary,
+.btn-secondary,
+.btn-tertiary,
+.btn-outline,
+.btn-ghost,
+.btn-danger,
+.btn-danger-soft {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
+  width: fit-content;
+  height: 2.5rem;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  border-radius: 9999px;
-  background-color: var(--accent-primary);
-  color: #fff;
-  font-weight: 600;
-  line-height: 1.2;
-  border: 1px solid color-mix(in srgb, var(--accent-primary) 88%, #000);
-  box-shadow: var(--shadow-btn-primary);
-  transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    background-color 0.18s ease;
-  cursor: pointer;
-  user-select: none;
-}
-.btn-primary:hover {
-  background-color: var(--accent-primary-hover);
-  box-shadow: var(--shadow-btn-primary-hover);
-  transform: translateY(-1px);
-}
-.btn-primary:active {
-  transform: translateY(1px) scale(0.98);
-  box-shadow: var(--shadow-btn-primary);
-}
-.btn-primary:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: var(--shadow-btn-primary);
-}
-
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  border-radius: 9999px;
-  background-color: var(--bg-card);
-  color: var(--text-primary);
+  padding-inline: 1rem;
+  border: 1px solid transparent;
+  border-radius: 1.5rem;
+  font-size: 0.875rem;
   font-weight: 500;
   line-height: 1.2;
-  border: 1px solid var(--accent-border);
-  box-shadow: var(--shadow-btn);
-  transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    background-color 0.18s ease,
-    color 0.18s ease;
-  cursor: pointer;
+  white-space: nowrap;
+  outline: none;
   user-select: none;
+  cursor: pointer;
+  transform-origin: center;
+  --btn-bg: transparent;
+  --btn-bg-hover: var(--btn-bg);
+  --btn-fg: currentColor;
+  background-color: var(--btn-bg);
+  color: var(--btn-fg);
+  transition:
+    transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 100ms ease-out,
+    box-shadow 100ms ease-out,
+    border-color 100ms ease-out;
 }
-.btn-secondary:hover {
-  background-color: var(--bg-highlight);
-  color: var(--accent-primary);
-  box-shadow: var(--shadow-btn-hover);
-  transform: translateY(-1px);
+@media (min-width: 768px) {
+  .btn-primary,
+  .btn-secondary,
+  .btn-tertiary,
+  .btn-outline,
+  .btn-ghost,
+  .btn-danger,
+  .btn-danger-soft {
+    height: 2.25rem;
+  }
 }
-.btn-secondary:active {
-  transform: translateY(1px) scale(0.98);
-  box-shadow: var(--shadow-btn);
+@media (hover: hover) {
+  .btn-primary:hover,
+  .btn-secondary:hover,
+  .btn-tertiary:hover,
+  .btn-outline:hover,
+  .btn-ghost:hover,
+  .btn-danger:hover,
+  .btn-danger-soft:hover {
+    background-color: var(--btn-bg-hover);
+  }
 }
+.btn-primary:active,
+.btn-secondary:active,
+.btn-tertiary:active,
+.btn-outline:active,
+.btn-ghost:active,
+.btn-danger:active,
+.btn-danger-soft:active {
+  transform: scale(0.97);
+}
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-tertiary:focus-visible,
+.btn-outline:focus-visible,
+.btn-ghost:focus-visible,
+.btn-danger:focus-visible,
+.btn-danger-soft:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-tertiary:disabled,
+.btn-outline:disabled,
+.btn-ghost:disabled,
+.btn-danger:disabled,
+.btn-danger-soft:disabled,
+.btn-primary[aria-disabled="true"],
+.btn-secondary[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary,
+  .btn-secondary,
+  .btn-tertiary,
+  .btn-outline,
+  .btn-ghost,
+  .btn-danger,
+  .btn-danger-soft {
+    transition: none;
+  }
+}
+
+/* ── Colour variants ─────────────────────────────────────────────────────── */
+.btn-primary {
+  --btn-bg: var(--accent-primary);
+  --btn-bg-hover: var(--accent-primary-hover);
+  --btn-fg: #fff;
+}
+.btn-secondary {
+  --btn-bg: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  --btn-bg-hover: color-mix(in srgb, var(--accent-primary) 16%, transparent);
+  --btn-fg: var(--accent-primary);
+}
+.btn-tertiary {
+  --btn-bg: var(--bg-highlight);
+  --btn-bg-hover: color-mix(in srgb, var(--text-primary) 10%, var(--bg-highlight));
+  --btn-fg: var(--text-primary);
+}
+.btn-outline {
+  --btn-bg: transparent;
+  --btn-bg-hover: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  --btn-fg: var(--text-primary);
+  border-color: var(--accent-border);
+}
+.btn-ghost {
+  --btn-bg: transparent;
+  --btn-bg-hover: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  --btn-fg: var(--text-primary);
+}
+.btn-danger {
+  --btn-bg: #dc2626;
+  --btn-bg-hover: #b91c1c;
+  --btn-fg: #fff;
+}
+.btn-danger-soft {
+  --btn-bg: color-mix(in srgb, #dc2626 12%, transparent);
+  --btn-bg-hover: color-mix(in srgb, #dc2626 20%, transparent);
+  --btn-fg: #b91c1c;
+}
+
+/* ── Size + shape modifiers (HeroUI: sm / md / lg, icon-only, full-width) ── */
+.btn-sm { height: 2.25rem; padding-inline: 0.75rem; }
+.btn-lg { height: 2.75rem; font-size: 1rem; padding-inline: 1.25rem; }
+.btn-sm:active { transform: scale(0.98); }
+.btn-lg:active { transform: scale(0.96); }
+@media (min-width: 768px) {
+  .btn-sm { height: 2rem; }
+  .btn-lg { height: 2.5rem; }
+}
+.btn-icon-only { width: 2.5rem; padding: 0; }
+.btn-icon-only.btn-sm { width: 2.25rem; }
+.btn-icon-only.btn-lg { width: 2.75rem; }
+@media (min-width: 768px) {
+  .btn-icon-only { width: 2.25rem; }
+  .btn-icon-only.btn-sm { width: 2rem; }
+  .btn-icon-only.btn-lg { width: 2.5rem; }
+}
+.btn-full { width: 100%; }
+
+
 
 /* CustomSelect dropdown open/close animation */
 @keyframes cs-dropdown-in {
@@ -493,8 +600,16 @@ h6 {
  * ------------------------------------------------------------------------- */
 
 /* Hero sections on the homepage: white base + pastel radial mesh. */
+/* Hero ground: ONE hue, one glow.
+ *
+ * Was a seven-stop mesh (periwinkle → mint → peach → pink) unrelated to the
+ * navy brand colour. It pushed body text to borderline contrast that shifted
+ * across the width of a paragraph, killed the blue accent by sitting it on a
+ * blue-violet field, and made the ghost CTA vanish. Now: a near-white ground
+ * with a single soft navy glow placed behind the headline, so emphasis comes
+ * from the light rather than from a second text colour. */
 .hero-mesh {
-  background-color: #ffffff;
+  background-color: #fbfcfe;
   background-image:
     radial-gradient(
       55rem 34rem at 18% 26%,
@@ -641,14 +756,6 @@ h6 {
 }
 
 /* Shader `rb2`: thin bright ring hugging the rounded-rect outline, getting a
-/* Hero ground: ONE hue, one glow.
- *
- * Was a seven-stop mesh (periwinkle → mint → peach → pink) unrelated to the
- * navy brand colour. It pushed body text to borderline contrast that shifted
- * across the width of a paragraph, killed the blue accent by sitting it on a
- * blue-violet field, and made the ghost CTA vanish. Now: a near-white ground
- * with a single soft navy glow placed behind the headline, so emphasis comes
- * from the light rather than from a second text colour. */
  * +0.3 brightness boost in the shader. We fake it with stacked inset shadows
  * — the outermost is a hard 1px white outline (the "rim"), then progressively
  * softer falloff inward. Plus a subtle brand-blue tint at the bottom edge for
@@ -1257,6 +1364,53 @@ body:has(#admin-root.admin-dark) .date-range-picker__popover .range-calendar__ce
 }
 
 /* ---------------------------------------------------------------------------
+ * Theme-paired logo lockup (components/Header.tsx).
+ *
+ * The header ships both colourways as <img> and shows exactly one: the ink
+ * lockup on the light theme, the white one on dark. Done here rather than with
+ * Tailwind's `dark:` variant because the public site toggles `site-dark` on
+ * <html>, while `dark:` is wired to `.dark` (see @custom-variant at the top of
+ * this file) — `dark:` utilities would silently never match.
+ *
+ * Scoped to `body:has(#site-header)` so it covers the header AND the mobile
+ * drawer (a sibling of <header>, whose `bg-white` is itself flipped dark
+ * below), while leaving /admin and /portal untouched.
+ *
+ * Responsive switching — full lockup on desktop, mark alone below lg — lives on
+ * the wrapper <span>, deliberately kept off these elements so the two rules
+ * can never fight over `display`.
+ * ------------------------------------------------------------------------- */
+body:has(#site-header) .logo-light { display: block; }
+body:has(#site-header) .logo-dark { display: none; }
+html.site-dark body:has(#site-header) .logo-light { display: none; }
+html.site-dark body:has(#site-header) .logo-dark { display: block; }
+
+/* ---------------------------------------------------------------------------
+ * Fixed-header offsets.
+ *
+ * The header is a floating pill with transparent gutters, so two things broke:
+ * anchor jumps (#category) landed underneath it, and scrolled content showed
+ * through the gaps beside and above the pill — section titles and prices
+ * literally reading "through" the navbar.
+ *
+ * scroll-padding-top fixes every in-page anchor at once (the browser offsets
+ * the scroll target itself, no per-element scroll-mt needed). .site-header-scrim
+ * is the full-bleed fade that sits behind the pill so nothing shows through.
+ * ------------------------------------------------------------------------- */
+html {
+  scroll-padding-top: 7rem;
+}
+.site-header-scrim {
+  background: linear-gradient(
+    to bottom,
+    var(--bg-main) 0%,
+    var(--bg-main) 45%,
+    color-mix(in srgb, var(--bg-main) 72%, transparent) 72%,
+    transparent 100%
+  );
+}
+
+/* ---------------------------------------------------------------------------
  * Public-site dark theme.
  * Toggled by components/SiteThemeSwitch.tsx: a `site-dark` class on <html>,
  * restored pre-paint by the inline script in app/layout.tsx. Independent of
@@ -1400,65 +1554,18 @@ html.site-dark body:has(#site-header) {
   }
 
   /* ── Homepage decorative backgrounds (classes defined earlier) ─────────── */
+  /* Same single-hue glow as the light theme, dimmer — see .hero-mesh above. */
   .hero-mesh {
     background-color: #000000;
     background-image:
-      radial-gradient(at 40% 20%, hsla(210, 100%, 60%, 0.14) 0px, transparent 50%),
-      radial-gradient(at 80% 0%, hsla(250, 100%, 65%, 0.14) 0px, transparent 50%),
-      radial-gradient(at 0% 50%, hsla(350, 100%, 70%, 0.1) 0px, transparent 50%),
-      radial-gradient(at 80% 50%, hsla(180, 100%, 55%, 0.1) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, hsla(290, 100%, 65%, 0.1) 0px, transparent 50%),
-      radial-gradient(at 80% 100%, hsla(20, 100%, 70%, 0.08) 0px, transparent 50%),
-      radial-gradient(at 0% 0%, hsla(220, 100%, 62%, 0.14) 0px, transparent 50%);
+      radial-gradient(
+        55rem 34rem at 18% 26%,
+        rgba(59, 130, 246, 0.16) 0%,
+        rgba(59, 130, 246, 0.06) 42%,
+        transparent 72%
+      );
   }
   .services-fog {
-/* ---------------------------------------------------------------------------
- * Theme-paired logo lockup (components/Header.tsx).
- *
- * The header ships both colourways as <img> and shows exactly one: the ink
- * lockup on the light theme, the white one on dark. Done here rather than with
- * Tailwind's `dark:` variant because the public site toggles `site-dark` on
- * <html>, while `dark:` is wired to `.dark` (see @custom-variant at the top of
- * this file) — `dark:` utilities would silently never match.
- *
- * Scoped to `body:has(#site-header)` so it covers the header AND the mobile
- * drawer (a sibling of <header>, whose `bg-white` is itself flipped dark
- * below), while leaving /admin and /portal untouched.
- *
- * Responsive switching — full lockup on desktop, mark alone below lg — lives on
- * the wrapper <span>, deliberately kept off these elements so the two rules
- * can never fight over `display`.
- * ------------------------------------------------------------------------- */
-body:has(#site-header) .logo-light { display: block; }
-body:has(#site-header) .logo-dark { display: none; }
-html.site-dark body:has(#site-header) .logo-light { display: none; }
-html.site-dark body:has(#site-header) .logo-dark { display: block; }
-
-/* ---------------------------------------------------------------------------
- * Fixed-header offsets.
- *
- * The header is a floating pill with transparent gutters, so two things broke:
- * anchor jumps (#category) landed underneath it, and scrolled content showed
- * through the gaps beside and above the pill — section titles and prices
- * literally reading "through" the navbar.
- *
- * scroll-padding-top fixes every in-page anchor at once (the browser offsets
- * the scroll target itself, no per-element scroll-mt needed). .site-header-scrim
- * is the full-bleed fade that sits behind the pill so nothing shows through.
- * ------------------------------------------------------------------------- */
-html {
-  scroll-padding-top: 7rem;
-}
-.site-header-scrim {
-  background: linear-gradient(
-    to bottom,
-    var(--bg-main) 0%,
-    var(--bg-main) 45%,
-    color-mix(in srgb, var(--bg-main) 72%, transparent) 72%,
-    transparent 100%
-  );
-}
-
     background:
       radial-gradient(circle at 0% 0%, rgba(37, 99, 235, 0.12) 0%, transparent 50%),
       radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
@@ -1568,7 +1675,6 @@ html {
   .\!text-\[\#0B5B5B\] { color: #5eead4 !important; }
   .\!border-\[\#9ed6d6\] { border-color: rgba(94, 234, 212, 0.4) !important; }
   .hover\:\!bg-\[\#a5dede\]:hover { background-color: rgba(20, 184, 166, 0.3) !important; }
-  /* Same single-hue glow as the light theme, dimmer — see .hero-mesh above. */
   .\!bg-gray-200 { background-color: #262626 !important; }
   .hover\:\!bg-gray-300:hover { background-color: #333333 !important; }
   .\!text-gray-800 { color: #e5e5e5 !important; }

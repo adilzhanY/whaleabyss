@@ -399,7 +399,7 @@ export default function ManualOrderForm({
         <button
           onClick={handleSubmit}
           disabled={!canSubmit}
-          className="btn-primary w-full !py-3 !rounded-full !shadow-lg hover:!shadow-xl transition-shadow disabled:opacity-50"
+          className="btn-primary w-full !py-3 !shadow-lg hover:!shadow-xl transition-shadow disabled:opacity-50"
         >
           {submitting ? "Создание..." : "Создать заказ (оплачен)"}
         </button>

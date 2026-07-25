@@ -12,7 +12,18 @@ interface ServiceCardProps {
   categorySlug?: string;
 }
 
+/**
+ * "100%" is an attribute of the service, not part of its name — it was
+ * suffixed onto 14 titles and read as repeated noise down the grid. Strip it
+ * from the displayed name and surface it as a badge instead.
+ */
+function splitName(raw: string): { name: string; full: boolean } {
+	const m = raw.match(/\s*100\s*%\s*$/);
+	return m ? { name: raw.slice(0, m.index).trim(), full: true } : { name: raw, full: false };
+}
+
 export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
+  const { name: displayName, full: isHundred } = splitName(item.subtitle || item.title || "");
   const { add: addToCartWithAddons, pending } = useAddToCartWithAddons();
 
   // Check if this category is on discount
@@ -70,11 +81,21 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
       </div>
 
       {/* Subtitle */}
-      <div className="flex-1 mb-3 sm:mb-4"
+      {/* Name leads, price supports. Previously the name was ~14px muted grey
+          and the price 24px navy bold, so the page scanned as a price list and
+          the user never learned what they were buying. */}
+      <div className="flex-1 mb-3 sm:mb-4 min-w-0"
         style={{ fontFamily: "var(--font-primary), sans-serif" }}>
-        <p className="text-xl sm:text-sm font-medium line-clamp-2 text-slate-700 transition-colors duration-300 group-hover:text-blue-900">
-          {item.subtitle}
-        </p>
+        <div className="flex items-start gap-1.5">
+          <p className="text-[15px] sm:text-base font-semibold leading-snug line-clamp-2 text-slate-900 transition-colors duration-300 group-hover:text-blue-900">
+            {displayName}
+          </p>
+          {isHundred && (
+            <span className="mt-0.5 shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">
+              100%
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Price + add button */}
@@ -90,7 +111,7 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
           )}
           <div className="flex items-center gap-2">
             <span
-              className={`text-base sm:text-2xl font-bold whitespace-nowrap transition-colors duration-300 ${
+              className={`text-sm sm:text-base font-bold whitespace-nowrap transition-colors duration-300 ${
                 isOnDiscount
                   ? "text-green-600 group-hover:text-green-700"
                   : "text-[#1e3a8a] group-hover:text-blue-800"

@@ -7,7 +7,7 @@ import CartModal from "@/components/CartModal";
 import AuthModal from "@/components/AuthModal";
 import ServiceCard from "@/components/ServiceCard";
 import SuggestServiceModal from "@/components/SuggestServiceModal";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
 import Input from "@/components/Input";
 
@@ -16,6 +16,11 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  // The page was a 6000px wall of scroll with no way to navigate it: search
+  // only, no filter, no sort, no counts. These two pieces of state drive the
+  // category rail and the ordering control below.
+  const [activeCat, setActiveCat] = useState<string>("all");
+  const [sort, setSort] = useState<"default" | "price-asc" | "price-desc" | "name">("default");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -24,23 +29,44 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Filter categories based on search
+  // Search matches the visible name too — users type what they can see
+  // ("Нод-Край"), which lives in `subtitle`, not only in `title`.
   const filteredCategories = useMemo(() => {
-    if (!debouncedSearch.trim()) {
-      return categories;
-    }
-
-    const query = debouncedSearch.toLowerCase();
-
+    const query = debouncedSearch.trim().toLowerCase();
     return categories
-      .map((category) => ({
-        ...category,
-        items: category.items.filter((item: any) =>
-          item.title?.toLowerCase().includes(query)
-        ),
-      }))
+      .filter((c) => activeCat === "all" || c.slug === activeCat)
+      .map((category) => {
+        let items = query
+          ? category.items.filter(
+              (item: any) =>
+                item.title?.toLowerCase().includes(query) ||
+                item.subtitle?.toLowerCase().includes(query)
+            )
+          : [...category.items];
+        if (sort === "price-asc") items.sort((a: any, b: any) => a.price - b.price);
+        else if (sort === "price-desc") items.sort((a: any, b: any) => b.price - a.price);
+        else if (sort === "name")
+          items.sort((a: any, b: any) =>
+            (a.subtitle || a.title).localeCompare(b.subtitle || b.title, "ru")
+          );
+        return { ...category, items };
+      })
       .filter((category) => category.items.length > 0);
-  }, [debouncedSearch, categories]);
+  }, [debouncedSearch, categories, activeCat, sort]);
+
+  const catCounts = useMemo(
+    () =>
+      categories.map((c) => ({
+        slug: c.slug,
+        title: c.title,
+        n: c.items.length,
+      })),
+    [categories]
+  );
+  const grandTotal = useMemo(
+    () => categories.reduce((sum, c) => sum + c.items.length, 0),
+    [categories]
+  );
 
   const totalResults = filteredCategories.reduce(
     (sum, cat) => sum + cat.items.length,
@@ -62,61 +88,110 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
           minHeight: "calc(100vh - 64px)"
         }}
       >
-        <div className="absolute inset-0 pointer-events-none z-0 bg-white">
-          <div className="services-fog absolute inset-0 opacity-70" />
-          {/* Subtle two-tier graph-paper grid: fine 40px cells + bolder 200px
-              lines, gently faded toward the left/right edges. */}
-          <div className="services-grid absolute inset-0" />
+        {/* One ground, one surface. The graph-paper grid used to sit under
+            bordered + shadowed cards on near-white; the background grid fought
+            the content grid and everything read washed out. Plain ground now —
+            the cards carry the structure. */}
+        <div className="absolute inset-0 pointer-events-none z-0" style={{ backgroundColor: "var(--bg-main)" }}>
+          <div className="services-fog absolute inset-0 opacity-40" />
         </div>
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 relative z-10">
+        <div className="site-container relative z-10">
           <Breadcrumb />
-          <div className="mb-12 text-center">
-            <h1 className="text-4xl sm:text-5xl font-black text-blue-950 mb-4" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
+          {/* Left-aligned to match the section headings and the grid below —
+              the centred title/search used to float on a different axis. */}
+          <div className="mb-8">
+            <h1 className="text-4xl sm:text-5xl font-black text-blue-950 mb-3" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
               Все услуги
             </h1>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">Полный каталог наших услуг для развития аккаунта и сопровождения в Genshin Impact.</p>
+            <p className="text-lg text-slate-600" style={{ maxWidth: "58ch", textWrap: "pretty" }}>
+              Полный каталог наших услуг для развития аккаунта и сопровождения в Genshin Impact.
+            </p>
           </div>
 
-          <div className="mb-8">
-            <div className="relative max-w-2xl mx-auto">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+          {/* Controls: search + sort + a category rail with counts. Previously
+              the only way through 100+ services was scrolling. */}
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative w-full sm:max-w-md">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
               <Input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Поиск по названию услуги..."
-                className="pl-12 text-sm"
+                className="pl-12 pr-10 text-sm"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  aria-label="Очистить поиск"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
+            <label className="sm:ml-auto flex items-center gap-2 text-sm text-slate-500">
+              <span className="whitespace-nowrap">Сортировка</span>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as typeof sort)}
+                className="input-field !py-2 !px-3 !text-sm !w-auto"
+              >
+                <option value="default">По умолчанию</option>
+                <option value="price-asc">Сначала дешевле</option>
+                <option value="price-desc">Сначала дороже</option>
+                <option value="name">По названию</option>
+              </select>
+            </label>
           </div>
 
-          {debouncedSearch && (
-            <div className="mb-8 text-center">
-              <p className="text-slate-600 text-sm">
-                {totalResults > 0
-                  ? `Найдено услуг: ${totalResults}`
-                  : "Ничего не найдено. Попробуйте изменить запрос."}
-              </p>
-            </div>
-          )}
+          <div className="mb-6 flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setActiveCat("all")}
+              className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                activeCat === "all"
+                  ? "border-transparent bg-[var(--accent-primary)] text-white"
+                  : "border-slate-200 text-slate-600 hover:border-slate-300"
+              }`}
+            >
+              Все <span className="opacity-60">{grandTotal}</span>
+            </button>
+            {catCounts.map((c) => (
+              <button
+                key={c.slug}
+                onClick={() => setActiveCat(c.slug)}
+                className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                  activeCat === c.slug
+                    ? "border-transparent bg-[var(--accent-primary)] text-white"
+                    : "border-slate-200 text-slate-600 hover:border-slate-300"
+                }`}
+              >
+                {c.title} <span className="opacity-60">{c.n}</span>
+              </button>
+            ))}
+          </div>
+
+          <p className="mb-8 text-sm text-slate-500">
+            {totalResults > 0
+              ? `Показано услуг: ${totalResults}`
+              : "Ничего не найдено. Попробуйте изменить запрос или сбросить фильтр."}
+          </p>
 
           <div className="flex flex-col gap-12">
             {filteredCategories.map((category) => (
               <div key={category.id} className="flex flex-col gap-6" id={category.slug}>
                 <h3
-                  className="text-2xl font-bold"
+                  className="text-2xl font-bold flex items-baseline gap-2"
                   style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
                 >
                   {category.title}
+                  <span className="text-sm font-medium text-slate-400">{category.items.length}</span>
                 </h3>
-                <div
-                  className={
-                    category.slug === "actual"
-                      ? "grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6"
-                      : "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6"
-                  }
-                >
+                {/* Every section uses the same 5-up grid. "Актуальное" used to
+                    be a 1-2 column layout, so a single item rendered as one
+                    lonely half-width card that looked like a failed load. */}
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
                   {category.items.map((item: any) => (
                     <div
                       key={item.id}
@@ -133,7 +208,7 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
           <div className="mt-16 flex justify-center">
             <button
               onClick={() => setSuggestOpen(true)}
-              className="btn-primary inline-flex items-center justify-center gap-2 !rounded-full !px-12 !py-5 !text-xl !font-bold"
+              className="btn-primary inline-flex items-center justify-center gap-2 !px-12 !py-5 !text-xl !font-bold"
             >
               Предложить услугу
             </button>

@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { orders, orderItems, services, users } from '@/lib/schema';
+import { orders, orderItems, services, users, serviceAddons } from '@/lib/schema';
 import {
   createFreekassaOrder,
   ALLOWED_METHOD_IDS,
   FREEKASSA_METHODS,
 } from '@/lib/freekassa';
-import { inArray, eq } from 'drizzle-orm';
+import { inArray, eq, and } from 'drizzle-orm';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { validatePromocodeForUser } from '@/lib/promocodeValidation';
 import { enforceRateLimit, RATE_TIERS } from '@/lib/apiRateLimit';
 import { parseMinAdventureRank } from '@/lib/adventureRank';
 import { isPerDayServiceName } from '@/lib/services';
+import { isAddonChoice, isQuestGatedAndUndeclared } from '@/lib/addonChoice';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -80,9 +81,9 @@ export async function POST(req: NextRequest) {
       if (!dateBySlug.has(slug)) {
         dateBySlug.set(slug, { startDate: item?.startDate, endDate: item?.endDate });
       }
-      // Quest-addon declaration ('completed' | 'self') from the upsell modal.
-      // Whitelisted so a tampered client can't write arbitrary strings.
-      if (item?.addonChoice === 'completed' || item?.addonChoice === 'self') {
+      // Quest-addon declaration from the upsell modal ('completed' | 'self' |
+      // 'quests'). Whitelisted so a tampered client can't write arbitrary strings.
+      if (isAddonChoice(item?.addonChoice)) {
         addonChoiceBySlug.set(slug, item.addonChoice);
       }
     }
@@ -124,6 +125,71 @@ export async function POST(req: NextRequest) {
           `Измените ранг приключений в профиле или удалите услугу из корзины.`,
         { status: 422 }
       );
+    }
+
+    // Quest-addon gate (THE backstop). An exploration service with linked quest
+    // services must not be ordered without the client saying what happens to
+    // those quests — otherwise the booster gets an order they can't fulfil and
+    // we only find out after the money moved. The upsell modal is an ADD-TIME
+    // gate on the client, so every way it can be missed (a failed /addons fetch
+    // degrading to a plain add, a line restored from cart_items by loadFromDb,
+    // ticking quests and then deleting those lines, a tampered request) lands
+    // here. Enforcing it server-side makes the bad order structurally impossible.
+    // NB: only links to non-test addon services count, mirroring
+    // /api/services/[slug]/addons — otherwise hiding a quest service would block
+    // its parent at checkout while the modal had nothing left to offer, leaving
+    // the buyer with an unpurchasable cart and no way out.
+    const orderedServiceIds = dbServices.map((s) => s.id);
+    const addonLinks = await db
+      .select({
+        parentServiceId: serviceAddons.parentServiceId,
+        addonServiceId: serviceAddons.addonServiceId,
+      })
+      .from(serviceAddons)
+      .innerJoin(services, eq(serviceAddons.addonServiceId, services.id))
+      .where(
+        and(
+          inArray(serviceAddons.parentServiceId, orderedServiceIds),
+          eq(services.isTestService, false)
+        )
+      );
+
+    if (addonLinks.length > 0) {
+      const addonIdsByParent = new Map<string, string[]>();
+      for (const link of addonLinks) {
+        const list = addonIdsByParent.get(link.parentServiceId) ?? [];
+        list.push(link.addonServiceId);
+        addonIdsByParent.set(link.parentServiceId, list);
+      }
+      const orderedIdSet = new Set(orderedServiceIds);
+
+      // Shared with the Telegram detector — see lib/addonChoice.
+      const undeclared = dbServices.filter((s) =>
+        isQuestGatedAndUndeclared(
+          addonIdsByParent.get(s.id),
+          addonChoiceBySlug.get(s.slug),
+          orderedIdSet
+        )
+      );
+
+      if (undeclared.length > 0) {
+        // Log the identity too — the whole reason this bug survived two rounds
+        // is that the failure left no trace to correlate with an order.
+        console.warn('[Checkout] ADDON_CHOICE_REQUIRED', {
+          userId: userId ?? 'guest',
+          slugs: undeclared.map((s) => s.slug),
+          choices: Object.fromEntries(addonChoiceBySlug),
+        });
+        return NextResponse.json(
+          {
+            code: 'ADDON_CHOICE_REQUIRED',
+            slugs: undeclared.map((s) => s.slug),
+            error:
+              'Уточните, что делать с заданиями для услуг в корзине, и повторите оплату.',
+          },
+          { status: 409 }
+        );
+      }
     }
 
     // Compute each line's unit price + subtotal from current DB prices.

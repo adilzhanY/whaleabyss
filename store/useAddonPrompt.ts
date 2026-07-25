@@ -11,16 +11,26 @@ export interface AddonService {
   image?: string;
 }
 
+/**
+ * 'add'     — the service is not in the cart yet; the modal performs the add.
+ * 'declare' — the service is ALREADY in the cart and only needs a declaration
+ *             (the re-prompt /cart opens when checkout rejects an undeclared
+ *             quest-gated line). Quantity must not change in this mode.
+ */
+export type AddonPromptMode = "add" | "declare";
+
 interface AddonPromptState {
   isOpen: boolean;
-  /** The exploration service the user is adding to the cart. */
+  /** The exploration service the user is adding to / has in the cart. */
   parent: Omit<CartItem, "quantity"> | null;
   parentQuantity: number;
   addons: AddonService[];
+  mode: AddonPromptMode;
   open: (
     parent: Omit<CartItem, "quantity">,
     addons: AddonService[],
-    quantity?: number
+    quantity?: number,
+    mode?: AddonPromptMode
   ) => void;
   close: () => void;
 }
@@ -35,7 +45,8 @@ export const useAddonPrompt = create<AddonPromptState>((set) => ({
   parent: null,
   parentQuantity: 1,
   addons: [],
-  open: (parent, addons, quantity = 1) =>
-    set({ isOpen: true, parent, addons, parentQuantity: quantity }),
+  mode: "add",
+  open: (parent, addons, quantity = 1, mode = "add") =>
+    set({ isOpen: true, parent, addons, parentQuantity: quantity, mode }),
   close: () => set({ isOpen: false }),
 }));

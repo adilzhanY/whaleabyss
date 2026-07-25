@@ -5,6 +5,7 @@ import Image from "next/image";
 import { X, Trash2, ShoppingBag, Plus, Minus } from "lucide-react";
 import { useCart } from "@/store/useCart";
 import { useRouter } from "next/navigation";
+import { ADDON_CHOICE_CART_LABEL, ADDON_CHOICE_TEXT_CLASS } from "@/lib/addonChoice";
 
 export default function CartModal() {
   const { items, isOpen, closeCart, removeFromCart, updateQuantity, cartTotal } = useCart();
@@ -124,8 +125,8 @@ export default function CartModal() {
                         </p>
                       )}
                       {item.addonChoice && (
-                        <p className={`text-xs font-semibold mt-1 ${item.addonChoice === "completed" ? "text-green-600" : "text-amber-600"}`}>
-                          {item.addonChoice === "completed" ? "Задания уже выполнены" : "Задания пройду сам"}
+                        <p className={`text-xs font-semibold mt-1 ${ADDON_CHOICE_TEXT_CLASS[item.addonChoice]}`}>
+                          {ADDON_CHOICE_CART_LABEL[item.addonChoice]}
                         </p>
                       )}
                     </div>

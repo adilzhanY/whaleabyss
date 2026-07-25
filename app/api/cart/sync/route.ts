@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { cartItems, services } from '@/lib/schema';
 import { eq, and } from 'drizzle-orm';
 import { enforceRateLimit, RATE_TIERS } from '@/lib/apiRateLimit';
+import { isAddonChoice } from '@/lib/addonChoice';
 
 /**
  * POST /api/cart/sync
@@ -67,8 +68,9 @@ export async function POST(req: NextRequest) {
             quantity: item.quantity || 1,
             ...(item.startDate ? { startDate: new Date(item.startDate) } : {}),
             ...(item.endDate ? { endDate: new Date(item.endDate) } : {}),
-            // Quest-addon declaration ('completed' | 'self') — see schema.
-            ...(item.addonChoice === 'completed' || item.addonChoice === 'self'
+            // Quest-addon declaration ('completed' | 'self' | 'quests') — see
+            // lib/addonChoice. Whitelisted; anything else is stored as NULL.
+            ...(isAddonChoice(item.addonChoice)
               ? { addonChoice: item.addonChoice }
               : {}),
           };

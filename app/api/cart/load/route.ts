@@ -4,6 +4,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { db } from '@/lib/db';
 import { cartItems, services } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
+import { isAddonChoice } from '@/lib/addonChoice';
 
 /**
  * GET /api/cart/load
@@ -47,7 +48,9 @@ export async function GET() {
       image: item.imageUrl || '/images/genshin_background.jpg',
       ...(item.startDate ? { startDate: item.startDate.toISOString() } : {}),
       ...(item.endDate ? { endDate: item.endDate.toISOString() } : {}),
-      ...(item.addonChoice ? { addonChoice: item.addonChoice } : {}),
+      // Guarded so a legacy/garbage column value can't enter the client store
+      // as a bogus declaration (checkout would reject it anyway).
+      ...(isAddonChoice(item.addonChoice) ? { addonChoice: item.addonChoice } : {}),
     }));
 
     return NextResponse.json({ items: cartData });

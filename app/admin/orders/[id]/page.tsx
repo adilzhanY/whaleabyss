@@ -13,6 +13,11 @@ import DeleteOrderButton from "./DeleteOrderButton";
 import CustomerNotesSection from "./CustomerNotesSection";
 import { ArrowLeft, Mail, Hash, User } from "lucide-react";
 import TelegramIcon from "@/components/TelegramIcon";
+import {
+  isAddonChoice,
+  ADDON_CHOICE_ADMIN_LABEL,
+  ADDON_CHOICE_TEXT_CLASS,
+} from "@/lib/addonChoice";
 
 export const dynamic = "force-dynamic";
 
@@ -123,17 +128,11 @@ export default async function OrderDetailPage({ params }: PageProps) {
                         {new Date(it.endDate).toLocaleDateString("ru-RU")}
                       </div>
                     )}
-                    {it.addonChoice && (
+                    {isAddonChoice(it.addonChoice) && (
                       <div
-                        className={`text-xs font-medium mt-0.5 ${
-                          it.addonChoice === "completed"
-                            ? "text-green-600"
-                            : "text-amber-600"
-                        }`}
+                        className={`text-xs font-medium mt-0.5 ${ADDON_CHOICE_TEXT_CLASS[it.addonChoice]}`}
                       >
-                        {it.addonChoice === "completed"
-                          ? "Клиент: задания региона уже выполнены"
-                          : "Клиент: пройдёт задания сам"}
+                        {ADDON_CHOICE_ADMIN_LABEL[it.addonChoice]}
                       </div>
                     )}
                   </div>

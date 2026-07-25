@@ -13,6 +13,8 @@ import Checkbox from "@/components/Checkbox";
 import Input from "@/components/Input";
 import { useSession } from "next-auth/react";
 import Breadcrumb from "@/components/Breadcrumb";
+import { useAddonPrompt } from "@/store/useAddonPrompt";
+import { ADDON_CHOICE_CART_LABEL, ADDON_CHOICE_TEXT_CLASS } from "@/lib/addonChoice";
 
 /**
  * Available payment methods. The numeric `id` is the Freekassa method id
@@ -31,6 +33,7 @@ const PAYMENT_METHODS = [
 export default function CartPage() {
   const { data: session } = useSession();
   const { items, removeFromCart, updateQuantity, cartTotal } = useCart();
+  const openAddonPrompt = useAddonPrompt((s) => s.open);
   const total = cartTotal();
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -151,6 +154,28 @@ export default function CartPage() {
 
   const { subtotal, discount, afterDiscount, commission, finalTotal } = calculateTotals();
 
+  /**
+   * Re-open QuestAddonModal for a cart line the server rejected as undeclared.
+   * Returns false if we couldn't (line gone, addons unavailable) so the caller
+   * falls back to showing the plain error instead of silently doing nothing.
+   */
+  const repromptAddonChoice = async (slug: unknown): Promise<boolean> => {
+    if (typeof slug !== "string" || !slug) return false;
+    const line = items.find((i) => i.id === slug);
+    if (!line) return false;
+    try {
+      const res = await fetch(`/api/services/${encodeURIComponent(slug)}/addons`);
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (!Array.isArray(data.addons) || data.addons.length === 0) return false;
+      const { quantity, ...parent } = line;
+      openAddonPrompt(parent, data.addons, quantity, "declare");
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const handleCheckout = async () => {
     // Check if user is logged in
     if (!session?.user) {
@@ -196,6 +221,24 @@ export default function CartPage() {
         if (res.status === 422) {
           const msg = (await res.text()).trim();
           throw new Error(msg || "Услуга недоступна для вашего ранга приключений");
+        }
+        // 409 = a quest-gated service in the cart carries no declaration (the
+        // upsell modal was missed, or its quest lines were deleted afterwards).
+        // Re-open the modal for the offending line instead of failing the sale;
+        // the cart is left untouched and the user just presses pay again.
+        if (res.status === 409) {
+          const data = await res.json().catch(() => null);
+          if (data?.code === "ADDON_CHOICE_REQUIRED" && Array.isArray(data.slugs)) {
+            const reprompted = await repromptAddonChoice(data.slugs[0]);
+            if (reprompted) {
+              setIsLoading(false);
+              return;
+            }
+          }
+          throw new Error(
+            data?.error ||
+              "Уточните, что делать с заданиями для услуг в корзине, и повторите оплату."
+          );
         }
         throw new Error("Ошибка при создании заказа");
       }
@@ -262,8 +305,8 @@ export default function CartPage() {
                         </p>
                       )}
                       {item.addonChoice && (
-                        <p className={`text-xs font-semibold mt-1 ${item.addonChoice === "completed" ? "text-green-600" : "text-amber-600"}`}>
-                          {item.addonChoice === "completed" ? "Задания уже выполнены" : "Задания пройду сам"}
+                        <p className={`text-xs font-semibold mt-1 ${ADDON_CHOICE_TEXT_CLASS[item.addonChoice]}`}>
+                          {ADDON_CHOICE_CART_LABEL[item.addonChoice]}
                         </p>
                       )}
                       {/* Trash lives in the title column only on desktop — mobile

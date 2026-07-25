@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import type { AddonChoice } from "@/lib/addonChoice";
 
 export interface CartItem {
   id: string;
@@ -10,11 +11,12 @@ export interface CartItem {
   image?: string;
   startDate?: string;
   endDate?: string;
-  // Quest-addon modal declaration for exploration services:
-  // 'completed' — клиент заявил, что гейт-квесты региона уже пройдены;
-  // 'self' — пройдёт их сам. undefined — выбора не было (выбрал квесты
-  // или у услуги нет аддонов). Travels cart → checkout → order_items.
-  addonChoice?: "completed" | "self";
+  // Quest-addon modal declaration for exploration services (see lib/addonChoice):
+  // 'completed' — гейт-квесты региона уже пройдены; 'self' — пройдёт их сам;
+  // 'quests' — заказывает квесты отдельными позициями. undefined — выбора не
+  // было (у услуги нет аддонов, либо строка старая). Travels cart → checkout →
+  // order_items; /api/checkout rejects an undeclared quest-gated line.
+  addonChoice?: AddonChoice;
 }
 
 // Collapse accidental duplicate lines (same service id) into one entry,
@@ -35,6 +37,11 @@ interface CartState {
   addToCart: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
   addManyToCart: (
     entries: { item: Omit<CartItem, "quantity">; quantity?: number }[]
+  ) => void;
+  declareAddon: (
+    parentId: string,
+    choice: AddonChoice,
+    addons?: { item: Omit<CartItem, "quantity">; quantity?: number }[]
   ) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
@@ -77,6 +84,31 @@ export const useCart = create<CartState>()(
         set((state) => {
           let items = [...state.items];
           for (const { item, quantity = 1 } of entries) {
+            const existing = items.find((i) => i.id === item.id);
+            if (existing) {
+              items = items.map((i) =>
+                i.id === item.id ? { ...i, ...item, quantity: i.quantity + quantity } : i
+              );
+            } else {
+              items = [...items, { ...item, quantity }];
+            }
+          }
+          return { items };
+        });
+        get().syncToDb().catch(err => console.error('Failed to sync cart:', err));
+      },
+
+      // Attach a quest-addon declaration to a line ALREADY in the cart, without
+      // touching its quantity, optionally appending the ticked quest lines.
+      // Used by QuestAddonModal in 'declare' mode — the re-prompt the cart page
+      // opens when /api/checkout rejects an undeclared quest-gated line. Same
+      // batching rule as addManyToCart: one state update, one db sync.
+      declareAddon: (parentId, choice, addons = []) => {
+        set((state) => {
+          let items = state.items.map((i) =>
+            i.id === parentId ? { ...i, addonChoice: choice } : i
+          );
+          for (const { item, quantity = 1 } of addons) {
             const existing = items.find((i) => i.id === item.id);
             if (existing) {
               items = items.map((i) =>

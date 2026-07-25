@@ -268,10 +268,37 @@ const result = await db.select().from(services).where(eq(services.id, id));
   (admin-managed). Adding such a service to the cart goes through
   `useAddToCartWithAddons()` (`components/QuestAddonModal.tsx`): it fetches
   `/api/services/[slug]/addons` and, if non-empty, opens `QuestAddonModal` instead of a
-  plain add. The client's choice — tick quests (added as separate cart lines), «задания
-  уже выполнены», or «пройду их сам» — travels cart → `cart_items.addon_choice` (sync/load)
+  plain add. The client's choice travels cart → `cart_items.addon_choice` (sync/load)
   → checkout → `order_items.addon_choice`, and is rendered in the admin panel and the
   Telegram order notification so the booster knows whether the gating quests are on the client.
+- **Three declaration values, all positive** (`lib/addonChoice.ts` — the single source of
+  truth for the type, the whitelist guard `isAddonChoice`, and every UI label):
+  `'completed'` («уже выполнены»), `'self'` («пройду сам»), `'quests'` (ticked quests, which
+  are added as separate cart lines). `'quests'` used to be left NULL — see the post-mortem
+  below for why that was the bug. Adding a fourth value means updating `lib/addonChoice.ts`
+  only; the column is `varchar(20)`, so no migration is needed.
+- **`POST /api/checkout` is the backstop and the load-bearing guarantee.** Before creating the
+  order it re-reads `service_addons` and rejects with **409** `{code:'ADDON_CHOICE_REQUIRED',
+  slugs}` any line whose service has (non-test) quest links but carries neither a
+  `'completed'`/`'self'` declaration nor at least one of its quest services in the same order.
+  `'quests'` with no quest lines in the order is rejected too — that's the "ticked them, then
+  deleted them in the cart" case. `app/cart/page.tsx` catches the 409 and re-opens
+  `QuestAddonModal` in **`mode:'declare'`** (`store/useAddonPrompt.ts`), which applies the
+  declaration to the line already in the cart via `useCart().declareAddon()` without touching
+  its quantity; the cart is never cleared and the user just presses pay again. Verified by
+  replaying all 50 post-feature paid orders: blocks exactly the 2 known-bad ones, passes 48.
+  - The addon-link lookup filters `services.isTestService = false`, mirroring
+    `/api/services/[slug]/addons` — otherwise hiding a quest service would block its parent
+    while the modal had nothing left to offer, leaving an unpurchasable cart.
+  - The gate is deliberately **not** applied to `/api/admin/orders` (manual orders) or
+    `/api/admin/testing/checkout` — an admin creating an order has already spoken to the client.
+  - **409 is reserved for this.** 422 is already the Adventure Rank gate, which the cart page
+    reads as plain text; don't reuse it.
+- **The client modal is an ADD-TIME gate only** and must never be treated as sufficient: a line
+  restored from `cart_items` by `loadFromDb` bypasses it entirely, and a failed `/addons` fetch
+  still degrades to a plain add. The server gate is what actually holds. (Client-side hardening —
+  in-flight guard, fetch timeouts, no silent fallthrough, merge-instead-of-replace in
+  `loadFromDb` — remains a known TODO.)
 - **Incident (order `f216229e`, 2026-07-12):** a paid order for a quest-gated service
   arrived with `addon_choice = NULL` and no quest lines — the admin notification showed
   nothing and there was no way to tell what the client wanted. Diagnosis: code and data
@@ -280,14 +307,35 @@ const result = await db.select().from(services).where(eq(services.id, id));
   blip, transient 500/429) skipped the modal and did a plain add, losing the declaration
   with no trace. Lesson: **a graceful degradation on a revenue-relevant path must never be
   silent** — degrade for the user, but surface the degradation to the operator.
-- Fix (commit `cdebec0`): (1) the addons fetch retries ×3 with backoff before falling back
-  (a definitive empty response still skips the modal instantly); (2) the Freekassa-notify
-  Telegram message now detects the bad shape server-side — ordered service has
-  `service_addons` links but neither an `addon_choice` nor any of its quest services in the
-  order — and appends «❗ Услуга с заданиями, но клиент не сделал выбор — уточните у
-  клиента». The same NULL shape can also be produced legitimately (client ticked quests in
-  the modal, then deleted the quest lines in the cart), which the flag covers too; Metrika
-  Webvisor session replay is the tiebreaker when it matters.
+- First fix attempt (commit `cdebec0`): (1) the addons fetch retries ×3 with backoff before
+  falling back; (2) the Freekassa-notify Telegram message detects the bad shape server-side and
+  appends «❗ Услуга с заданиями, но клиент не сделал выбор — уточните у клиента».
+- **It did not hold — the bug recurred on 2026-07-25** (order `96162b2e`, `fonteyn-4-1-11`,
+  2000 ₽, a Yandex-OAuth buyer). Full DB audit at the time: ~27 gated order lines since the
+  feature shipped, exactly **2** broken (2026-07-12 and 2026-07-25); **0** post-feature
+  `cart_items` rows in the bad shape (so the add-gate does write the declaration when it runs);
+  neither buyer had a legacy cart row; no deploy near either incident. Root causes:
+  1. **The real one — `addWithQuests` wrote `addonChoice: undefined` on the parent**, so "I'm
+     buying the quests" existed only as sibling cart lines. Deleting those lines — one tap on
+     the trash, or on «−» at qty 1, since `updateQuantity(id, 0)` removes the line — silently
+     reverted the parent to an indistinguishable NULL. `cdebec0` never touched this path, which
+     is exactly why the retry fix changed nothing. Fixed by the `'quests'` value above.
+  2. **No backstop after the add.** Checkout trusted the client array and never consulted
+     `service_addons` or its own `cart_items.addon_choice` copy, so any single loss became a
+     paid order. Fixed by the 409 gate above.
+  3. Contributing: `cdebec0`'s retry budget is ~1.2 s while the addons endpoint's own rate-limit
+     window is 60 s (and it's IP-keyed, not user-keyed); the route returns 200 `{addons:[]}` for
+     parent-not-found, which `break`s the retry loop with zero verification; neither add button
+     has an in-flight guard or a fetch timeout, so a slow chain invites a second tap whose
+     fallback adds a bare line *behind* the modal.
+- **Lesson (unchanged, and now enforced): a graceful degradation on a revenue path must never be
+  silent — and a client-side gate is a UX affordance, not a guarantee. Put the invariant on the
+  server.** Metrika Webvisor session replay remains the tiebreaker for "what did the client
+  actually click".
+- Still open (known TODO, tracked in the plan): 74 legacy `cart_items` rows across 36 users,
+  created before 2026-06-08, sit on gated services with no declaration. They are harmless now —
+  the 409 gate catches them at checkout and re-prompts — but a cart-render-time warning would be
+  friendlier than discovering it at the payment step.
 
 **Boosters (качеры) & Commission Payouts:**
 - `boosters` table is an admin-managed roster at `/admin/boosters` (list with

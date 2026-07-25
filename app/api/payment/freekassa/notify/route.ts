@@ -7,6 +7,11 @@ import {
   FREEKASSA_NOTIFY_IPS,
   shouldCheckNotifyIp,
 } from '@/lib/freekassa';
+import {
+  ADDON_CHOICE_TELEGRAM_LABEL,
+  isAddonChoice,
+  isQuestGatedAndUndeclared,
+} from '@/lib/addonChoice';
 
 /**
  * Freekassa notification endpoint.
@@ -249,21 +254,27 @@ async function handle(req: NextRequest) {
 
           // Quest-addon declaration from the upsell modal — the booster must
           // know whether the gating quests are on the client.
-          if (i.addonChoice === 'completed') {
-            desc += '\n  ⚠️ Клиент: задания региона уже выполнены';
-          } else if (i.addonChoice === 'self') {
-            desc += '\n  ⚠️ Клиент: пройдёт задания сам';
-          } else {
-            const linkedAddonIds = i.serviceId
-              ? addonIdsByParent.get(i.serviceId)
-              : undefined;
-            const questsInOrder = linkedAddonIds?.some((id) =>
-              orderedIdSet.has(id)
-            );
-            if (linkedAddonIds && linkedAddonIds.length > 0 && !questsInOrder) {
-              desc +=
-                '\n  ❗ Услуга с заданиями, но клиент не сделал выбор — уточните у клиента';
-            }
+          const linkedAddonIds = i.serviceId
+            ? addonIdsByParent.get(i.serviceId)
+            : undefined;
+          // Same predicate the /api/checkout gate rejects on, so this warning
+          // can never drift out of sync with what is actually blocked.
+          const undeclared = isQuestGatedAndUndeclared(
+            linkedAddonIds,
+            i.addonChoice,
+            orderedIdSet
+          );
+
+          if (undeclared) {
+            desc +=
+              i.addonChoice === 'quests'
+                ? // Ticked the quests in the modal, then removed those lines from
+                  // the cart. Checkout rejects this now, so it should only ever
+                  // show up on an order created before that gate shipped.
+                  '\n  ❗ Клиент выбрал задания, но затем удалил их из корзины — уточните у клиента'
+                : '\n  ❗ Услуга с заданиями, но клиент не сделал выбор — уточните у клиента';
+          } else if (isAddonChoice(i.addonChoice)) {
+            desc += `\n  ⚠️ ${ADDON_CHOICE_TELEGRAM_LABEL[i.addonChoice]}`;
           }
           return desc;
         })

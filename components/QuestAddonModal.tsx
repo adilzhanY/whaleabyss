@@ -9,15 +9,20 @@ import { useRankGate } from "@/store/useRankGate";
 
 /**
  * Upsell modal shown when an exploration service with linked quest addons is
- * added to the cart. The client has three choices:
- *  1. tick quests → they're added to the cart alongside the service;
- *  2. «Все задания уже выполнены» → addonChoice: 'completed' on the service;
- *  3. «Пройду их сам» → addonChoice: 'self' on the service.
+ * added to the cart. The client has three choices, and EVERY one of them writes
+ * a positive declaration onto the parent line:
+ *  1. tick quests → addonChoice: 'quests' + the quests as separate cart lines;
+ *  2. «Все задания уже выполнены» → addonChoice: 'completed';
+ *  3. «Пройду их сам» → addonChoice: 'self'.
  * The declaration travels cart → checkout → order and is visible to admins.
+ *
+ * In 'declare' mode the parent is already in the cart and only the declaration
+ * is applied — quantity is left alone. That mode is used for the re-prompt
+ * /cart opens when /api/checkout rejects an undeclared quest-gated line.
  */
 export default function QuestAddonModal() {
-  const { isOpen, parent, parentQuantity, addons, close } = useAddonPrompt();
-  const { addToCart, addManyToCart, openCart } = useCart();
+  const { isOpen, parent, parentQuantity, addons, mode, close } = useAddonPrompt();
+  const { addToCart, addManyToCart, declareAddon, openCart } = useCart();
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   // Reset selection each time the modal opens for a new service.
@@ -50,31 +55,47 @@ export default function QuestAddonModal() {
 
   const finish = () => {
     close();
-    openCart();
+    // In 'declare' mode the user is already looking at their cart — popping the
+    // drawer on top of it would just be in the way.
+    if (mode === "add") openCart();
   };
 
+  const questLines = () =>
+    selectedAddons.map((a) => ({
+      item: {
+        id: a.id,
+        title: a.title,
+        subtitle: a.subtitle,
+        price: a.price,
+        image: a.image || "/images/genshin_background.jpg",
+      },
+    }));
+
   const addWithQuests = () => {
+    // 'quests' is a POSITIVE declaration: it used to be left undefined here, so
+    // deleting the quest lines in the cart afterwards silently reverted the
+    // parent to "no declaration" and the booster was left guessing. Checkout
+    // now also rejects 'quests' with no quest lines actually in the order.
+    //
     // One batched store update + one db sync (looped addToCart calls would
     // fire concurrent syncs that race and duplicate cart_items rows).
-    // Explicit undefined clears a stale declaration if the same service was
-    // added earlier with «пройду сам» (the cart merges fields on re-add).
-    addManyToCart([
-      { item: { ...parent, addonChoice: undefined }, quantity: parentQuantity },
-      ...selectedAddons.map((a) => ({
-        item: {
-          id: a.id,
-          title: a.title,
-          subtitle: a.subtitle,
-          price: a.price,
-          image: a.image || "/images/genshin_background.jpg",
-        },
-      })),
-    ]);
+    if (mode === "declare") {
+      declareAddon(parent.id, "quests", questLines());
+    } else {
+      addManyToCart([
+        { item: { ...parent, addonChoice: "quests" }, quantity: parentQuantity },
+        ...questLines(),
+      ]);
+    }
     finish();
   };
 
   const addWithChoice = (choice: NonNullable<CartItem["addonChoice"]>) => {
-    addToCart({ ...parent, addonChoice: choice }, parentQuantity);
+    if (mode === "declare") {
+      declareAddon(parent.id, choice);
+    } else {
+      addToCart({ ...parent, addonChoice: choice }, parentQuantity);
+    }
     finish();
   };
 
@@ -113,8 +134,9 @@ export default function QuestAddonModal() {
                 На этой локации есть задания
               </h2>
               <p className="text-sm text-slate-600 mt-1 leading-snug">
-                Для 100% исследования нужно пройти задания ниже — без них мы не
-                сможем полностью зачистить карту.
+                {mode === "declare"
+                  ? "Чтобы оформить заказ, уточните, что делать с заданиями этой локации — без них мы не сможем полностью зачистить карту."
+                  : "Для 100% исследования нужно пройти задания ниже — без них мы не сможем полностью зачистить карту."}
               </p>
             </div>
           </div>
@@ -170,9 +192,11 @@ export default function QuestAddonModal() {
           >
             <ListChecks className="w-4 h-4" />
             <span>
-              {selectedAddons.length > 0
-                ? `Добавить с заданиями (+${addonsTotal.toLocaleString("ru-RU")} ₽)`
-                : "Выберите задания"}
+              {selectedAddons.length === 0
+                ? "Выберите задания"
+                : mode === "declare"
+                  ? `Добавить задания (+${addonsTotal.toLocaleString("ru-RU")} ₽)`
+                  : `Добавить с заданиями (+${addonsTotal.toLocaleString("ru-RU")} ₽)`}
             </span>
           </button>
           <div className="grid grid-cols-2 gap-2.5">

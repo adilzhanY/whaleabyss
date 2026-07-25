@@ -53,9 +53,26 @@ npm run bot:dev
   `npm run lint` runs **non-blocking** (`continue-on-error`) because there are ~85
   pre-existing lint errors. If `verify` fails, `deploy` is skipped and prod is untouched.
   - The full `next build` is **NOT** run in CI — it does build-time DB queries a runner
-    can't reach. The build still runs on the VM in the `deploy` job (`git pull && npm
-    install && npm run build && pm2 restart`), so a build that only fails on the VM can
-    still leave prod half-broken (atomic deploy + rollback is a known TODO).
+    can't reach. It runs on the VM in the `deploy` job instead.
+  - **The VM build is out-of-place and the swap is atomic.** `next build` rewrites its
+    output dir as it goes and `next start` reads from it at runtime, so building straight
+    into `.next` breaks the app that is currently serving — for the whole build, on every
+    deploy. On **2026-07-25** a VM build failed and prod returned 500 on every prerendered
+    route (`client reference manifest ... does not exist`) until it was rebuilt by hand;
+    `set -e` correctly skipped `pm2 restart`, but the build had already destroyed the live
+    `.next`. The deploy now:
+    1. builds into `.next-build` (`NEXT_DIST_DIR`, read by `next.config.ts` → `distDir`),
+       **retrying once** because the remote DB is occasionally flaky from the VM;
+    2. refuses to continue unless `.next-build/BUILD_ID` exists;
+    3. `mv .next .next-prev && mv .next-build .next && pm2 restart`;
+    4. health-checks `/` **and** `/services` (a prerendered route — a broken `.next` still
+       answers dynamic routes, which is how the last breakage looked healthy at a glance),
+       and **rolls back to `.next-prev`** if it doesn't come up.
+    A failed build is now a no-op, not an outage. Verified on the VM: a happy-path deploy
+    held 100% availability across build+swap+restart, and both a failing build and a
+    BUILD_ID-less build exit non-zero with `.next` untouched and the app still serving.
+  - **Don't set `NEXT_DIST_DIR` in pm2's environment.** It's only for the build step; the
+    running app must read the default `.next`.
   - `tsc --noEmit` passes on a cold checkout even though `next-env.d.ts` imports the
     not-yet-generated `.next/types/routes.d.ts` (TypeScript tolerates it).
 - **Implication: pushing to `main` ships to live customers** once `verify` passes.

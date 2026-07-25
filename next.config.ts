@@ -59,6 +59,17 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Build output directory. Overridable so the deploy can build OUT OF PLACE
+  // and swap the result in only once it succeeds.
+  //
+  // `next build` rewrites this directory as it goes, and `next start` reads
+  // from it at runtime — so building straight into `.next` breaks the app that
+  // is currently serving, for the whole duration of every build. On
+  // 2026-07-25 a build failed on the VM and prod stayed down (500s on every
+  // prerendered route) until it was rebuilt by hand: `set -e` correctly
+  // skipped `pm2 restart`, but the damage was already done by the build.
+  // See .github/workflows/deploy.yml.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   // Don't advertise the framework.
   poweredByHeader: false,
   experimental: {

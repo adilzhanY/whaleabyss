@@ -8,7 +8,11 @@ import {
 	Star,
 	Clock,
 	PlusCircle,
+	ArrowRight,
+	CheckCircle2,
+	ShieldCheck,
 } from "lucide-react";
+import type { SiteStats } from "@/lib/siteStats";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CartModal from "@/components/CartModal";
@@ -82,13 +86,111 @@ interface OrderData {
 	[key: string]: unknown;
 }
 
-export default function HomeClient({ categories }: { categories: any[] }) {
+/** Russian count forms: 1 отзыв / 2–4 отзыва / 5+ отзывов. */
+function plural(n: number, one: string, few: string, many: string) {
+	const m10 = n % 10;
+	const m100 = n % 100;
+	if (m10 === 1 && m100 !== 11) return one;
+	if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+	return many;
+}
+
+/**
+ * Product illustration for the right half of the fold.
+ *
+ * Replaces a 50% void. Deliberately a real-looking order card rather than a
+ * hand-drawn SVG: it counterbalances the headline, shows what the product
+ * actually is, and reinforces trust — all at once. Marked aria-hidden because
+ * it is illustrative, not live data.
+ */
+function HeroOrderCard() {
+	return (
+		<div className="w-full max-w-sm mx-auto lg:mx-0" aria-hidden="true">
+			<div className="rounded-[14px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_18px_50px_-24px_rgba(15,27,45,0.4)] backdrop-blur-sm">
+				<div className="flex items-center justify-between">
+					<span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+						Ваш заказ
+					</span>
+					<span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-700">
+						Выполняется
+					</span>
+				</div>
+				<p className="mt-3 text-lg font-bold text-slate-900">Спиральная Бездна</p>
+				<p className="text-sm text-slate-500">Этажи 9–12, полное прохождение</p>
+				<div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+					<div
+						className="h-full w-3/4 rounded-full"
+						style={{ backgroundColor: "var(--accent-primary)" }}
+					/>
+				</div>
+				<div className="mt-1.5 flex justify-between text-[11px] text-slate-400">
+					<span>9 из 12 этажей</span>
+					<span>75%</span>
+				</div>
+				<div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+					<div className="flex items-center gap-2">
+						<div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 text-xs font-bold text-white">
+							К
+						</div>
+						<div className="leading-tight">
+							<p className="text-xs font-semibold text-slate-700">Ваш качер</p>
+							<p className="text-[11px] text-slate-400">на связи в Telegram</p>
+						</div>
+					</div>
+					<ShieldCheck className="h-5 w-5 text-slate-300" />
+				</div>
+			</div>
+		</div>
+	);
+}
+
+export default function HomeClient({
+	categories,
+	stats,
+}: {
+	categories: any[];
+	stats?: SiteStats;
+}) {
 	const { data: session } = useSession();
 	const searchParams = useSearchParams();
 	const router = useRouter();
 	const clearCart = useCart((state) => state.clearCart);
 
 	const [showDeletedModal, setShowDeletedModal] = useState(false);
+
+	// Trust figures come straight from the DB (lib/siteStats). Anything we
+	// cannot back with a real number is omitted rather than invented — these
+	// are claims made to paying customers, not decoration.
+	const priceAnchor = stats?.minPrice
+		? ` — от ${stats.minPrice.toLocaleString("ru-RU")} ₽`
+		: "";
+	const trustSignals: { icon: React.ReactNode; label: string }[] = [];
+	if (stats?.rating != null && stats.reviewCount > 0) {
+		trustSignals.push({
+			icon: <Star className="h-4 w-4 fill-amber-400 text-amber-400" />,
+			label: `${stats.rating.toFixed(1).replace(".", ",")} · ${stats.reviewCount} ${plural(
+				stats.reviewCount,
+				"отзыв",
+				"отзыва",
+				"отзывов",
+			)}`,
+		});
+	}
+	if (stats?.completedOrders) {
+		trustSignals.push({
+			icon: <CheckCircle2 className="h-4 w-4 text-emerald-600" />,
+			label: `${stats.completedOrders} ${plural(
+				stats.completedOrders,
+				"выполненный заказ",
+				"выполненных заказа",
+				"выполненных заказов",
+			)}`,
+		});
+	}
+	trustSignals.push({
+		icon: <CreditCard className="h-4 w-4 text-slate-400" />,
+		label: "Оплата через СБП",
+	});
 
 	useEffect(() => {
 		if (searchParams.get("deleted") === "true") {
@@ -172,7 +274,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 								<div className="mb-10">
 									<Link
 										href="/portal"
-										className="btn-primary inline-flex items-center justify-center !rounded-full !px-6 sm:!px-8 !py-3.5 !text-sm !font-bold w-full sm:w-auto"
+										className="btn-primary inline-flex items-center justify-center !px-6 sm:!px-8 !py-3.5 !text-sm !font-bold w-full sm:w-auto"
 									>
 										Перейти на портал
 									</Link>
@@ -210,7 +312,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 										</p>
 										<a
 											href="#services"
-											className="btn-primary inline-flex items-center justify-center gap-2 !rounded-full !px-6 !py-3 !font-bold"
+											className="btn-primary inline-flex items-center justify-center gap-2 !px-6 !py-3 !font-bold"
 										>
 											<PlusCircle className="w-5 h-5" />
 											Создать заказ
@@ -229,7 +331,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 											<div className="mt-6 flex justify-center">
 												<Link
 													href="/orders"
-													className="btn-primary inline-flex items-center justify-center gap-2 !rounded-full !px-6 sm:!px-8 !py-3 !font-bold w-full sm:w-auto"
+													className="btn-primary inline-flex items-center justify-center gap-2 !px-6 sm:!px-8 !py-3 !font-bold w-full sm:w-auto"
 												>
 													Показать все заказы ({activeOrders.length})
 												</Link>
@@ -262,7 +364,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 										<div className="mt-6 flex justify-start pb-8 sm:pb-0">
 											<Link
 												href="/orders"
-												className="btn-secondary !rounded-full !px-8 !py-3.5 !font-bold"
+												className="btn-secondary !px-8 !py-3.5 !font-bold"
 											>
 												Посмотреть все заказы
 											</Link>
@@ -285,7 +387,7 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 									<div className="mt-6 flex justify-start pb-8 sm:pb-0">
 										<Link
 											href="/orders"
-											className="btn-secondary !rounded-full !px-8 !py-3.5 !font-bold"
+											className="btn-secondary !px-8 !py-3.5 !font-bold"
 										>
 											Посмотреть все заказы
 										</Link>
@@ -300,84 +402,79 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 					id="hero"
 					className="hero-mesh relative overflow-hidden pt-24 pb-24 sm:pb-32"
 				>
-					<div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-between gap-8 px-4 sm:px-12 lg:flex-row">
-						<div className="text-left w-full sm:w-auto">
-							<span
-								className="mb-4 inline-block rounded-full px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-center sm:text-left wrap-break-word max-w-full"
-								style={{
-									backgroundColor: "rgba(30,58,138,0.05)",
-									color: "var(--accent-primary)",
-									border: "1px solid rgba(30,58,138,0.15)",
-								}}
-							>
-								#1 Сервис сопровождения Genshin Impact
-							</span>
-							<h1
-								className="mb-6 max-w-3xl text-3xl font-black leading-tight sm:text-5xl lg:text-6xl tracking-tight text-slate-800 wrap-break-word w-full overflow-hidden"
-								style={{
-									fontFamily: "var(--font-primary), sans-serif",
-									wordBreak: "break-word",
-									hyphens: "auto",
-								}}
-							>
-								Ваш персональный
-								<br className="hidden sm:block" />
-								<span style={{ color: "var(--accent-primary)" }}>
-									{" "}
-									игровой ассистент
-								</span>{" "}
-								в
-								<br />
-								<span style={{ fontWeight: "bold" }}>Genshin Impact</span>
-							</h1>
-							<p className="mb-10 max-w-xl text-sm sm:text-lg leading-relaxed text-slate-600 font-medium wrap-break-word w-full">
-								Быстро, безопасно и с гарантией результата. Позвольте экспертам
-								позаботиться о вашей рутине, пока вы наслаждаетесь историей
-								Тейвата.
-							</p>
-							<div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-3 w-full max-w-[100vw]">
-								<a
-									href="#services"
-									className="btn-primary w-full sm:w-auto !rounded-full !px-6 sm:!px-8 !py-3.5 !text-sm !font-bold"
-								>
-									Выбрать услугу
-								</a>
-								<a
-									href="#how"
-									className="btn-secondary w-full sm:w-auto !rounded-full !px-6 sm:!px-8 !py-3.5 !text-sm !font-bold"
-								>
-									Как это работает?
-								</a>
+						{/* .site-gutter + .site-container reproduce the header pill's geometry, so
+						    the badge, headline, paragraph and buttons land on the same vertical
+						    line as the logo at every breakpoint (see globals.css). */}
+						<div className="relative z-10 site-gutter">
+							<div className="site-container grid grid-cols-1 items-center gap-12 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-12">
+								<div className="text-left w-full">
+									{/* Chip, not a pill — 8px in the new radius scale. Cyrillic caps need
+									    more tracking than the old value gave them. */}
+									<span
+										className="mb-5 inline-block rounded-lg px-3 py-1.5 text-[11px] font-bold uppercase max-w-full"
+										style={{
+											backgroundColor: "rgba(30,58,138,0.06)",
+											color: "var(--accent-primary)",
+											border: "1px solid rgba(30,58,138,0.14)",
+											letterSpacing: "0.14em",
+										}}
+									>
+										Сопровождение Genshin Impact
+									</span>
+									{/* One colour: emphasis now comes from the background glow instead of a
+									    second hue that the old mesh cancelled out anyway. The one-letter
+									    preposition «в» is bound with a non-breaking space — leaving it at a
+									    line end is a hard no in Russian typesetting. */}
+									<h1
+										className="mb-5 text-[2rem] font-black leading-[1.08] sm:text-5xl lg:text-[3.4rem] tracking-tight text-slate-900"
+										style={{ fontFamily: "var(--font-primary), sans-serif", textWrap: "balance" }}
+									>
+										Ваш персональный игровой ассистент в&nbsp;Genshin&nbsp;Impact
+									</h1>
+									<p
+										className="mb-8 text-[1.0625rem] sm:text-lg leading-relaxed text-slate-700"
+										style={{ maxWidth: "58ch", textWrap: "pretty" }}
+									>
+										Быстро, безопасно и с гарантией результата. Позвольте экспертам
+										позаботиться о вашей рутине, пока вы наслаждаетесь историей Тейвата.
+									</p>
+									{/* Unambiguous hierarchy: one filled pill — the only 999px radius left
+									    on the page — plus a text link. The old pair were the same size and
+									    shape, and the ghost button disappeared into the mesh. */}
+									<div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-6">
+										<a
+											href="#services"
+											className="btn-primary w-full sm:w-auto !px-7 !py-3.5 !text-sm !font-bold text-center"
+										>
+											Выбрать услугу{priceAnchor}
+										</a>
+										<a
+											href="#how"
+											className="group inline-flex items-center justify-center sm:justify-start gap-1.5 text-sm font-semibold"
+											style={{ color: "var(--accent-primary)" }}
+										>
+											Как это работает
+											<ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+										</a>
+									</div>
+									{/* Trust strip. Every figure comes from lib/siteStats (live DB) — a
+									    signal is omitted rather than rounded up or invented. */}
+									{trustSignals.length > 0 && (
+										<ul className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-slate-600">
+											{trustSignals.map((s, i) => (
+												<li key={i} className="flex items-center gap-1.5">
+													{s.icon}
+													<span>{s.label}</span>
+												</li>
+											))}
+										</ul>
+									)}
+								</div>
+								{/* Right column: a real order card, not decoration. It counterbalances
+								    the headline, explains the product, and carries trust at once. */}
+								<HeroOrderCard />
 							</div>
 						</div>
-
-						{/* Right side with Image */}
-						<div
-							className="w-full sm:w-auto relative hidden md:block"
-							style={{
-								width: "450px",
-								height: "450px",
-								transform: "scale(1.3)",
-								transformOrigin: "center right",
-								marginRight: "-30px",
-							}}
-						>
-							<div
-								className="absolute inset-0 rounded-full"
-								style={{
-									background:
-										"radial-gradient(circle, rgba(30,58,138,0.1) 0%, transparent 70%)",
-									filter: "blur(20px)",
-								}}
-							/>
-							<img
-								src="/icons/whale_logo_circle.png"
-								alt="Логотип Whale Abyss"
-								className="relative z-10 w-full h-full object-contain"
-								style={{ filter: "drop-shadow(0 20px 30px rgba(0,0,0,0.1))" }}
-							/>
-						</div>
-					</div>
 				</section>
 			)}
 
@@ -521,14 +618,14 @@ export default function HomeClient({ categories }: { categories: any[] }) {
 						{session?.user && (
 							<Link
 								href="/services"
-								className="btn-secondary w-full sm:w-auto !rounded-full !px-12 !py-5 !text-xl !font-bold"
+								className="btn-secondary w-full sm:w-auto !px-12 !py-5 !text-xl !font-bold"
 							>
 								Все услуги
 							</Link>
 						)}
 						<button
 							onClick={() => setSuggestOpen(true)}
-							className="btn-primary w-full sm:w-auto !rounded-full !px-12 !py-5 !text-xl !font-bold"
+							className="btn-primary w-full sm:w-auto !px-12 !py-5 !text-xl !font-bold"
 						>
 							Предложить услугу
 						</button>

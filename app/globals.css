@@ -482,13 +482,40 @@ h6 {
 .hero-mesh {
   background-color: #ffffff;
   background-image:
-    radial-gradient(at 40% 20%, hsla(210, 100%, 74%, 0.3) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, hsla(250, 100%, 79%, 0.3) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, hsla(350, 100%, 89%, 0.3) 0px, transparent 50%),
-    radial-gradient(at 80% 50%, hsla(180, 100%, 74%, 0.3) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, hsla(290, 100%, 84%, 0.3) 0px, transparent 50%),
-    radial-gradient(at 80% 100%, hsla(20, 100%, 89%, 0.3) 0px, transparent 50%),
-    radial-gradient(at 0% 0%, hsla(220, 100%, 79%, 0.3) 0px, transparent 50%);
+    radial-gradient(
+      55rem 34rem at 18% 26%,
+      rgba(30, 58, 138, 0.11) 0%,
+      rgba(30, 58, 138, 0.045) 42%,
+      transparent 72%
+    );
+}
+
+/* ---------------------------------------------------------------------------
+ * Shared page container.
+ *
+ * The header pill and the hero used to have different left edges (~440px vs
+ * ~710px), so nothing lined up vertically. These two classes reproduce the
+ * header's geometry exactly — .site-gutter mirrors the fixed header's
+ * left-3/md:left-6 inset, .site-container mirrors the pill's max-w-[75rem]
+ * plus its pl-3/md:pl-5 inner padding. Any section that nests them lands on
+ * the same vertical line as the logo, at every breakpoint.
+ * ------------------------------------------------------------------------- */
+.site-gutter {
+  padding-inline: 0.75rem;
+}
+.site-container {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 75rem;
+  padding-inline: 0.75rem;
+}
+@media (min-width: 768px) {
+  .site-gutter {
+    padding-inline: 1.5rem;
+  }
+  .site-container {
+    padding-inline: 1.25rem;
+  }
 }
 
 /* Homepage services section: soft blurred corner fog over the white overlay. */
@@ -600,6 +627,14 @@ h6 {
 }
 
 /* Shader `rb2`: thin bright ring hugging the rounded-rect outline, getting a
+/* Hero ground: ONE hue, one glow.
+ *
+ * Was a seven-stop mesh (periwinkle → mint → peach → pink) unrelated to the
+ * navy brand colour. It pushed body text to borderline contrast that shifted
+ * across the width of a paragraph, killed the blue accent by sitting it on a
+ * blue-violet field, and made the ghost CTA vanish. Now: a near-white ground
+ * with a single soft navy glow placed behind the headline, so emphasis comes
+ * from the light rather than from a second text colour. */
  * +0.3 brightness boost in the shader. We fake it with stacked inset shadows
  * — the outermost is a hard 1px white outline (the "rim"), then progressively
  * softer falloff inward. Plus a subtle brand-blue tint at the bottom edge for
@@ -1519,6 +1554,7 @@ html {
   .\!text-\[\#0B5B5B\] { color: #5eead4 !important; }
   .\!border-\[\#9ed6d6\] { border-color: rgba(94, 234, 212, 0.4) !important; }
   .hover\:\!bg-\[\#a5dede\]:hover { background-color: rgba(20, 184, 166, 0.3) !important; }
+  /* Same single-hue glow as the light theme, dimmer — see .hero-mesh above. */
   .\!bg-gray-200 { background-color: #262626 !important; }
   .hover\:\!bg-gray-300:hover { background-color: #333333 !important; }
   .\!text-gray-800 { color: #e5e5e5 !important; }

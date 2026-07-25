@@ -313,11 +313,28 @@ const result = await db.select().from(services).where(eq(services.id, id));
     `/api/admin/testing/checkout` — an admin creating an order has already spoken to the client.
   - **409 is reserved for this.** 422 is already the Adventure Rank gate, which the cart page
     reads as plain text; don't reuse it.
-- **The client modal is an ADD-TIME gate only** and must never be treated as sufficient: a line
-  restored from `cart_items` by `loadFromDb` bypasses it entirely, and a failed `/addons` fetch
-  still degrades to a plain add. The server gate is what actually holds. (Remaining client-side
-  hardening — an in-flight guard on the add buttons, fetch timeouts, and no silent fallthrough —
-  is still a known TODO. `loadFromDb`'s replace-vs-merge hole is fixed; see Cart Management.)
+- **The client modal is an ADD-TIME gate only** and must never be treated as sufficient — a line
+  restored from `cart_items` by `loadFromDb` bypasses it entirely. The server gate is what holds.
+- **`ServiceItem.hasQuestAddons` (server-rendered, `lib/services.ts`) decides whether a
+  declaration is required — never a fetch.** The old flow asked `/api/services/[slug]/addons`,
+  so one failed request silently skipped the mandatory modal. Now a non-gated service fetches
+  *nothing* on add (faster, zero failure surface) and the fetch is only for the quest LIST.
+  - Pass it through from every add-to-cart call site (`components/ServiceCard.tsx`,
+    `app/service/[slug]/ClientServicePage.tsx`) as the 4th arg to `useAddToCartWithAddons().add`.
+  - A stale `false` is possible on prerendered listing pages if an admin links a quest after a
+    deploy (`/service/[slug]` is dynamic, so the detail page is always fresh). The `/api/checkout`
+    409 catches it — that is the whole point of having the server gate.
+- **`lib/questAddons.ts` → `fetchQuestAddons()` returns `null` for "couldn't find out" and an
+  array for a definitive answer.** Keep that distinction. It's why
+  `/api/services/[slug]/addons` returns **404** for an unresolvable service and **503**
+  `{error}` (never an `addons` key) on failure — a success-shaped error body is what let a blip
+  masquerade as "no quests". 3 attempts, 4s timeout each, ~13s bounded worst case.
+  - When the list can't be loaded, the add is **refused** (`AddonUnavailableModal`, retry in one
+    tap), never degraded into an undeclared line. Don't "fix" this by adding it anyway.
+  - `useAddToCartWithAddons()` returns `{ add, pending }`; `pending` drives the button spinner
+    and a ref-based in-flight guard makes a second tap a no-op. Two racing chains used to be
+    able to add a bare line *behind* the open modal.
+  - The addons route is rate-limited **by user id** when signed in, falling back to IP.
 - **Incident (order `f216229e`, 2026-07-12):** a paid order for a quest-gated service
   arrived with `addon_choice = NULL` and no quest lines — the admin notification showed
   nothing and there was no way to tell what the client wanted. Diagnosis: code and data
@@ -342,11 +359,11 @@ const result = await db.select().from(services).where(eq(services.id, id));
   2. **No backstop after the add.** Checkout trusted the client array and never consulted
      `service_addons` or its own `cart_items.addon_choice` copy, so any single loss became a
      paid order. Fixed by the 409 gate above.
-  3. Contributing: `cdebec0`'s retry budget is ~1.2 s while the addons endpoint's own rate-limit
-     window is 60 s (and it's IP-keyed, not user-keyed); the route returns 200 `{addons:[]}` for
-     parent-not-found, which `break`s the retry loop with zero verification; neither add button
-     has an in-flight guard or a fetch timeout, so a slow chain invites a second tap whose
-     fallback adds a bare line *behind* the modal.
+  3. Contributing (all since fixed — see the client-gate bullets above): `cdebec0`'s retry budget
+     was ~1.2 s while the addons endpoint's own rate-limit window is 60 s and was IP-keyed; the
+     route returned 200 `{addons:[]}` for parent-not-found, which `break`s the retry loop with
+     zero verification; and neither add button had an in-flight guard or a fetch timeout, so a
+     slow chain invited a second tap whose fallback added a bare line *behind* the modal.
 - **Lesson (unchanged, and now enforced): a graceful degradation on a revenue path must never be
   silent — and a client-side gate is a UX affordance, not a guarantee. Put the invariant on the
   server.** Metrika Webvisor session replay remains the tiebreaker for "what did the client

@@ -8,7 +8,7 @@ import AuthModal from "@/components/AuthModal";
 import { ServiceItem } from "@/lib/services";
 import { useAddToCartWithAddons } from "@/components/QuestAddonModal";
 import { parseMinAdventureRank } from "@/lib/adventureRank";
-import { UserCircle, Tag, Layers, CheckCircle, Info, ShoppingCart, Gauge, Shield, MonitorPlay } from "lucide-react";
+import { UserCircle, Tag, Layers, CheckCircle, Info, ShoppingCart, Gauge, Shield, MonitorPlay, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import DateInput from "@/components/DateInput";
@@ -43,7 +43,7 @@ function escapeRegex(string: string) {
 
 export default function ClientServicePage({ service }: ClientServicePageProps) {
   const [authOpen, setAuthOpen] = useState(false);
-  const addToCartWithAddons = useAddToCartWithAddons();
+  const { add: addToCartWithAddons, pending: addPending } = useAddToCartWithAddons();
 
   // Get today and tomorrow as default dates. Format in LOCAL time — for a
   // UTC+ timezone (all of Russia) toISOString() shifts local midnight to the
@@ -80,7 +80,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
       price: pricePerItem,
       image: service.background || "/images/genshin_background.jpg",
       ...(service.isPerDay ? { startDate, endDate } : {}),
-    }, activeDays, parseMinAdventureRank(service.description));
+    }, activeDays, parseMinAdventureRank(service.description), service.hasQuestAddons);
   };
 
   const currentStartDate = startDate;
@@ -251,10 +251,16 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
   const buyButton = (
     <button
       onClick={handleAdd}
-      className="btn-primary w-full !px-6 !py-4 !rounded-full !text-base flex items-center justify-center gap-2 mt-2"
+      disabled={addPending}
+      aria-busy={addPending}
+      className="btn-primary w-full !px-6 !py-4 !rounded-full !text-base flex items-center justify-center gap-2 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
     >
-      <ShoppingCart className="w-5 h-5" />
-      <span>Добавить в корзину</span>
+      {addPending ? (
+        <Loader2 className="w-5 h-5 animate-spin" />
+      ) : (
+        <ShoppingCart className="w-5 h-5" />
+      )}
+      <span>{addPending ? "Добавляем..." : "Добавить в корзину"}</span>
     </button>
   );
 

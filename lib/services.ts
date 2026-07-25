@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { categories, services } from '@/lib/schema';
+import { categories, services, serviceAddons } from '@/lib/schema';
 import { cache } from 'react';
 import { eq } from 'drizzle-orm';
 import servicesData from '@/services/services_list.json';
@@ -18,6 +18,19 @@ export interface ServiceItem {
   isExtraTall?: boolean;
   isSquare?: boolean;
   isPerDay?: boolean;
+  /**
+   * True when this service has at least one (non-test) linked quest service in
+   * `service_addons`, i.e. adding it MUST go through QuestAddonModal so the
+   * client declares what happens to the gating quests.
+   *
+   * Server-rendered on purpose: the add-to-cart flow used to answer this
+   * question with a live fetch to /api/services/[slug]/addons, so a single
+   * failed request silently skipped the modal and added an undeclared line.
+   * The decision now cannot fail; the fetch is only needed for the quest LIST.
+   * A stale `false` (link added after a listing page was prerendered) is caught
+   * by the /api/checkout gate, which rejects undeclared quest-gated lines.
+   */
+  hasQuestAddons?: boolean;
 }
 
 export interface ServiceCategory {
@@ -83,6 +96,22 @@ export const getServiceCategories = cache(async (): Promise<ServiceCategory[]> =
   const allCategories = await db.select().from(categories);
   const allServices = await db.select().from(services).where(eq(services.isTestService, false));
 
+  // Which services are quest-gated. Kept as two plain queries + a JS intersect
+  // rather than a join, so the "non-test addon" rule stays visibly identical to
+  // /api/services/[slug]/addons and the /api/checkout gate.
+  const liveServiceIds = new Set(allServices.map(s => s.id));
+  const addonLinks = await db
+    .select({
+      parentServiceId: serviceAddons.parentServiceId,
+      addonServiceId: serviceAddons.addonServiceId,
+    })
+    .from(serviceAddons);
+  const questGatedIds = new Set(
+    addonLinks
+      .filter(l => liveServiceIds.has(l.addonServiceId))
+      .map(l => l.parentServiceId)
+  );
+
   let globalIndex = 0;
 
   const orderMap = new Map<string, number>();
@@ -132,6 +161,7 @@ export const getServiceCategories = cache(async (): Promise<ServiceCategory[]> =
           description: s.description || '',
           background: s.imageUrl || '',
           categorySlug: (s.categoryId && catSlugById.get(s.categoryId)) || cat.slug,
+          hasQuestAddons: questGatedIds.has(s.id),
           ...enrichItemUI(s, idx)
         };
       })

@@ -27,6 +27,7 @@ import { Providers } from "./Providers";
 import CookieConsent from "@/components/CookieConsent";
 import QuestAddonModal from "@/components/QuestAddonModal";
 import RankGateModal from "@/components/RankGateModal";
+import AddonUnavailableModal from "@/components/AddonUnavailableModal";
 
 export const metadata: Metadata = {
   title: "Whale Abyss — Экспертное сопровождение аккаунтов",
@@ -89,6 +90,7 @@ export default function RootLayout({
         <QuestAddonModal />
         {/* Adventure Rank gate — opened by add-to-cart when the user's rank is too low. */}
         <RankGateModal />
+        <AddonUnavailableModal />
       </body>
     </html>
   );

@@ -1,11 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { X, Check, ListChecks } from "lucide-react";
 import { useCart, CartItem } from "@/store/useCart";
 import { useAddonPrompt } from "@/store/useAddonPrompt";
 import { useRankGate } from "@/store/useRankGate";
+import { useAddonError } from "@/store/useAddonError";
+import {
+  fetchWithTimeout,
+  fetchQuestAddons,
+  PROFILE_TIMEOUT_MS,
+} from "@/lib/questAddons";
 
 /**
  * Upsell modal shown when an exploration service with linked quest addons is
@@ -227,6 +233,9 @@ export default function QuestAddonModal() {
  * Read the signed-in user's Adventure Rank for the add-to-cart gate.
  * Distinguishes "not logged in" (401) from a network/other error so the caller
  * can decide whether to enforce the gate or fall through to checkout.
+ *
+ * Failing open here is safe: `/api/checkout` re-parses the requirement and
+ * rejects with 422, so a missed client check can't complete a purchase.
  */
 async function fetchUserAdventureRank(): Promise<
   | { state: "anon" }
@@ -234,7 +243,7 @@ async function fetchUserAdventureRank(): Promise<
   | { state: "error" }
 > {
   try {
-    const res = await fetch("/api/user/profile");
+    const res = await fetchWithTimeout("/api/user/profile", PROFILE_TIMEOUT_MS);
     if (res.status === 401) return { state: "anon" };
     if (!res.ok) return { state: "error" };
     const data = await res.json();
@@ -251,56 +260,86 @@ async function fetchUserAdventureRank(): Promise<
  *  1. enforces the service's Adventure Rank gate (`minAdventureRank`, parsed
  *     from the description by the caller) for logged-in users — blocking with
  *     the RankGateModal when their rank is below the requirement or unset;
- *  2. checks the service for quest addons and opens the upsell modal when there
- *     are any; otherwise adds to the cart directly (and on any fetch error, so
- *     the cart never breaks).
+ *  2. for a quest-gated service, opens the upsell modal so the client declares
+ *     what happens to the gating quests. If that list can't be loaded the add
+ *     is REFUSED (AddonUnavailableModal), never silently degraded.
  *
- * Anonymous users are not blocked here (we can't read their rank) — they must
- * log in at checkout, where `/api/checkout` re-parses the requirement and
- * enforces it server-side regardless of what the client did.
+ * Anonymous users are not blocked by the rank gate here (we can't read their
+ * rank) — `/api/checkout` re-parses the requirement server-side regardless.
+ *
+ * `hasQuestAddons` comes from server-rendered data (lib/services.ts), so
+ * whether a declaration is required never depends on a request succeeding. For
+ * a non-gated service nothing is fetched at all — the common path got faster
+ * and lost its failure surface entirely.
+ *
+ * Returns `pending` so call sites can disable their button and show a spinner;
+ * an in-flight guard makes a second tap a no-op, because two racing chains used
+ * to be able to add a bare line behind the open modal.
  */
 export function useAddToCartWithAddons() {
   const { addToCart, openCart } = useCart();
   const openPrompt = useAddonPrompt((s) => s.open);
   const openRankGate = useRankGate((s) => s.open);
+  const openAddonError = useAddonError((s) => s.open);
+  const [pending, setPending] = useState(false);
+  const inFlightRef = useRef(false);
 
-  return async (
-    item: Omit<CartItem, "quantity">,
-    quantity = 1,
-    minAdventureRank: number | null = null
-  ) => {
-    if (minAdventureRank != null) {
-      const profile = await fetchUserAdventureRank();
-      // Only block when we positively know a logged-in user's rank is too low
-      // (or unset). Anonymous/error → fall through; checkout is the backstop.
-      if (profile.state === "ok") {
-        if (profile.rank == null || profile.rank < minAdventureRank) {
-          openRankGate({ requiredRank: minAdventureRank, currentRank: profile.rank });
-          return;
-        }
-      }
-    }
-
-    // A failed addons lookup must not block the sale, but a single transient
-    // blip (mobile network, brief 5xx) silently skipping the modal loses the
-    // client's quest declaration for good — so retry briefly before giving up.
-    for (let attempt = 0; attempt < 3; attempt++) {
+  const add = useCallback(
+    async (
+      item: Omit<CartItem, "quantity">,
+      quantity = 1,
+      minAdventureRank: number | null = null,
+      hasQuestAddons = false
+    ): Promise<void> => {
+      // Double-tap guard. A ref, not `pending`, because state updates are async
+      // and two taps in the same tick would both see pending === false.
+      if (inFlightRef.current) return;
+      inFlightRef.current = true;
+      setPending(true);
       try {
-        const res = await fetch(`/api/services/${encodeURIComponent(item.id)}/addons`);
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data.addons) && data.addons.length > 0) {
-            openPrompt(item, data.addons, quantity);
+        if (minAdventureRank != null) {
+          const profile = await fetchUserAdventureRank();
+          // Only block when we positively know a logged-in user's rank is too
+          // low (or unset). Anonymous/error → fall through; checkout backstops.
+          if (profile.state === "ok") {
+            if (profile.rank == null || profile.rank < minAdventureRank) {
+              openRankGate({
+                requiredRank: minAdventureRank,
+                currentRank: profile.rank,
+              });
+              return;
+            }
+          }
+        }
+
+        if (hasQuestAddons) {
+          const addons = await fetchQuestAddons(item.id);
+          if (addons === null) {
+            // Couldn't find out what to ask. Refuse rather than add an
+            // undeclared line — /api/checkout would reject it at the payment
+            // step anyway, and failing here is recoverable in one tap.
+            openAddonError(item.subtitle || item.title, () =>
+              add(item, quantity, minAdventureRank, hasQuestAddons)
+            );
             return;
           }
-          break; // definitive answer: no addons for this service
+          if (addons.length > 0) {
+            openPrompt(item, addons, quantity);
+            return;
+          }
+          // Flag was stale (quests unlinked/hidden since this page rendered) —
+          // there is genuinely nothing to declare, so add normally.
         }
-      } catch {
-        // network error — retry below
+
+        addToCart(item, quantity);
+        openCart();
+      } finally {
+        inFlightRef.current = false;
+        setPending(false);
       }
-      if (attempt < 2) await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
-    }
-    addToCart(item, quantity);
-    openCart();
-  };
+    },
+    [addToCart, openCart, openPrompt, openRankGate, openAddonError]
+  );
+
+  return { add, pending };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Loader2 } from "lucide-react";
 import { useAddToCartWithAddons } from "@/components/QuestAddonModal";
 import Link from "next/link";
 import { ServiceItem } from "@/lib/services";
@@ -13,7 +13,7 @@ interface ServiceCardProps {
 }
 
 export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
-  const addToCartWithAddons = useAddToCartWithAddons();
+  const { add: addToCartWithAddons, pending } = useAddToCartWithAddons();
 
   // Check if this category is on discount
   const isOnDiscount = categorySlug ? isCategoryOnDiscount(categorySlug) : false;
@@ -28,8 +28,11 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
     // the detail page — adding straight from the card would create an order
     // with no dates. Let the wrapping Link navigate there instead.
     if (item.isPerDay) return;
+    // Always swallow the click — the card is wrapped in a <Link>, so bailing
+    // out before preventDefault would navigate away mid-add.
     e.preventDefault();
     e.stopPropagation();
+    if (pending) return;
     // Opens the quest-addon modal when the service has linked quests,
     // otherwise adds to the cart directly and opens it.
     addToCartWithAddons(
@@ -41,7 +44,8 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
         image: item.background || "/images/genshin_background.jpg",
       },
       1,
-      parseMinAdventureRank(item.description)
+      parseMinAdventureRank(item.description),
+      item.hasQuestAddons
     );
   };
 
@@ -104,10 +108,15 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
         </div>
         <button
           onClick={handleAdd}
+          aria-busy={pending}
           className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg bg-transparent cursor-pointer transition-all duration-300 group-hover:bg-blue-600 group-hover:scale-110"
           aria-label={`Добавить ${item.title} в корзину`}
         >
-          <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 text-[#8b9fd6] transition-colors duration-300 group-hover:text-white" strokeWidth={1.5} />
+          {pending ? (
+            <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin text-[#8b9fd6] transition-colors duration-300 group-hover:text-white" strokeWidth={1.5} />
+          ) : (
+            <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 text-[#8b9fd6] transition-colors duration-300 group-hover:text-white" strokeWidth={1.5} />
+          )}
         </button>
       </div>
     </Link>

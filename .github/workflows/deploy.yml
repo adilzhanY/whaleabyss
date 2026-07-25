@@ -42,70 +42,25 @@ jobs:
           host: 93.77.188.163
           username: qantr
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # script_stop is REQUIRED. Without it this action does not reliably
+          # abort on a failed command: on 2026-07-25 the deploy of 4b0103b
+          # reported success in 66s while `npm run build` had actually failed,
+          # and prod was left serving 500s. Belt and braces with the fact that
+          # the real work is one `bash scripts/deploy/vm-deploy.sh` call whose
+          # exit code is unambiguous.
+          script_stop: true
+          command_timeout: 20m
           script: |
-            # Fail loudly: any failed step aborts the deploy (instead of silently
-            # continuing to `pm2 restart` and reporting success on stale code).
+            # Keep this inline part TINY. All real logic lives in the versioned
+            # script below, which runs as a single bash process so its exit code
+            # is the deploy's exit code (see the comment on script_stop).
             set -euo pipefail
             cd /var/www/whaleabyss
-
             # Force the VM to exactly match origin/main. A plain `git pull` is
             # blocked by any stray local edit on the VM (this once froze prod 3
-            # commits back); reset --hard is immune to that.
+            # commits back, and `next build` dirties tsconfig.json every run);
+            # reset --hard is immune to that.
             git fetch origin main
             git reset --hard origin/main
             npm install
-
-            # --- Build OUT OF PLACE -------------------------------------------
-            # `next build` rewrites its output dir as it goes and `next start`
-            # reads from it at runtime, so building straight into `.next` breaks
-            # the app that is currently serving — for the whole build, every
-            # deploy. On 2026-07-25 a build failed here and prod served 500s on
-            # every prerendered route until it was rebuilt by hand: `set -e`
-            # correctly skipped the restart, but the build had already destroyed
-            # the live `.next`. Building elsewhere keeps the running app intact
-            # and makes a failed build a no-op instead of an outage.
-            # NEXT_DIST_DIR is read by next.config.ts. Side effect: next build
-            # rewrites tsconfig.json to add "<distDir>/types" to `include`, so
-            # the VM's tree is left dirty — harmless, because the `git reset
-            # --hard` above wipes it at the start of every deploy.
-            rm -rf .next-build
-            # One retry: the remote DB is occasionally flaky from the VM and the
-            # build does DB queries to prerender pages (see DB_RULES.md).
-            NEXT_DIST_DIR=.next-build npm run build \
-              || { echo "::warning::build failed, retrying once"; rm -rf .next-build; NEXT_DIST_DIR=.next-build npm run build; }
-
-            # Refuse to swap in a build that didn't finish.
-            test -f .next-build/BUILD_ID
-
-            # --- Swap + restart ------------------------------------------------
-            rm -rf .next-prev
-            # Guarded for a first deploy on a fresh VM, where .next won't exist.
-            if [ -d .next ]; then mv .next .next-prev; fi
-            mv .next-build .next
-            pm2 restart whaleabyss
-
-            # --- Verify, and roll back if the new build doesn't actually serve --
-            ok=""
-            for i in $(seq 1 15); do
-              sleep 2
-              # Check a prerendered route too: a broken .next 500s on those while
-              # dynamic routes can still answer, which is how the last breakage
-              # looked healthy at a glance.
-              if curl -fsS -o /dev/null http://127.0.0.1:3000/ \
-                 && curl -fsS -o /dev/null http://127.0.0.1:3000/services; then
-                ok="yes"; break
-              fi
-            done
-            if [ -z "$ok" ]; then
-              echo "::error::new build failed its health check — rolling back"
-              if [ -d .next-prev ]; then
-                rm -rf .next
-                mv .next-prev .next
-                pm2 restart whaleabyss
-              fi
-              exit 1
-            fi
-
-            rm -rf .next-prev
-            pm2 save
-            echo "deployed $(git rev-parse --short HEAD)"
+            bash scripts/deploy/vm-deploy.sh

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CartModal from "@/components/CartModal";
@@ -8,7 +10,7 @@ import AuthModal from "@/components/AuthModal";
 import { ServiceItem } from "@/lib/services";
 import { useAddToCartWithAddons } from "@/components/QuestAddonModal";
 import { parseMinAdventureRank } from "@/lib/adventureRank";
-import { Info, ShoppingCart, Gauge, Loader2, AlertTriangle, MessageCircle } from "lucide-react";
+import { Info, ShoppingCart, Gauge, Loader2, AlertTriangle, MessageCircle, Star, Plus, ArrowRight } from "lucide-react";
 import DateInput from "@/components/DateInput";
 import ServiceCard from "@/components/ServiceCard";
 import Breadcrumb from "@/components/Breadcrumb";
@@ -16,6 +18,37 @@ import Breadcrumb from "@/components/Breadcrumb";
 interface ClientServicePageProps {
   service: ServiceItem;
   recommended?: ServiceItem[];
+}
+
+/** Shape of GET /api/reviews - the same endpoint /reviews and the home page use. */
+interface PageReview {
+  id: string;
+  rating: string;
+  description: string;
+  createdAt: string;
+  userName: string | null;
+  userAvatar: string | null;
+}
+
+// Same 14px stars as the /reviews cards.
+function renderReviewStars(rating: number) {
+  const stars = [];
+  for (let i = 0; i < Math.floor(rating); i++) {
+    stars.push(
+      <Star key={i} className="h-3.5 w-3.5 fill-current shrink-0" style={{ color: "#f59e0b" }} />
+    );
+  }
+  if (rating % 1 !== 0) {
+    stars.push(
+      <div key="half" className="relative h-3.5 w-3.5 shrink-0">
+        <Star className="h-3.5 w-3.5 absolute" style={{ color: "#f59e0b", opacity: 0.3 }} />
+        <div className="overflow-hidden absolute" style={{ width: "50%" }}>
+          <Star className="h-3.5 w-3.5 fill-current" style={{ color: "#f59e0b" }} />
+        </div>
+      </div>
+    );
+  }
+  return stars;
 }
 
 /**
@@ -70,6 +103,23 @@ function splitDescription(desc: string | undefined) {
 export default function ClientServicePage({ service, recommended = [] }: ClientServicePageProps) {
   const [authOpen, setAuthOpen] = useState(false);
   const { add: addToCartWithAddons, pending: addPending } = useAddToCartWithAddons();
+  const { data: session } = useSession();
+
+  // Latest approved reviews for the section below the recommendations. A
+  // failed fetch just hides the section - it must never block the page.
+  const [pageReviews, setPageReviews] = useState<PageReview[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/reviews?offset=0&limit=6")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!cancelled && Array.isArray(d?.reviews)) setPageReviews(d.reviews);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Get today and tomorrow as default dates. Format in LOCAL time — for a
   // UTC+ timezone (all of Russia) toISOString() shifts local midnight to the
@@ -463,6 +513,96 @@ export default function ClientServicePage({ service, recommended = [] }: ClientS
               {recommended.map((item) => (
                 <ServiceCard key={item.id} item={item} categorySlug={item.categorySlug} />
               ))}
+            </div>
+          </section>
+        )}
+
+        {pageReviews.length > 0 && (
+          <section className="w-full mt-14" aria-label="Отзывы">
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <h2
+                className="text-2xl font-bold"
+                style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
+              >
+                Отзывы
+              </h2>
+              <Link
+                href="/reviews"
+                className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold transition-colors hover:opacity-80"
+                style={{ color: "var(--accent-primary)" }}
+              >
+                Больше отзывов
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {pageReviews.map((review) => (
+                <div
+                  key={review.id}
+                  className="flex flex-col rounded-3xl p-5 sm:p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
+                  style={{
+                    backgroundColor: "var(--bg-card)",
+                    border: "1px solid var(--accent-border)",
+                    boxShadow: "var(--card-shadow)",
+                    borderRadius: "1.5rem",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div className="mb-4 flex items-center gap-3">
+                    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-slate-200">
+                      {review.userAvatar ? (
+                        <img
+                          src={review.userAvatar}
+                          alt={review.userName || "User"}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center font-bold text-slate-500">
+                          {review.userName ? review.userName[0].toUpperCase() : "?"}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-bold" style={{ color: "var(--text-primary)" }}>
+                        {review.userName || "Аноним"}
+                      </p>
+                      <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                        {new Date(review.createdAt).toLocaleDateString("ru-RU", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 gap-0.5">{renderReviewStars(parseFloat(review.rating))}</div>
+                  </div>
+                  <p
+                    className="flex-1 italic leading-relaxed text-[0.9375rem]"
+                    style={{ color: "var(--text-primary)", overflowWrap: "break-word" }}
+                  >
+                    &ldquo;{review.description}&rdquo;
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 flex justify-center">
+              {session?.user ? (
+                <Link
+                  href="/reviews/new"
+                  className="btn-primary inline-flex items-center justify-center gap-2 !px-6 !py-3 !font-bold"
+                >
+                  <Plus className="h-5 w-5" />
+                  Написать отзыв
+                </Link>
+              ) : (
+                <button
+                  onClick={() => setAuthOpen(true)}
+                  className="btn-primary inline-flex items-center justify-center gap-2 !px-6 !py-3 !font-bold"
+                >
+                  <Plus className="h-5 w-5" />
+                  Написать отзыв
+                </button>
+              )}
             </div>
           </section>
         )}

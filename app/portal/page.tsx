@@ -9,6 +9,7 @@ import {
   Loader2,
 } from "lucide-react";
 import PortalOrderCard, { type PortalOrder, rub } from "./_components/PortalOrderCard";
+import { confirmDialog } from "@/store/useConfirm";
 
 /**
  * Portal dashboard: greeting, revenue/work metrics, and ACTIVE orders only
@@ -73,7 +74,12 @@ export default function PortalDashboardPage() {
   };
 
   const completeOrder = async (order: PortalOrder) => {
-    if (!confirm("Завершить заказ? Администратор получит уведомление.")) return;
+    const ok = await confirmDialog({
+      title: "Завершить заказ?",
+      description: "Администратор получит уведомление.",
+      confirmLabel: "Завершить",
+    });
+    if (!ok) return;
     setBusyOrder(order.id);
     setError(null);
     try {

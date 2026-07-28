@@ -1,8 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2, AlertTriangle } from "lucide-react";
+import { Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface DeleteOrderButtonProps {
   orderId: string;
@@ -30,7 +38,9 @@ export default function DeleteOrderButton({
   }
 
   // Require the admin to type the short order id — a deliberate friction step
-  // so a paid/manual order is never deleted by an accidental click.
+  // so a paid/manual order is never deleted by an accidental click. This is
+  // why it does NOT use the shared confirmDialog(): a plain yes/no would drop
+  // that safeguard.
   const confirmKey = orderId.slice(0, 8);
   const canDelete = confirmText.trim() === confirmKey;
 
@@ -59,8 +69,8 @@ export default function DeleteOrderButton({
       // Order is gone — leave the (now-404) detail page for the orders list.
       router.replace("/admin/orders");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Произошла ошибка");
+    } catch (err) {
+      setError(err instanceof Error && err.message ? err.message : "Произошла ошибка");
       setIsDeleting(false);
     }
   };
@@ -75,79 +85,110 @@ export default function DeleteOrderButton({
         Удалить заказ
       </button>
 
-      {showConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl">
-            <div className="flex items-start gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
-                <AlertTriangle className="w-5 h-5" strokeWidth={2.25} />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">Удалить заказ навсегда</h3>
-                <p className="text-sm text-slate-500">Это действие необратимо.</p>
+      <Dialog
+        open={showConfirm}
+        onOpenChange={(open) => {
+          // A delete request in flight must not be dismissed underneath.
+          if (!open && !isDeleting) close();
+        }}
+      >
+        <DialogContent
+          showCloseButton={!isDeleting}
+          onEscapeKeyDown={(e) => {
+            if (isDeleting) e.preventDefault();
+          }}
+          onInteractOutside={(e) => {
+            if (isDeleting) e.preventDefault();
+          }}
+        >
+          <DialogHeader>
+            <div className="flex items-start gap-3">
+              <span
+                aria-hidden
+                className="flex size-10 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600"
+              >
+                <AlertTriangle className="size-5" strokeWidth={2.25} />
+              </span>
+              <div className="flex min-w-0 flex-col gap-1.5">
+                <DialogTitle>Удалить заказ навсегда</DialogTitle>
+                <DialogDescription>Это действие необратимо.</DialogDescription>
               </div>
             </div>
+          </DialogHeader>
 
-            <p className="text-sm text-slate-600 mb-4">
-              Заказ и все его позиции будут{" "}
-              <span className="font-semibold text-rose-700">удалены безвозвратно</span>.
-              Восстановить их или отменить это действие будет невозможно. Удаляйте
-              заказ только если уверены — для оплаченных заказов это сотрёт запись об
-              оплате.
-            </p>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+            Заказ и все его позиции будут{" "}
+            <span className="font-semibold text-rose-700">удалены безвозвратно</span>.
+            Восстановить их или отменить это действие будет невозможно. Удаляйте заказ
+            только если уверены — для оплаченных заказов это сотрёт запись об оплате.
+          </p>
 
-            <label className="block text-sm text-slate-600 mb-2">
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="delete-order-confirm"
+              className="text-sm"
+              style={{ color: "var(--text-secondary)" }}
+            >
               Чтобы подтвердить, введите{" "}
-              <span className="font-mono font-semibold text-slate-900">
+              <span className="font-mono font-semibold" style={{ color: "var(--text-primary)" }}>
                 {confirmKey}
               </span>
             </label>
             <input
+              id="delete-order-confirm"
               type="text"
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
               autoFocus
               disabled={isDeleting}
               placeholder={confirmKey}
-              className="w-full px-4 py-2.5 mb-4 rounded-xl border border-slate-200 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 disabled:opacity-50"
+              className="input-field font-mono !text-sm disabled:opacity-50"
             />
-
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-                {error}
-              </div>
-            )}
-
-            <div className="flex gap-3">
-              <button
-                onClick={close}
-                disabled={isDeleting}
-                className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full font-medium transition-colors disabled:opacity-50"
-              >
-                Отмена
-              </button>
-              
-              <button
-                onClick={handleDelete}
-                disabled={isDeleting || !canDelete}
-                className="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-full font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {isDeleting ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Удаление...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="w-4 h-4" strokeWidth={2.25} />
-                    Удалить навсегда
-                  </>
-                )}
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+
+          {error && (
+            <p
+              role="alert"
+              className="rounded-xl px-3.5 py-2.5 text-sm font-medium"
+              style={{
+                backgroundColor: "rgba(239,68,68,0.10)",
+                border: "1px solid rgba(239,68,68,0.30)",
+                color: "#b91c1c",
+              }}
+            >
+              {error}
+            </p>
+          )}
+
+          <DialogFooter>
+            <button
+              onClick={close}
+              disabled={isDeleting}
+              className="btn-outline w-full sm:w-auto"
+            >
+              Отмена
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={isDeleting || !canDelete}
+              aria-busy={isDeleting}
+              className="btn-danger w-full sm:w-auto"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Удаление...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="size-4" strokeWidth={2.25} />
+                  Удалить навсегда
+                </>
+              )}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

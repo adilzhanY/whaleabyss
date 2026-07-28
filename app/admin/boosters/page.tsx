@@ -8,6 +8,7 @@ import TelegramIcon from "@/components/TelegramIcon";
 import CustomSelect from "@/components/CustomSelect";
 import DataTable, { type Column } from "../_components/DataTable";
 import PageHeader from "../_components/PageHeader";
+import { confirmDialog } from "@/store/useConfirm";
 
 const BOOSTERS_PER_PAGE = 10;
 
@@ -84,7 +85,13 @@ export default function BoostersPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Удалить этого качера? История заказов не затрагивается.")) return;
+    const ok = await confirmDialog({
+      title: "Удалить этого качера?",
+      description: "История заказов не затрагивается.",
+      confirmLabel: "Удалить",
+      variant: "danger",
+    });
+    if (!ok) return;
     try {
       const res = await fetch(`/api/admin/boosters/${id}`, { method: "DELETE" });
       if (res.ok) {

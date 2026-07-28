@@ -1707,3 +1707,124 @@ html.site-dark body:has(#site-header) {
     background-color: rgba(10, 10, 10, 0.7);
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Header entrance reveal (navbar option C). The .nav-reveal class is added by
+ * Header.tsx once per full page load (module-scope flag, so client-side route
+ * changes never replay it). Server HTML ships without the class, so no-JS and
+ * reduced-motion visitors always see a fully visible bar.
+ * ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  .nav-reveal .nav-reveal-logo {
+    animation: nav-reveal-pop 0.5s cubic-bezier(0.2, 0.8, 0.3, 1.3) both;
+  }
+  .nav-reveal .nav-reveal-link {
+    opacity: 0;
+    animation: nav-reveal-drop 0.45s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+    animation-delay: calc(50ms + var(--reveal-i, 0) * 70ms);
+  }
+  .nav-reveal .nav-reveal-actions {
+    opacity: 0;
+    animation: nav-reveal-fade 0.5s ease 0.55s forwards;
+  }
+}
+@keyframes nav-reveal-pop {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes nav-reveal-drop {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes nav-reveal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ---------------------------------------------------------------------------
+ * «Погружение» - the How-it-works dive panel on the home page. The gradient
+ * descends from surface water to the abyss; bubbles are decoration only and
+ * disappear under prefers-reduced-motion. Sits on the hero mesh as a rounded
+ * panel so the surrounding background stays continuous with the header.
+ * ------------------------------------------------------------------------- */
+.dive-panel{position:relative;overflow:hidden;border-radius:28px;padding:44px 20px 30px;
+  background:linear-gradient(180deg,#eaf3fc 0%,#b9d7f0 18%,#3f75ad 52%,#123a63 78%,#090e17 100%)}
+.dive-line{position:absolute;left:50%;top:128px;bottom:185px;border-left:2.5px dashed rgba(255,255,255,.5)}
+/* Curved replacement drawn by components/DivePath.tsx; .dive-line above is its
+ * no-JS / pre-measure fallback. Dashes drift downward to read as a descent. */
+.dive-path{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.dive-path path{fill:none;stroke:rgba(255,255,255,.5);stroke-width:2.5;stroke-linecap:round;
+  stroke-dasharray:10 14;animation:dive-flow 2.4s linear infinite}
+@keyframes dive-flow{to{stroke-dashoffset:-24}}
+@media (prefers-reduced-motion: reduce){.dive-path path{animation:none}}
+.dive-title{margin:0 0 4px;text-align:center;font-size:1.875rem;font-weight:900;color:#12315b;
+  font-family:var(--font-primary),sans-serif}
+.dive-sub{margin:0 0 36px;text-align:center;font-size:.875rem;color:#2c517e}
+.dive-step{position:relative;display:flex;align-items:center;gap:22px;max-width:760px;margin:0 auto 40px}
+.dive-step-right{flex-direction:row-reverse;text-align:right}
+.dive-card{flex:1;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);border-radius:16px;
+  padding:16px 18px;box-shadow:0 12px 30px -12px rgba(9,14,23,.45)}
+.dive-card b{display:block;font-size:16px;margin-bottom:3px;color:#0f172a}
+.dive-card p{margin:0;font-size:13.5px;color:#475569}
+.dive-sbp{height:30px;width:auto;margin-top:10px;background:#fff;border-radius:8px;padding:3px 8px}
+.dive-node{flex:none;width:54px;height:54px;border-radius:50%;background:#fff;display:flex;
+  align-items:center;justify-content:center;font-size:19px;font-weight:900;color:#0B5191;z-index:1;
+  box-shadow:0 0 0 6px rgba(255,255,255,.25),0 10px 24px -8px rgba(9,14,23,.5)}
+.dive-spacer{flex:1}
+.dive-fin{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:52px}
+.dive-fin img{height:110px;width:auto;filter:drop-shadow(0 8px 24px rgba(0,0,0,.5))}
+.dive-chip{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:#dbeafe;
+  font-size:13px;font-weight:700;border-radius:999px;padding:7px 16px;backdrop-filter:blur(6px)}
+.dive-bubble{position:absolute;bottom:-30px;border:2px solid rgba(255,255,255,.35);border-radius:50%;
+  animation:dive-rise linear infinite}
+@keyframes dive-rise{from{transform:translateY(0);opacity:.8}to{transform:translateY(-640px);opacity:0}}
+@media (prefers-reduced-motion: reduce){.dive-bubble{display:none}}
+@media (max-width: 639px){
+  .dive-line{left:41px}
+  .dive-step{flex-direction:row;text-align:left;gap:14px;max-width:none;margin-bottom:24px}
+  .dive-step-right{flex-direction:row;text-align:left}
+  .dive-node{order:-1;width:44px;height:44px;font-size:16px}
+  .dive-spacer{display:none}
+}
+/* Dark theme: same descent, starting from the dark page surface. */
+html.site-dark body:has(#site-header) .dive-panel{
+  background:linear-gradient(180deg,#0d1524 0%,#132844 22%,#0f2138 55%,#0a1626 78%,#000000 100%)}
+html.site-dark body:has(#site-header) .dive-title{color:#dbeafe}
+html.site-dark body:has(#site-header) .dive-sub{color:#93b3d8}
+html.site-dark body:has(#site-header) .dive-card{background:rgba(16,24,40,.9)}
+html.site-dark body:has(#site-header) .dive-card b{color:#f1f5f9}
+html.site-dark body:has(#site-header) .dive-card p{color:#a3b2c7}
+html.site-dark body:has(#site-header) .dive-node{background:#101828;color:#60a5fa;
+  box-shadow:0 0 0 6px rgba(255,255,255,.08),0 10px 24px -8px rgba(0,0,0,.6)}
+
+/* ---------------------------------------------------------------------------
+ * Home page «Чем поможем?» category tiles. Image tiles with a bottom scrim;
+ * the first tile renders double-size from 820px up. Image-based, so they need
+ * no separate dark-theme pass.
+ * ------------------------------------------------------------------------- */
+.home-tiles{display:grid;gap:12px;grid-template-columns:repeat(2,1fr)}
+@media (min-width:640px){.home-tiles{gap:16px}}
+@media (min-width:820px){.home-tiles{grid-template-columns:repeat(4,1fr);grid-auto-rows:9rem}}
+.home-tile{position:relative;display:flex;align-items:flex-end;min-height:8.5rem;padding:16px;
+  border-radius:20px;overflow:hidden;background-size:cover;background-position:center;
+  background-color:#123a63;transition:transform .3s,box-shadow .3s}
+.home-tile:hover{transform:translateY(-4px);box-shadow:0 18px 40px -14px rgba(9,14,23,.5)}
+.home-tile::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(9,14,23,.85),rgba(9,14,23,.2) 55%,transparent)}
+@media (min-width:820px){.home-tile-big{grid-column:span 2;grid-row:span 2}}
+.home-tile .in{position:relative;z-index:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+.home-tile b{color:#fff;font-size:1.0625rem;line-height:1.25}
+.home-tile-big b{font-size:1.375rem}
+.home-tile small{font-size:.78rem;font-weight:700;color:#bcd3ee}
+.home-tile .home-tile-arr{position:absolute;right:14px;top:14px;z-index:1;display:flex;
+  width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.16);
+  backdrop-filter:blur(6px);align-items:center;justify-content:center;color:#fff;
+  transition:background .25s}
+.home-tile:hover .home-tile-arr{background:var(--accent-primary)}
+@media (prefers-reduced-motion: reduce){.home-tile{transition:none}.home-tile:hover{transform:none}}
+/* Big tile collage: 2x2 of the category's images under the shared scrim. */
+.home-tile-collage{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px}
+.home-tile-collage i{display:block;background-size:cover;background-position:center}
+@media (min-width: 820px) {
+  .home-tile-wide { grid-column: span 2; }
+}

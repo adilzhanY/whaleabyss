@@ -23,6 +23,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import Input from "@/components/Input";
 import Textarea from "@/components/Textarea";
+import { confirmDialog } from "@/store/useConfirm";
 
 interface Category {
   id: string;
@@ -180,9 +181,13 @@ export default function CategoriesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Удалить эту категорию? Все услуги в ней останутся без категории.")) {
-      return;
-    }
+    const ok = await confirmDialog({
+      title: "Удалить эту категорию?",
+      description: "Все услуги в ней останутся без категории.",
+      confirmLabel: "Удалить",
+      variant: "danger",
+    });
+    if (!ok) return;
 
     try {
       const res = await fetch(`/api/admin/categories/${id}`, {

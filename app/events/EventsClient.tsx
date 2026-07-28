@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import CartModal from "@/components/CartModal";
 import AuthModal from "@/components/AuthModal";
 import { Clock, Percent, Calendar } from "lucide-react";
 import { getActiveEvent } from "@/lib/events";
@@ -100,7 +99,6 @@ export default function EventsClient() {
   return (
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
-      <CartModal />
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
       <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-24 pb-20">

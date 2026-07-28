@@ -1,5 +1,5 @@
-import { getServiceCategories } from "@/lib/services";
 import { getSiteStats } from "@/lib/siteStats";
+import { getBestsellers, getCategoryTiles } from "@/lib/homeShowcase";
 import HomeClient from "@/app/HomeClient";
 import { Suspense } from "react";
 import { generateMetadata as genMeta, generateLocalBusinessSchema, StructuredData } from "@/lib/seo";
@@ -14,9 +14,10 @@ export const metadata = genMeta({
 });
 
 export default async function Home() {
-  const [categories, stats] = await Promise.all([
-    getServiceCategories(),
+  const [stats, tiles, bestsellers] = await Promise.all([
     getSiteStats(),
+    getCategoryTiles(),
+    getBestsellers(5),
   ]);
   const businessSchema = generateLocalBusinessSchema();
 
@@ -24,7 +25,7 @@ export default async function Home() {
     <>
       <StructuredData data={businessSchema} />
       <Suspense fallback={<div>Loading...</div>}>
-        <HomeClient categories={categories} stats={stats} />
+        <HomeClient stats={stats} tiles={tiles} bestsellers={bestsellers} />
       </Suspense>
     </>
   );

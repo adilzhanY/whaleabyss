@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Plus, Trash2, Calendar, Percent } from "lucide-react";
 import Link from "next/link";
 import PageHeader from "../_components/PageHeader";
+import { confirmDialog } from "@/store/useConfirm";
 
 interface Promocode {
   id: string;
@@ -37,7 +38,12 @@ export default function PromocodesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Удалить этот промокод?")) return;
+    const ok = await confirmDialog({
+      title: "Удалить этот промокод?",
+      confirmLabel: "Удалить",
+      variant: "danger",
+    });
+    if (!ok) return;
 
     try {
       const res = await fetch(`/api/admin/promocodes/${id}`, {

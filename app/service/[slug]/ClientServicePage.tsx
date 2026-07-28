@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import CartModal from "@/components/CartModal";
 import AuthModal from "@/components/AuthModal";
 import { ServiceItem } from "@/lib/services";
 import { useAddToCartWithAddons } from "@/components/QuestAddonModal";
@@ -411,7 +410,6 @@ export default function ClientServicePage({ service, recommended = [] }: ClientS
   return (
     <>
       <Header onAuthOpen={() => setAuthOpen(true)} />
-      <CartModal />
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
       <main className="mx-auto max-w-6xl px-4 sm:px-6 pt-24 pb-8 flex flex-col items-center w-full">

@@ -2,52 +2,31 @@
 
 import { useState, useEffect } from "react";
 import {
-	MousePointerClick,
 	CreditCard,
-	Trophy,
 	Star,
 	Clock,
 	PlusCircle,
 	ArrowRight,
+	ArrowUpRight,
 	CheckCircle2,
-	ShieldCheck,
 } from "lucide-react";
 import type { SiteStats } from "@/lib/siteStats";
+import type { CategoryTile } from "@/lib/homeShowcase";
+import type { ServiceItem } from "@/lib/services";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import CartModal from "@/components/CartModal";
 import AuthModal from "@/components/AuthModal";
 import ServiceCard from "@/components/ServiceCard";
 import SuggestServiceModal from "@/components/SuggestServiceModal";
 import OrderCard from "@/components/OrderCard";
 import Toast from "@/components/Toast";
 import EventBanner from "@/components/EventBanner";
+import DivePath from "@/components/DivePath";
 import { useCart } from "@/store/useCart";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getActiveEvent } from "@/lib/events";
-
-const STEPS = [
-	{
-		icon: <MousePointerClick className="h-7 w-7" />,
-		number: "01",
-		title: "Выбираете услугу",
-		desc: "Просмотрите каталог и добавьте нужную услугу в корзину одним кликом.",
-	},
-	{
-		icon: <CreditCard className="h-7 w-7" />,
-		number: "02",
-		title: "Оплачиваете",
-		desc: "Безопасная оплата онлайн через СБП (Систему быстрых платежей).",
-	},
-	{
-		icon: <Trophy className="h-7 w-7" />,
-		number: "03",
-		title: "Получаете результат",
-		desc: "Наши специалисты выполняют заказ быстро и конфиденциально. Мы уведомим вас о готовности.",
-	},
-];
 
 /** Shape of GET /api/reviews — the same endpoint /reviews uses. */
 interface HomeReview {
@@ -106,60 +85,13 @@ function plural(n: number, one: string, few: string, many: string) {
 	return many;
 }
 
-/**
- * Product illustration for the right half of the fold.
- *
- * Replaces a 50% void. Deliberately a real-looking order card rather than a
- * hand-drawn SVG: it counterbalances the headline, shows what the product
- * actually is, and reinforces trust — all at once. Marked aria-hidden because
- * it is illustrative, not live data.
- */
-function HeroOrderCard() {
-	return (
-		<div className="w-full max-w-sm mx-auto lg:mx-0" aria-hidden="true">
-			<div className="rounded-[14px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_18px_50px_-24px_rgba(15,27,45,0.4)] backdrop-blur-sm">
-				<div className="flex items-center justify-between">
-					<span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-						Ваш заказ
-					</span>
-					<span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-700">
-						Выполняется
-					</span>
-				</div>
-				<p className="mt-3 text-lg font-bold text-slate-900">Спиральная Бездна</p>
-				<p className="text-sm text-slate-500">Этажи 9–12, полное прохождение</p>
-				<div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-					<div
-						className="h-full w-3/4 rounded-full"
-						style={{ backgroundColor: "var(--accent-primary)" }}
-					/>
-				</div>
-				<div className="mt-1.5 flex justify-between text-[11px] text-slate-400">
-					<span>9 из 12 этажей</span>
-					<span>75%</span>
-				</div>
-				<div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
-					<div className="flex items-center gap-2">
-						<div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 text-xs font-bold text-white">
-							К
-						</div>
-						<div className="leading-tight">
-							<p className="text-xs font-semibold text-slate-700">Ваш качер</p>
-							<p className="text-[11px] text-slate-400">на связи в Telegram</p>
-						</div>
-					</div>
-					<ShieldCheck className="h-5 w-5 text-slate-300" />
-				</div>
-			</div>
-		</div>
-	);
-}
-
 export default function HomeClient({
-	categories,
+	tiles,
+	bestsellers,
 	stats,
 }: {
-	categories: any[];
+	tiles: CategoryTile[];
+	bestsellers: ServiceItem[];
 	stats?: SiteStats;
 }) {
 	const { data: session } = useSession();
@@ -286,7 +218,6 @@ export default function HomeClient({
 	return (
 		<div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
 			<Header onAuthOpen={() => setAuthOpen(true)} />
-			<CartModal />
 			<AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 			<SuggestServiceModal
 				isOpen={suggestOpen}
@@ -444,13 +375,13 @@ export default function HomeClient({
 			) : (
 				<section
 					id="hero"
-					className="hero-mesh relative overflow-hidden pt-24 pb-24 sm:pb-32"
+					className="hero-mesh relative overflow-hidden pt-24 pb-20"
 				>
 						{/* .site-gutter + .site-container reproduce the header pill's geometry, so
 						    the badge, headline, paragraph and buttons land on the same vertical
 						    line as the logo at every breakpoint (see globals.css). */}
 						<div className="relative z-10 site-gutter">
-							<div className="site-container grid grid-cols-1 items-center gap-12 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-12">
+							<div className="site-container grid grid-cols-1 items-center gap-12 lg:grid-cols-[minmax(0,1fr)_26rem] lg:gap-12">
 								<div className="text-left w-full">
 									{/* Chip, not a pill — 8px in the new radius scale. Cyrillic caps need
 									    more tracking than the old value gave them. */}
@@ -514,11 +445,63 @@ export default function HomeClient({
 										</ul>
 									)}
 								</div>
-								{/* Right column: a real order card, not decoration. It counterbalances
-								    the headline, explains the product, and carries trust at once. */}
-								<HeroOrderCard />
+								{/* Right column: Valle at full height (bg removed via isnet-anime
+								    matting from valle_full_height.png). Decorative, so aria-hidden. */}
+								{/* Desktop only - on mobile/tablet the hero reads better as pure text. */}
+								<div className="hidden w-full lg:flex justify-end" aria-hidden="true">
+									<img
+										src="/images/valle_full_height_nobg.png"
+										alt=""
+										className="h-[34rem] w-auto select-none pointer-events-none drop-shadow-[0_24px_40px_rgba(11,81,145,0.25)]"
+									/>
+								</div>
 							</div>
 						</div>
+					{/* HOW IT WORKS - same mesh surface as the hero, one continuous block */}
+					<div id="how" className="relative z-10 mt-14 sm:mt-16">
+						<div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "75rem" }}>
+							<div className="dive-panel">
+								{/* rising bubbles - decoration only */}
+								<span className="dive-bubble" style={{ left: "12%", width: 14, height: 14, animationDuration: "9s" }} aria-hidden />
+								<span className="dive-bubble" style={{ left: "24%", width: 8, height: 8, animationDuration: "7s", animationDelay: "2s" }} aria-hidden />
+								<span className="dive-bubble" style={{ left: "78%", width: 11, height: 11, animationDuration: "8s", animationDelay: "1s" }} aria-hidden />
+								<span className="dive-bubble" style={{ left: "88%", width: 7, height: 7, animationDuration: "6s", animationDelay: "3.4s" }} aria-hidden />
+								<span className="dive-bubble" style={{ left: "56%", width: 9, height: 9, animationDuration: "10s", animationDelay: ".6s" }} aria-hidden />
+								<DivePath />
+								<h2 className="dive-title">Как это работает</h2>
+								<p className="dive-sub">Три простых шага до результата</p>
+								<div className="dive-step">
+									<div className="dive-card">
+										<b>Выбираете услугу</b>
+										<p>Просмотрите каталог и добавьте нужную услугу в корзину одним кликом.</p>
+									</div>
+									<div className="dive-node">01</div>
+									<div className="dive-spacer" />
+								</div>
+								<div className="dive-step dive-step-right">
+									<div className="dive-card">
+										<b>Оплачиваете через СБП</b>
+										<p>Безопасная оплата онлайн по Системе быстрых платежей - без ввода карты.</p>
+										<img src="/icons/sbp.png" alt="СБП - Система быстрых платежей" className="dive-sbp" />
+									</div>
+									<div className="dive-node">02</div>
+									<div className="dive-spacer" />
+								</div>
+								<div className="dive-step">
+									<div className="dive-card">
+										<b>Получаете результат</b>
+										<p>Наши специалисты выполняют заказ быстро и конфиденциально. Мы уведомим вас о готовности.</p>
+									</div>
+									<div className="dive-node">03</div>
+									<div className="dive-spacer" />
+								</div>
+								<div className="dive-fin">
+									<img src="/images/valle_chibi_happy.png" alt="" aria-hidden />
+									<span className="dive-chip">Заказ выполнен</span>
+								</div>
+							</div>
+						</div>
+					</div>
 				</section>
 			)}
 
@@ -527,146 +510,98 @@ export default function HomeClient({
 				<EventBanner eventType={activeEvent.type!} endsAt={activeEvent.endsAt} />
 			)}
 
-			{/* HOW IT WORKS */}
-			{!session?.user && (
-				<section id="how" className="py-20">
-					<div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "75rem" }}>
-						<div className="mb-12 text-center">
-							<h2
-								className="text-3xl font-black"
-								style={{
-									fontFamily: "var(--font-primary), sans-serif",
-									color: "var(--text-primary)",
-								}}
-							>
-								Как это работает
-							</h2>
-							<p
-								className="mt-2 text-sm"
-								style={{ color: "var(--text-secondary)" }}
-							>
-								Три простых шага до результата
-							</p>
-						</div>
-						<div className="grid gap-6 sm:grid-cols-3">
-							{STEPS.map((step) => (
-								<div
-									key={step.number}
-									className="relative rounded-2xl p-6"
-									style={{
-										backgroundColor: "var(--bg-card)",
-										border: "1px solid var(--accent-border)",
-										boxShadow: "var(--card-shadow)",
-									}}
-								>
-									<span
-										className="absolute right-5 top-5 text-4xl font-black opacity-10"
-										style={{
-											color: "var(--accent-primary)",
-											fontFamily:
-												"var(--font-primary), sans-serif",
-										}}
-									>
-										{step.number}
-									</span>
-									<div
-										className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl"
-										style={{
-											backgroundColor: "var(--bg-highlight)",
-											color: "var(--accent-primary)",
-										}}
-									>
-										{step.icon}
-									</div>
-									<h3
-										className="mb-2 text-base font-bold"
-										style={{
-											fontFamily:
-												"var(--font-primary), sans-serif",
-											color: "var(--text-primary)",
-										}}
-									>
-										{step.title}
-									</h3>
-									<p
-										className="text-sm leading-relaxed"
-										style={{ color: "var(--text-secondary)" }}
-									>
-										{step.desc}
-									</p>
-								</div>
-							))}
-						</div>
-					</div>
-				</section>
-			)}
 
 			{/* SERVICES GRID */}
-			<section
-				id="services"
-				className="py-20 relative overflow-hidden rounded-t-[2.5rem] sm:rounded-t-[3.5rem] -mt-8 sm:-mt-14 shadow-[0_-24px_60px_-28px_rgba(15,23,42,0.22)]"
-				style={{
-					background: "linear-gradient(to bottom, #090e17 0%, #111a2e 100%)",
-				}}
-			>
-				<div className="absolute inset-0 pointer-events-none z-0 bg-white">
-					<div className="services-fog absolute inset-0 opacity-70" />
-					{/* Subtle two-tier graph-paper grid: fine 40px cells + bolder 200px
-					    lines, gently faded toward the left/right edges. */}
-					<div className="services-grid absolute inset-0" />
-				</div>
-
-				<div
-					className="mx-auto px-4 sm:px-6 relative z-10"
-					style={{ maxWidth: "75rem" }}
-				>
-					<div className="flex flex-col gap-12">
-						{categories.map((category, index) => {
-							if (session?.user && index > 1) return null;
-							const itemsToShow =
-								session?.user && index === 1
-									? category.items.slice(0, 5)
-									: category.items;
-
-							return (
-								<div key={category.id} className="flex flex-col gap-6">
-									<h3
-										className="text-2xl font-bold"
-										style={{
-											fontFamily:
-												"var(--font-primary), sans-serif",
-											color: "var(--text-primary)",
-										}}
-									>
-										{category.title}
-									</h3>
-									<div
-										className={
-											category.slug === "actual"
-												? "grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6"
-												: "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6"
-										}
-									>
-										{itemsToShow.map((item: any) => (
-											<div key={item.id} className="w-full h-full">
-												<ServiceCard item={item} categorySlug={category.slug} />
-											</div>
+			{/* SERVICES SHOWCASE - category tiles + one bestseller rail, flat on the
+			    page ground. The graph-paper grid and the giant rounded "sheet" are gone
+			    on purpose; /services remains the single full catalogue. */}
+			<section id="services" className="py-20">
+				<div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "75rem" }}>
+					<div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
+						<h2
+							className="text-3xl font-black"
+							style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
+						>
+							Чем поможем?
+						</h2>
+						<Link
+							href="/services"
+							className="inline-flex items-center gap-1.5 text-sm font-bold transition-opacity hover:opacity-80"
+							style={{ color: "var(--accent-primary)" }}
+						>
+							Весь каталог
+							<ArrowRight className="h-4 w-4" />
+						</Link>
+					</div>
+					{/* The big tile takes 4 cells; widen the last few singles so the
+					    4-column grid always closes without holes, whatever the number
+					    of categories. */}
+					<div className="home-tiles">
+						{tiles.map((tile, i) => (
+							<Link
+								key={tile.slug}
+								href={`/services#${tile.slug}`}
+								className={`home-tile ${i === 0 ? "home-tile-big" : ""} ${
+									i > 0 && i >= tiles.length - ((4 - ((3 + tiles.length) % 4)) % 4)
+										? "home-tile-wide"
+										: ""
+								}`}
+								style={
+									i === 0 && tile.images.length >= 4
+										? undefined
+										: tile.image
+											? { backgroundImage: `url('${tile.image}')` }
+											: undefined
+								}
+							>
+								{i === 0 && tile.images.length >= 4 && (
+									<span className="home-tile-collage" aria-hidden>
+										{tile.images.map((img) => (
+											<i key={img} style={{ backgroundImage: `url('${img}')` }} />
 										))}
-									</div>
-								</div>
-							);
-						})}
+									</span>
+								)}
+								<span className="home-tile-arr" aria-hidden>
+									<ArrowUpRight className="h-4 w-4" />
+								</span>
+								<span className="in">
+									<b>{tile.title}</b>
+									<small>
+										{tile.count} {plural(tile.count, "услуга", "услуги", "услуг")} · от{" "}
+										{tile.minPrice.toLocaleString("ru-RU")} ₽
+									</small>
+								</span>
+							</Link>
+						))}
 					</div>
 
-					<div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-4">
-						{session?.user && (
-							<Link
-								href="/services"
-								className="btn-secondary w-full sm:w-auto !px-12 !py-5 !text-xl !font-bold"
-							>
-								Все услуги
-							</Link>
-						)}
+					{bestsellers.length > 0 && (
+						<>
+							<div className="mt-16 mb-6 flex flex-wrap items-baseline justify-between gap-3">
+								<h2
+									className="text-3xl font-black"
+									style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
+								>
+									Популярные услуги
+								</h2>
+								<Link
+									href="/services"
+									className="inline-flex items-center gap-1.5 text-sm font-bold transition-opacity hover:opacity-80"
+									style={{ color: "var(--accent-primary)" }}
+								>
+									Весь каталог
+									<ArrowRight className="h-4 w-4" />
+								</Link>
+							</div>
+							<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6">
+								{bestsellers.map((item) => (
+									<ServiceCard key={item.id} item={item} categorySlug={item.categorySlug} />
+								))}
+							</div>
+						</>
+					)}
+
+					<div className="mt-16 flex justify-center">
 						<button
 							onClick={() => setSuggestOpen(true)}
 							className="btn-primary w-full sm:w-auto !px-12 !py-5 !text-xl !font-bold"

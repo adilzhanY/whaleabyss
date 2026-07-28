@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Plus, Trash2, Calendar as CalendarIcon, Percent, Edit } from "lucide-react";
 import Link from "next/link";
 import PageHeader from "../_components/PageHeader";
+import { confirmDialog } from "@/store/useConfirm";
 
 interface Event {
   id: string;
@@ -41,7 +42,12 @@ export default function EventsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Удалить это событие?")) return;
+    const ok = await confirmDialog({
+      title: "Удалить это событие?",
+      confirmLabel: "Удалить",
+      variant: "danger",
+    });
+    if (!ok) return;
 
     try {
       const res = await fetch(`/api/admin/events/${id}`, {

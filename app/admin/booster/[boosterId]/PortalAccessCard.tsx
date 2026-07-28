@@ -4,6 +4,7 @@ import { useState } from "react";
 import { KeyRound, Link2, Unlink, Loader2 } from "lucide-react";
 import Input from "@/components/Input";
 import CopyableText from "../../_components/CopyableText";
+import { confirmDialog } from "@/store/useConfirm";
 
 /**
  * «Доступ в портал» card on /admin/booster/[id]. Links a site account
@@ -48,7 +49,13 @@ export default function PortalAccessCard({
   };
 
   const unlink = async () => {
-    if (!confirm("Отвязать аккаунт? Качер потеряет доступ к порталу.")) return;
+    const ok = await confirmDialog({
+      title: "Отвязать аккаунт?",
+      description: "Качер потеряет доступ к порталу.",
+      confirmLabel: "Отвязать",
+      variant: "danger",
+    });
+    if (!ok) return;
     setBusy(true);
     setError(null);
     try {

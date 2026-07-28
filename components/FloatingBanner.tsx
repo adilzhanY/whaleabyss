@@ -27,7 +27,13 @@ export default function FloatingBanner() {
   }
 
   return (
-    <div className="fixed bottom-2 right-2 sm:bottom-4 sm:right-4 z-50 group animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div
+      className={`fixed right-2 sm:right-4 z-50 group animate-in fade-in slide-in-from-bottom-4 duration-500 ${
+        // /cart pins a pay bar to the bottom of the screen below lg. Sit above
+        // it rather than covering the primary CTA of the whole site.
+        pathname === "/cart" ? "bottom-24 lg:bottom-4" : "bottom-2 sm:bottom-4"
+      }`}
+    >
       <div className="relative">
         {/* Close button */}
         <button

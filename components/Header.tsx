@@ -31,6 +31,11 @@ const NAV_LINKS = [
   { label: "О сервисе", href: "/info" },
 ];
 
+// The entrance reveal plays once per full page load. Module scope survives
+// client-side route changes (Header remounts per page), so navigating around
+// the site never replays it; a hard reload starts a fresh JS session and does.
+let hasRevealedThisLoad = false;
+
 /**
  * Resolve which nav link is active for the current pathname.
  * The root "/" must match exactly; every other link matches a prefix so that
@@ -69,6 +74,44 @@ export default function Header({ onAuthOpen }: HeaderProps) {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  /* --------------- Entrance reveal + scroll behavior (option C) ---------- */
+  const [reveal, setReveal] = useState(false);
+  // Layout effect so the class lands before first paint - otherwise the bar
+  // is visible for one frame and then jumps back to its hidden keyframe start.
+  useLayoutEffect(() => {
+    if (hasRevealedThisLoad) return;
+    hasRevealedThisLoad = true;
+    setReveal(true);
+  }, []);
+
+  // Condensed pill after any scroll; the whole bar slides away on sustained
+  // scrolling down and comes back the moment the user scrolls up.
+  const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastYRef = useRef(0);
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const y = window.scrollY;
+        setScrolled(y > 24);
+        const last = lastYRef.current;
+        if (y > 160 && y > last + 4) setHidden(true);
+        else if (y < last - 4 || y <= 160) setHidden(false);
+        lastYRef.current = y;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+  const headerHidden = hidden && !isMobileMenuOpen;
 
   useEffect(() => {
     document.body.style.overflow = isMobileMenuOpen ? "hidden" : "auto";
@@ -159,7 +202,11 @@ export default function Header({ onAuthOpen }: HeaderProps) {
       <header
         id="site-header"
         className="fixed top-3 left-3 right-3 md:top-5 md:left-6 md:right-6 z-40"
-        style={{ fontFamily: "var(--font-primary), sans-serif" }}
+        style={{
+          fontFamily: "var(--font-primary), sans-serif",
+          transform: headerHidden ? "translateY(-140%)" : "translateY(0)",
+          transition: "transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
       >
         {/* Full-bleed scrim behind the floating pill. Without it, content
             scrolling past showed through the transparent gutters beside and
@@ -171,7 +218,9 @@ export default function Header({ onAuthOpen }: HeaderProps) {
         />
         <div
           ref={glassPanelRef}
-          className="mx-auto w-full max-w-[75rem] glass-panel liquid-glass rounded-[28px] md:rounded-[32px]"
+          className={`mx-auto w-full max-w-[75rem] glass-panel liquid-glass transition-[border-radius] duration-300 ${
+            scrolled ? "rounded-[20px] md:rounded-[22px]" : "rounded-[28px] md:rounded-[32px]"
+          } ${reveal ? "nav-reveal" : ""}`}
           style={{
             // Chromium honors SVG-filter URLs in backdrop-filter; Firefox/Safari
             // drop the whole declaration as invalid and fall back to the plain
@@ -180,12 +229,16 @@ export default function Header({ onAuthOpen }: HeaderProps) {
             WebkitBackdropFilter: `blur(18px) saturate(180%)`,
           }}
         >
-          <div className="flex h-14 md:h-16 items-center justify-between pl-3 pr-3 md:pl-5 md:pr-4">
+          <div
+            className={`relative flex items-center justify-between pl-3 pr-3 md:pl-5 md:pr-4 transition-[height] duration-300 ${
+              scrolled ? "h-12" : "h-14 md:h-16"
+            }`}
+          >
             {/* Left: burger (mobile/tablet only) + logo (whale icon always,
                 brand text on desktop only) */}
             <div className="flex items-center gap-2 md:gap-3">
               {/* Wrapper with lg:hidden so cascade specificity can't revive the button on desktop */}
-              <div className="lg:hidden">
+              <div className="lg:hidden nav-reveal-actions">
                 <button
                   className="btn-icon !h-10 !w-10 !rounded-full"
                   onClick={() => setIsMobileMenuOpen(true)}
@@ -197,37 +250,47 @@ export default function Header({ onAuthOpen }: HeaderProps) {
 
               {/* Logo lockup. The wordmark is part of the artwork now (Onest
                   ExtraBold, outlined + optically kerned in the brand file), so
-                  there is no live text beside it any more. Full lockup from lg
-                  up, mark alone below that — the lockup is far too wide for a
-                  phone header. .logo-light/.logo-dark are swapped by theme in
-                  globals.css (the site uses `site-dark`, not Tailwind `dark:`). */}
-              <Link href="/" className="flex items-center" aria-label="Whale Abyss — на главную">
-                <span className="hidden lg:block">
-                  <img
-                    src="/images/whaleabyss-lockup-ink.svg"
-                    alt="Whale Abyss"
-                    className="logo-light h-9 w-auto"
-                  />
-                  <img
-                    src="/images/whaleabyss-lockup-white.svg"
-                    alt="Whale Abyss"
-                    className="logo-dark h-9 w-auto"
-                  />
-                </span>
-                <span className="lg:hidden">
-                  <img
-                    src="/images/whaleabyss-mark-ink.svg"
-                    alt="Whale Abyss"
-                    className="logo-light h-10 w-auto"
-                  />
-                  <img
-                    src="/images/whaleabyss-mark-white.svg"
-                    alt="Whale Abyss"
-                    className="logo-dark h-10 w-auto"
-                  />
-                </span>
+                  there is no live text beside it any more. Desktop: lockup on
+                  the left. Mobile: the bar holds only burger + profile, so the
+                  full lockup fits dead-center (see below).
+                  .logo-light/.logo-dark are swapped by theme in globals.css
+                  (the site uses `site-dark`, not Tailwind `dark:`). */}
+              <Link
+                href="/"
+                className="hidden lg:flex items-center nav-reveal-logo"
+                aria-label="Whale Abyss - на главную"
+              >
+                <img
+                  src="/images/whaleabyss-lockup-ink.svg"
+                  alt="Whale Abyss"
+                  className={`logo-light w-auto transition-all duration-300 ${scrolled ? "h-7" : "h-9"}`}
+                />
+                <img
+                  src="/images/whaleabyss-lockup-white.svg"
+                  alt="Whale Abyss"
+                  className={`logo-dark w-auto transition-all duration-300 ${scrolled ? "h-7" : "h-9"}`}
+                />
               </Link>
             </div>
+
+            {/* Mobile: full wordmark lockup, dead-center between burger and
+                profile (absolute so the flanking buttons can't push it). */}
+            <Link
+              href="/"
+              className="lg:hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 nav-reveal-logo"
+              aria-label="Whale Abyss - на главную"
+            >
+              <img
+                src="/images/whaleabyss-lockup-ink.svg"
+                alt="Whale Abyss"
+                className={`logo-light w-auto transition-all duration-300 ${scrolled ? "h-5" : "h-6"}`}
+              />
+              <img
+                src="/images/whaleabyss-lockup-white.svg"
+                alt="Whale Abyss"
+                className={`logo-dark w-auto transition-all duration-300 ${scrolled ? "h-5" : "h-6"}`}
+              />
+            </Link>
 
             {/* Desktop nav with sliding pill indicator */}
             <nav
@@ -266,11 +329,12 @@ export default function Header({ onAuthOpen }: HeaderProps) {
                     ref={(el) => {
                       linksRef.current[i] = el;
                     }}
-                    className={`relative z-10 px-4 py-2 text-sm transition-colors duration-300 select-none ${
+                    className={`nav-reveal-link relative z-10 px-4 py-2 text-sm transition-colors duration-300 select-none ${
                       isActive ? "font-bold" : "font-medium"
                     }`}
                     style={{
                       color: isActive ? "var(--accent-primary)" : undefined,
+                      ["--reveal-i" as string]: i,
                     }}
                     onMouseEnter={() => {
                       if (isActive) setHover(true);
@@ -297,13 +361,54 @@ export default function Header({ onAuthOpen }: HeaderProps) {
             {/* Right: actions. The theme switch is a preference, not a feature —
                 it sits first, quiet and scaled down, so it stops competing with
                 the primary CTA. Cart + auth are one group behind a divider. */}
-            <div className="flex items-center gap-2">
-              <div className="hidden lg:block opacity-55 transition-opacity hover:opacity-100 scale-90">
+            <div className="flex items-center gap-2 nav-reveal-actions">
+              {/* Mobile bar holds only the profile entry - auth pill and cart
+                  live in the burger sheet below lg (per the navbar redesign:
+                  burger / centered lockup / profile). */}
+              <div className="lg:hidden">
+                {session ? (
+                  <Link
+                    href="/profile"
+                    aria-label="Профиль"
+                    className="btn-icon !h-10 !w-10 !p-0 !rounded-full overflow-hidden"
+                  >
+                    {session.user?.image ? (
+                      <img
+                        src={session.user.image}
+                        alt="User Avatar"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div
+                        className="w-full h-full flex items-center justify-center font-bold uppercase"
+                        style={{ color: "var(--accent-primary)" }}
+                      >
+                        {session.user?.name ? (
+                          session.user.name.charAt(0)
+                        ) : (
+                          <User className="h-5 w-5" />
+                        )}
+                      </div>
+                    )}
+                  </Link>
+                ) : (
+                  <button
+                    onClick={onAuthOpen}
+                    aria-label="Войти или зарегистрироваться"
+                    className="btn-icon !h-10 !w-10 !rounded-full"
+                  >
+                    <User className="h-5 w-5" />
+                  </button>
+                )}
+              </div>
+
+              <div className="hidden lg:flex items-center gap-2">
+              <div className="opacity-55 transition-opacity hover:opacity-100 scale-90">
                 <SiteThemeSwitch />
               </div>
               <span
                 aria-hidden="true"
-                className="hidden lg:block h-6 w-px"
+                className="h-6 w-px"
                 style={{ backgroundColor: "color-mix(in srgb, currentColor 18%, transparent)" }}
               />
               {session ? (
@@ -377,6 +482,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
                   {isMounted && count > 9 ? "9+" : isMounted ? count : 0}
                 </span>
               </button>
+              </div>
             </div>
           </div>
         </div>
@@ -424,6 +530,35 @@ export default function Header({ onAuthOpen }: HeaderProps) {
 
         <nav className="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-6">
           <div className="flex flex-col gap-1">
+            {/* The redesigned mobile bar holds only burger + profile, so the
+                cart entry point below lg lives here. */}
+            <button
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                openCart();
+              }}
+              className="flex items-center justify-between py-3 px-4 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+              aria-label={
+                isMounted && count > 0
+                  ? `Корзина, товаров: ${count}`
+                  : "Корзина, пусто"
+              }
+            >
+              <span className="flex items-center gap-3">
+                <ShoppingCart className="h-5 w-5 text-[var(--accent-primary)]" />
+                Корзина
+              </span>
+              <span
+                className="flex h-6 min-w-6 items-center justify-center rounded-lg px-1.5 text-xs font-bold tabular-nums"
+                style={
+                  isMounted && count > 0
+                    ? { backgroundColor: "var(--accent-primary)", color: "#fff" }
+                    : { backgroundColor: "#f1f5f9", color: "#64748b" }
+                }
+              >
+                {isMounted && count > 9 ? "9+" : isMounted ? count : 0}
+              </span>
+            </button>
             {[
               ...NAV_LINKS,
               ...(session ? [{ label: "Заказы", href: "/orders" }] : []),

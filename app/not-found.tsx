@@ -18,7 +18,7 @@ export default function NotFound() {
         <div className="mx-auto max-w-xl text-center">
           <Image
             src="/images/valle_chibi_sad.png"
-            alt="Валле расстроена"
+            alt="Вэлль расстроена"
             width={140}
             height={140}
             className="mx-auto mb-4 h-28 w-28 sm:h-36 sm:w-36 object-contain"

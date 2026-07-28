@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Eye, Download, Trash2, Upload, FileText, IdCard, Loader2 } from "lucide-react";
 import DocumentViewer from "@/components/DocumentViewer";
+import { confirmDialog } from "@/store/useConfirm";
 
 /**
  * «Документы» card on /admin/booster/[id]: agreement (PDF) + passport scan
@@ -92,7 +93,13 @@ export default function DocumentsCard({
   };
 
   const handleDelete = async (doc: BoosterDocument) => {
-    if (!confirm(`Удалить документ «${doc.fileName}»? Это действие необратимо.`)) return;
+    const ok = await confirmDialog({
+      title: `Удалить документ «${doc.fileName}»?`,
+      description: "Это действие необратимо.",
+      confirmLabel: "Удалить",
+      variant: "danger",
+    });
+    if (!ok) return;
     setBusyType(doc.docType);
     setError(null);
     try {

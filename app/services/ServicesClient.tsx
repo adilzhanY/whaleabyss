@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import CartModal from "@/components/CartModal";
 import AuthModal from "@/components/AuthModal";
 import ServiceCard from "@/components/ServiceCard";
 import SuggestServiceModal from "@/components/SuggestServiceModal";
@@ -76,7 +75,6 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
   return (
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
-      <CartModal />
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
       <SuggestServiceModal isOpen={suggestOpen} onClose={() => setSuggestOpen(false)} />
 

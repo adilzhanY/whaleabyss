@@ -7,6 +7,7 @@ import { generateSlug } from "@/lib/slug";
 import CustomSelect from "@/components/CustomSelect";
 import Input from "@/components/Input";
 import Textarea from "@/components/Textarea";
+import { confirmDialog } from "@/store/useConfirm";
 
 export interface Category {
   id: string;
@@ -224,7 +225,13 @@ export default function ServiceForm({
 
   async function onDelete() {
     if (!initial.id) return;
-    if (!confirm("Удалить услугу? Это действие нельзя отменить.")) return;
+    const ok = await confirmDialog({
+      title: "Удалить услугу?",
+      description: "Это действие нельзя отменить.",
+      confirmLabel: "Удалить",
+      variant: "danger",
+    });
+    if (!ok) return;
     setError(null);
     setDeleting(true);
     try {

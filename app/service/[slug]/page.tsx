@@ -1,9 +1,6 @@
 import { getServiceBySlug } from "@/lib/services";
 import { getRecommendedServices } from "@/lib/recommendations";
 import { notFound } from "next/navigation";
-import Header from "@/components/Header";
-import CartModal from "@/components/CartModal";
-import Link from "next/link";
 import ClientServicePage from "./ClientServicePage";
 import { generateMetadata as genMeta, generateServiceSchema, StructuredData } from "@/lib/seo";
 import type { Metadata } from "next";

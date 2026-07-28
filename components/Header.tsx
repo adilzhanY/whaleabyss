@@ -342,21 +342,22 @@ export default function Header({ onAuthOpen }: HeaderProps) {
               )}
 
               {/* Cart. Was a lone outlined circle with a badge that only existed
-                  when the cart was non-empty — so at rest it was an unlabelled
+                  when the cart was non-empty - so at rest it was an unlabelled
                   icon, and on a services site users can't tell a basket from a
-                  shop or an order history. Now it carries a word from md up and
-                  always shows a count (including 0), and it uses the control
-                  radius so the pill next to it clearly reads as the primary. */}
+                  shop or an order history. It carries a word from md up and
+                  always shows a count (including 0). Same button system and
+                  geometry as the sign-in pill next to it; the outline variant
+                  keeps the filled pill reading as the primary action. */}
               <button
                 onClick={openCart}
-                className="btn-icon !w-auto !rounded-lg flex items-center gap-2 !px-2.5 md:!px-3"
+                className="btn-outline !gap-2 !px-2.5 md:!px-3"
                 aria-label={
                   isMounted && count > 0
                     ? `Корзина, товаров: ${count}`
                     : "Корзина, пусто"
                 }
               >
-                <ShoppingCart className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
+                <ShoppingCart className="h-4 w-4 md:h-5 md:w-5 shrink-0 text-[var(--accent-primary)]" />
                 <span className="hidden md:inline text-sm font-medium">Корзина</span>
                 <span
                   className="flex h-5 min-w-5 items-center justify-center rounded px-1 text-[11px] font-bold tabular-nums"

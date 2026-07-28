@@ -272,7 +272,6 @@ h6 {
   position: relative;
   isolation: isolate;
   display: inline-flex;
-  width: fit-content;
   height: 2.5rem;
   align-items: center;
   justify-content: center;
@@ -298,6 +297,22 @@ h6 {
     background-color 100ms ease-out,
     box-shadow 100ms ease-out,
     border-color 100ms ease-out;
+}
+/* Default width lives in the components layer ON PURPOSE: buttons shrink to
+   their content even inside stretch-happy flex columns, but Tailwind width
+   utilities (`w-full`, `sm:w-auto`, ...) sit in the later utilities layer and
+   win. As an unlayered rule this silently overrode `w-full` at ~9 call sites
+   that wanted a stretched button. */
+@layer components {
+  .btn-primary,
+  .btn-secondary,
+  .btn-tertiary,
+  .btn-outline,
+  .btn-ghost,
+  .btn-danger,
+  .btn-danger-soft {
+    width: fit-content;
+  }
 }
 @media (min-width: 768px) {
   .btn-primary,
@@ -672,14 +687,13 @@ h6 {
  * trick (the card element has border-2 border-transparent). Hover swaps to a
  * light-blue body and saturated border — previously done with JS handlers. */
 .service-card {
-  background:
-    linear-gradient(#ffffff, #ffffff) padding-box,
-    linear-gradient(135deg, rgba(30, 58, 138, 0.4) 0%, rgba(96, 165, 250, 0.4) 100%) border-box;
+  background: #ffffff;
+  border: 1px solid var(--accent-border);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 .service-card:hover {
-  background:
-    linear-gradient(#e0f2fe, #e0f2fe) padding-box,
-    linear-gradient(135deg, var(--accent-primary) 0%, #3b82f6 100%) border-box;
+  border-color: #93c5fd;
+  box-shadow: 0 12px 32px -12px rgba(30, 58, 138, 0.35);
 }
 
 /* ---------------------------------------------------------------------------
@@ -1578,14 +1592,12 @@ html.site-dark body:has(#site-header) {
       linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
   }
   .service-card {
-    background:
-      linear-gradient(#0a0a0a, #0a0a0a) padding-box,
-      linear-gradient(135deg, rgba(96, 165, 250, 0.35) 0%, rgba(30, 58, 138, 0.55) 100%) border-box;
+    background: #0a0a0a;
+    border-color: rgba(255, 255, 255, 0.14);
   }
   .service-card:hover {
-    background:
-      linear-gradient(#101828, #101828) padding-box,
-      linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%) border-box;
+    border-color: #3b82f6;
+    box-shadow: 0 12px 32px -12px rgba(59, 130, 246, 0.35);
   }
 
   /* ── Surfaces (pure-black neutral scale) ───────────────────────────────── */

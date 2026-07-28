@@ -1,6 +1,6 @@
 "use client";
 
-import { ShoppingBag, Loader2 } from "lucide-react";
+import { ShoppingBag, Loader2, CalendarDays } from "lucide-react";
 import { useAddToCartWithAddons } from "@/components/QuestAddonModal";
 import Link from "next/link";
 import { ServiceItem } from "@/lib/services";
@@ -13,7 +13,7 @@ interface ServiceCardProps {
 }
 
 /**
- * "100%" is an attribute of the service, not part of its name — it was
+ * "100%" is an attribute of the service, not part of its name - it was
  * suffixed onto 14 titles and read as repeated noise down the grid. Strip it
  * from the displayed name and surface it as a badge instead.
  */
@@ -25,6 +25,7 @@ function splitName(raw: string): { name: string; full: boolean } {
 export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
   const { name: displayName, full: isHundred } = splitName(item.subtitle || item.title || "");
   const { add: addToCartWithAddons, pending } = useAddToCartWithAddons();
+  const minRank = parseMinAdventureRank(item.description);
 
   // Check if this category is on discount
   const isOnDiscount = categorySlug ? isCategoryOnDiscount(categorySlug) : false;
@@ -36,10 +37,10 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
 
   const handleAdd = (e: React.MouseEvent) => {
     // Per-day services must have their period (startDate/endDate) picked on
-    // the detail page — adding straight from the card would create an order
+    // the detail page - adding straight from the card would create an order
     // with no dates. Let the wrapping Link navigate there instead.
     if (item.isPerDay) return;
-    // Always swallow the click — the card is wrapped in a <Link>, so bailing
+    // Always swallow the click - the card is wrapped in a <Link>, so bailing
     // out before preventDefault would navigate away mid-add.
     e.preventDefault();
     e.stopPropagation();
@@ -55,7 +56,7 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
         image: item.background || "/images/genshin_background.jpg",
       },
       1,
-      parseMinAdventureRank(item.description),
+      minRank,
       item.hasQuestAddons
     );
   };
@@ -63,13 +64,13 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
   return (
     <Link
       href={`/service/${item.id}`}
-      className="service-card group flex flex-col rounded-[14px] cursor-pointer col-span-1 transition-all duration-300 w-full h-full p-3 sm:p-4 border-2 border-transparent relative hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/20"
+      className="service-card flex flex-col rounded-[20px] cursor-pointer col-span-1 w-full h-full p-3 sm:p-4 relative"
     >
-      {/* Image placeholder */}
+      {/* Image: category chip anchored bottom-left, discount ribbon top-left */}
       <div
-        className="mb-3 sm:mb-4 w-full flex items-center justify-center relative overflow-hidden shrink-0 h-30 sm:h-45 transition-transform duration-300 group-hover:scale-105"
+        className="relative mb-3 sm:mb-4 w-full overflow-hidden shrink-0 h-30 sm:h-45"
         style={{
-          borderRadius: "0.75rem",
+          borderRadius: "0.875rem",
           background: item.background
             ? `url('${item.background}') ${item.background.includes('mondstadt_plot.jpg')
               ? 'center 55% / 120% no-repeat'
@@ -78,16 +79,30 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
             : (item.gradient || "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"),
         }}
       >
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(to top, rgba(9, 14, 23, 0.4), transparent 45%)" }}
+        />
+        {item.categoryTitle && (
+          <span className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] truncate rounded-md bg-slate-950/55 px-2 py-0.5 text-[10px] sm:text-[11px] font-bold text-white backdrop-blur-sm">
+            {item.categoryTitle}
+          </span>
+        )}
+        {isOnDiscount && activeEvent && (
+          <span className="absolute top-2 left-2 rounded-md bg-red-600 px-2 py-0.5 text-[11px] font-extrabold text-white">
+            -{activeEvent.discountPercent}%
+          </span>
+        )}
       </div>
 
-      {/* Subtitle */}
-      {/* Name leads, price supports. Previously the name was ~14px muted grey
-          and the price 24px navy bold, so the page scanned as a price list and
-          the user never learned what they were buying. */}
+      {/* Name leads, price supports. The name is clamped to two lines with a
+          reserved two-line height so the price row sits on the same baseline
+          across the whole grid row. */}
       <div className="flex-1 mb-3 sm:mb-4 min-w-0"
         style={{ fontFamily: "var(--font-primary), sans-serif" }}>
         <div className="flex items-start gap-1.5">
-          <p className="text-[15px] sm:text-base font-semibold leading-snug line-clamp-2 text-slate-900 transition-colors duration-300 group-hover:text-blue-900">
+          <p className="min-w-0 flex-1 text-[15px] sm:text-base font-semibold leading-snug line-clamp-2 min-h-[2.75em] text-slate-900">
             {displayName}
           </p>
           {isHundred && (
@@ -96,48 +111,60 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
             </span>
           )}
         </div>
-      </div>
-
-      {/* Price + add button */}
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col gap-1">
-          {isOnDiscount && (
-            <span
-              className="text-xs sm:text-sm font-semibold line-through text-slate-400"
-              style={{ fontFamily: "var(--font-primary), sans-serif" }}
-            >
-              {item.price.toLocaleString("ru-RU")} ₽
-            </span>
-          )}
-          <div className="flex items-center gap-2">
-            <span
-              className={`text-sm sm:text-base font-bold whitespace-nowrap transition-colors duration-300 ${
-                isOnDiscount
-                  ? "text-green-600 group-hover:text-green-700"
-                  : "text-slate-700 group-hover:text-blue-800"
-              }`}
-              style={{ fontFamily: "var(--font-primary), sans-serif" }}
-            >
-              {finalPrice.toLocaleString("ru-RU")} {item.isPerDay ? "₽/день" : "₽"}
-            </span>
-            {isOnDiscount && (
-              <span className="text-xs sm:text-sm font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-lg">
-                -15%
+        {(minRank !== null || item.hasQuestAddons) && (
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {minRank !== null && (
+              <span className="rounded-md bg-blue-50 px-1.5 py-0.5 text-[11px] font-bold text-blue-900 whitespace-nowrap">
+                РП {minRank}+
+              </span>
+            )}
+            {item.hasQuestAddons && (
+              <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-600 whitespace-nowrap">
+                Квесты нужны
               </span>
             )}
           </div>
+        )}
+      </div>
+
+      {/* Price + CTA. Old price sits inline (not stacked) so a discount never
+          changes the card height. The row wraps when the pair doesn't fit
+          (e.g. «100 ₽/день» + «Выбрать даты» on narrow columns) - the button
+          drops to its own line instead of painting over the price. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
+        <div className="flex items-baseline gap-1.5"
+          style={{ fontFamily: "var(--font-primary), sans-serif" }}>
+          <span
+            className={`text-[15px] font-bold whitespace-nowrap ${
+              isOnDiscount ? "text-red-600" : "text-blue-950"
+            }`}
+          >
+            {finalPrice.toLocaleString("ru-RU")} {item.isPerDay ? "₽/день" : "₽"}
+          </span>
+          {isOnDiscount && (
+            <span className="truncate text-xs font-semibold line-through text-slate-400">
+              {item.price.toLocaleString("ru-RU")} ₽
+            </span>
+          )}
         </div>
         <button
           onClick={handleAdd}
           aria-busy={pending}
-          className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg bg-transparent cursor-pointer transition-all duration-300 group-hover:bg-blue-600 group-hover:scale-110"
-          aria-label={`Добавить ${item.title} в корзину`}
+          className="btn-primary ml-auto shrink-0 !h-8 !gap-1.5 !px-2.5 sm:!px-3 !text-[13px] !font-semibold"
+          aria-label={
+            item.isPerDay
+              ? `Выбрать даты для ${item.title}`
+              : `Добавить ${item.title} в корзину`
+          }
         >
           {pending ? (
-            <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin text-[#8b9fd6] transition-colors duration-300 group-hover:text-white" strokeWidth={1.5} />
+            <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} />
+          ) : item.isPerDay ? (
+            <CalendarDays className="h-4 w-4" strokeWidth={2} />
           ) : (
-            <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 text-[#8b9fd6] transition-colors duration-300 group-hover:text-white" strokeWidth={1.5} />
+            <ShoppingBag className="h-4 w-4" strokeWidth={2} />
           )}
+          <span className="hidden sm:inline">{item.isPerDay ? "Выбрать даты" : "В корзину"}</span>
         </button>
       </div>
     </Link>

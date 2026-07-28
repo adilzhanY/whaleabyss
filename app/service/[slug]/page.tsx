@@ -1,4 +1,5 @@
 import { getServiceBySlug } from "@/lib/services";
+import { getRecommendedServices } from "@/lib/recommendations";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import CartModal from "@/components/CartModal";
@@ -36,6 +37,8 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
     return notFound();
   }
 
+  const recommended = await getRecommendedServices(service.id);
+
   const serviceSchema = generateServiceSchema({
     id: service.id,
     title: service.title,
@@ -47,7 +50,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
   return (
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
       <StructuredData data={serviceSchema} />
-      <ClientServicePage service={service} />
+      <ClientServicePage service={service} recommended={recommended} />
     </div>
   );
 }

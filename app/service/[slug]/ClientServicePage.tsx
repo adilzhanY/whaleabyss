@@ -8,13 +8,14 @@ import AuthModal from "@/components/AuthModal";
 import { ServiceItem } from "@/lib/services";
 import { useAddToCartWithAddons } from "@/components/QuestAddonModal";
 import { parseMinAdventureRank } from "@/lib/adventureRank";
-import { UserCircle, Tag, Layers, CheckCircle, Info, ShoppingCart, Gauge, Loader2, AlertTriangle, MessageCircle } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
+import { Info, ShoppingCart, Gauge, Loader2, AlertTriangle, MessageCircle } from "lucide-react";
 import DateInput from "@/components/DateInput";
+import ServiceCard from "@/components/ServiceCard";
+import Breadcrumb from "@/components/Breadcrumb";
 
 interface ClientServicePageProps {
   service: ServiceItem;
+  recommended?: ServiceItem[];
 }
 
 /**
@@ -66,11 +67,7 @@ function splitDescription(desc: string | undefined) {
 	return { mainText, rankNote, priceNote };
 }
 
-function escapeRegex(string: string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-export default function ClientServicePage({ service }: ClientServicePageProps) {
+export default function ClientServicePage({ service, recommended = [] }: ClientServicePageProps) {
   const [authOpen, setAuthOpen] = useState(false);
   const { add: addToCartWithAddons, pending: addPending } = useAddToCartWithAddons();
 
@@ -321,7 +318,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
       href="https://t.me/whaleabyss_official"
       target="_blank"
       rel="noopener noreferrer"
-      className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-800"
+      className="btn-outline mt-2.5 w-full !h-11 !gap-2 !text-sm !font-semibold"
     >
       <MessageCircle className="h-4 w-4" />
       Спросить в Telegram
@@ -329,12 +326,14 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
   );
 
   // Default vertical layout: description, then per-day config, price and button.
-  const detailsCard = (
+  // The heading is included only where this card is the sole title carrier
+  // (actual-category layouts) - next to the page H1 it was a duplicate.
+  const detailsCard = (withHeading: boolean) => (
     <div className="w-full bg-white rounded-4xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] p-8 sm:p-10 flex flex-col border border-slate-50">
-      {heading}
-      <div className="mb-8">{descriptionBlock}</div>
+      {withHeading && heading}
+      <div>{descriptionBlock}</div>
       {perDayConfig && <div className="mb-6 border-t border-slate-100 pt-6">{perDayConfig}</div>}
-      <div className="mt-2 border-t border-slate-100 pt-6 flex items-end justify-between mb-6">{priceRow}</div>
+      <div className="border-t border-slate-100 pt-5 flex items-end justify-between mb-6">{priceRow}</div>
       {buyButton}
       {askButton}
     </div>
@@ -366,6 +365,14 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
       <main className="mx-auto max-w-6xl px-4 sm:px-6 pt-24 pb-8 flex flex-col items-center w-full">
+        <div className="w-full">
+          <Breadcrumb
+            items={[
+              { label: "Услуги", href: "/services" },
+              { label: service.subtitle || service.title, href: `/service/${service.id}` },
+            ]}
+          />
+        </div>
         {isActual ? (
           <div ref={containerRef} className="w-full">
             {stack ? (
@@ -384,7 +391,7 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
               // Image leaves room: keep it beside the price/details panel.
               <div className="w-full grid grid-cols-1 lg:grid-cols-[1fr_450px] gap-6 xl:gap-8 items-start">
                 <div className="w-full flex justify-center lg:justify-start">{actualImage}</div>
-                <div className="w-full lg:sticky lg:top-24 h-max">{detailsCard}</div>
+                <div className="w-full lg:sticky lg:top-24 h-max">{detailsCard(true)}</div>
               </div>
             )}
           </div>
@@ -439,9 +446,25 @@ export default function ClientServicePage({ service }: ClientServicePageProps) {
             </div>
 
             {/* Details & Checkout Right Column */}
-            <div className="w-full lg:sticky lg:top-24 h-max">{detailsCard}</div>
+            <div className="w-full lg:sticky lg:top-24 h-max">{detailsCard(false)}</div>
 
           </div>
+        )}
+
+        {recommended.length > 0 && (
+          <section className="w-full mt-14" aria-label="С этим товаром часто покупают">
+            <h2
+              className="text-2xl font-bold mb-6"
+              style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
+            >
+              С этим товаром часто покупают
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6">
+              {recommended.map((item) => (
+                <ServiceCard key={item.id} item={item} categorySlug={item.categorySlug} />
+              ))}
+            </div>
+          </section>
         )}
       </main>
       <Footer />

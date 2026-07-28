@@ -22,21 +22,33 @@ const routeLabels: Record<string, string> = {
   "/reset-password": "Сброс пароля",
 };
 
-export default function Breadcrumb() {
+interface Crumb {
+  label: string;
+  href: string;
+}
+
+/**
+ * Without `items` the trail is derived from the pathname via `routeLabels`.
+ * Pages whose URL segments aren't human-readable (e.g. /service/[slug]) pass
+ * their own trail; «Главная» is always prepended.
+ */
+export default function Breadcrumb({ items }: { items?: Crumb[] }) {
   const pathname = usePathname();
 
   if (pathname === "/") return null;
 
-  const segments = pathname.split("/").filter(Boolean);
-  const breadcrumbs: { label: string; href: string }[] = [
-    { label: "Главная", href: "/" },
-  ];
+  const breadcrumbs: Crumb[] = [{ label: "Главная", href: "/" }];
 
-  let currentPath = "";
-  for (const segment of segments) {
-    currentPath += `/${segment}`;
-    const label = routeLabels[currentPath] || segment;
-    breadcrumbs.push({ label, href: currentPath });
+  if (items) {
+    breadcrumbs.push(...items);
+  } else {
+    const segments = pathname.split("/").filter(Boolean);
+    let currentPath = "";
+    for (const segment of segments) {
+      currentPath += `/${segment}`;
+      const label = routeLabels[currentPath] || segment;
+      breadcrumbs.push({ label, href: currentPath });
+    }
   }
 
   return (

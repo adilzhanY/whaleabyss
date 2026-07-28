@@ -28,7 +28,6 @@ export default function ReviewsPage() {
   const [hasMore, setHasMore] = useState(false);
   const [columns, setColumns] = useState<Review[][]>([[], [], []]);
   const [averageRating, setAverageRating] = useState(0);
-  const [totalReviews, setTotalReviews] = useState(0);
 
   useEffect(() => {
     fetchReviews();
@@ -49,8 +48,6 @@ export default function ReviewsPage() {
         counts[roundedDown]++;
       }
     });
-    setTotalReviews(reviews.length);
-
     if (reviews.length > 0) {
       const sum = reviews.reduce((acc, r) => acc + parseFloat(r.rating), 0);
       setAverageRating(sum / reviews.length);
@@ -127,15 +124,15 @@ export default function ReviewsPage() {
 
     for (let i = 0; i < fullStars; i++) {
       stars.push(
-        <Star key={i} className="h-4 w-4 fill-current shrink-0" style={{ color: "#f59e0b" }} />
+        <Star key={i} className="h-3.5 w-3.5 fill-current shrink-0" style={{ color: "#f59e0b" }} />
       );
     }
     if (hasHalfStar) {
       stars.push(
-        <div key="half" className="relative h-4 w-4 shrink-0">
-          <Star className="h-4 w-4 absolute" style={{ color: "#f59e0b", opacity: 0.3 }} />
+        <div key="half" className="relative h-3.5 w-3.5 shrink-0">
+          <Star className="h-3.5 w-3.5 absolute" style={{ color: "#f59e0b", opacity: 0.3 }} />
           <div className="overflow-hidden absolute" style={{ width: '50%' }}>
-            <Star className="h-4 w-4 fill-current" style={{ color: "#f59e0b" }} />
+            <Star className="h-3.5 w-3.5 fill-current" style={{ color: "#f59e0b" }} />
           </div>
         </div>
       );
@@ -256,23 +253,7 @@ export default function ReviewsPage() {
                             overflow: 'hidden'
                           }}
                             >
-                          <div className="mb-4 flex gap-0.5">
-                            {renderStars(rating)}
-                          </div>
-                          <p
-                            className="flex-1 leading-relaxed mb-5 italic"
-                            style={{
-                              color: "var(--text-primary)",
-                              fontSize: dimensions.span === 2 ? '1.125rem' : '0.9375rem',
-                              lineHeight: dimensions.span === 2 ? '1.75' : '1.6',
-                              wordWrap: 'break-word',
-                              overflowWrap: 'break-word',
-                              hyphens: 'auto'
-                            }}
-                          >
-                            &ldquo;{review.description}&rdquo;
-                          </p>
-                          <div className="flex items-center gap-3 mt-auto pt-2">
+                          <div className="mb-4 flex items-center gap-3">
                             <div
                               className="relative shrink-0 overflow-hidden rounded-full bg-slate-200"
                               style={{
@@ -295,7 +276,7 @@ export default function ReviewsPage() {
                                 </div>
                               )}
                             </div>
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1">
                               <p
                                 className="font-bold truncate"
                                 style={{
@@ -316,7 +297,23 @@ export default function ReviewsPage() {
                                 })}
                               </p>
                             </div>
+                            <div className="flex shrink-0 gap-0.5">
+                              {renderStars(rating)}
+                            </div>
                           </div>
+                          <p
+                            className="flex-1 leading-relaxed italic"
+                            style={{
+                              color: "var(--text-primary)",
+                              fontSize: dimensions.span === 2 ? '1.125rem' : '0.9375rem',
+                              lineHeight: dimensions.span === 2 ? '1.75' : '1.6',
+                              wordWrap: 'break-word',
+                              overflowWrap: 'break-word',
+                              hyphens: 'auto'
+                            }}
+                          >
+                            &ldquo;{review.description}&rdquo;
+                          </p>
                         </div>
                       );
                     })}

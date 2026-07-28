@@ -49,26 +49,37 @@ const STEPS = [
 	},
 ];
 
-const TESTIMONIALS = [
-	{
-		name: "Никита",
-		avatar: "/images/reviews/ava1.jpg",
-		text: "заказывал Исследование натлана 100%, сделали быстро и качественно",
-		rating: 5,
-	},
-	{
-		name: "Анастасия",
-		avatar: "/images/reviews/ava2.jpg",
-		text: "очень всегда быстро помогает и за приятную цену, огромное спасибо за помощь, не сомневаюсь, что если снова понадобится помощь, то обращусь именно к whale abyss 🥺",
-		rating: 5,
-	},
-	{
-		name: "Кирилл",
-		avatar: "/images/reviews/ava3.jpg",
-		text: "беру уже 2 раз!! делает работу быстро. общение очень доброжелательное, цены 🔥 всем советую)",
-		rating: 5,
-	},
-];
+/** Shape of GET /api/reviews — the same endpoint /reviews uses. */
+interface HomeReview {
+	id: string;
+	rating: string;
+	description: string;
+	userName: string | null;
+	userAvatar: string | null;
+}
+
+const REVIEWS_PAGE = 5;
+
+/** Mirrors the half-star rendering on /reviews so both pages agree. */
+function renderStars(rating: number) {
+	const stars = [];
+	for (let i = 0; i < Math.floor(rating); i++) {
+		stars.push(
+			<Star key={i} className="h-3.5 w-3.5 fill-current shrink-0" style={{ color: "#f59e0b" }} />
+		);
+	}
+	if (rating % 1 !== 0) {
+		stars.push(
+			<div key="half" className="relative h-3.5 w-3.5 shrink-0">
+				<Star className="h-3.5 w-3.5 absolute" style={{ color: "#f59e0b", opacity: 0.3 }} />
+				<div className="overflow-hidden absolute" style={{ width: "50%" }}>
+					<Star className="h-3.5 w-3.5 fill-current" style={{ color: "#f59e0b" }} />
+				</div>
+			</div>
+		);
+	}
+	return stars;
+}
 
 interface OrderItem {
 	serviceId?: string;
@@ -157,6 +168,39 @@ export default function HomeClient({
 	const clearCart = useCart((state) => state.clearCart);
 
 	const [showDeletedModal, setShowDeletedModal] = useState(false);
+
+	// Live reviews — same endpoint and page size as /reviews. The homepage used
+	// to ship three hardcoded testimonials: invented praise attributed to named
+	// people, which also never reflected a real new review.
+	const [reviews, setReviews] = useState<HomeReview[]>([]);
+	const [reviewsLoading, setReviewsLoading] = useState(true);
+	const [reviewsMoreLoading, setReviewsMoreLoading] = useState(false);
+	const [reviewsHasMore, setReviewsHasMore] = useState(false);
+
+	const fetchReviews = async (offset = 0) => {
+		if (offset === 0) setReviewsLoading(true);
+		else setReviewsMoreLoading(true);
+		try {
+			const res = await fetch(`/api/reviews?offset=${offset}&limit=${REVIEWS_PAGE}`);
+			if (!res.ok) throw new Error(`reviews request failed: ${res.status}`);
+			const data = await res.json();
+			const batch: HomeReview[] = Array.isArray(data.reviews) ? data.reviews : [];
+			setReviews((prev) => (offset === 0 ? batch : [...prev, ...batch]));
+			setReviewsHasMore(Boolean(data.hasMore));
+		} catch (err) {
+			// The section just doesn't render rather than showing a broken state.
+			console.error("Failed to load reviews:", err);
+			if (offset === 0) setReviews([]);
+			setReviewsHasMore(false);
+		} finally {
+			setReviewsLoading(false);
+			setReviewsMoreLoading(false);
+		}
+	};
+
+	useEffect(() => {
+		fetchReviews(0);
+	}, []);
 
 	// Trust figures come straight from the DB (lib/siteStats). Anything we
 	// cannot back with a real number is omitted rather than invented — these
@@ -634,7 +678,7 @@ export default function HomeClient({
 			</section>
 
 			{/* TESTIMONIALS */}
-			{!session?.user && (
+			{!session?.user && !reviewsLoading && reviews.length > 0 && (
 				<section id="testimonials" className="py-20">
 					<div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "75rem" }}>
 						<div className="mb-12 text-center">
@@ -651,68 +695,68 @@ export default function HomeClient({
 								className="mt-2 text-sm"
 								style={{ color: "var(--text-secondary)" }}
 							>
-								Более 500 довольных игроков по всей России
+								{/* Was "Более 500 довольных игроков по всей России" — a number nobody
+								    could back. Uses the live count, or says nothing. */}
+								{stats?.reviewCount
+									? `${stats.reviewCount} ${plural(stats.reviewCount, "отзыв", "отзыва", "отзывов")} от наших клиентов`
+									: "Что говорят наши клиенты"}
 							</p>
 						</div>
-						<div
-							className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-							style={{ gridAutoFlow: "dense" }}
-						>
-							{TESTIMONIALS.map((t) => {
-								const spanClass =
-									t.text.length > 120
-										? "sm:col-span-2 sm:row-span-2"
-										: t.text.length > 80
-											? "sm:row-span-2"
-											: "";
-
+						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+							{reviews.map((review) => {
+								const rating = parseFloat(review.rating);
+								const name = review.userName || "Клиент";
 								return (
 									<div
-										key={t.name}
-										className={`flex flex-col rounded-3xl p-6 ${spanClass}`}
+										key={review.id}
+										className="flex flex-col p-5 sm:p-6 transition-shadow duration-300 hover:shadow-xl"
 										style={{
 											backgroundColor: "var(--bg-card)",
 											border: "1px solid var(--accent-border)",
 											boxShadow: "var(--card-shadow)",
-											borderRadius: "2rem",
+											borderRadius: "1.5rem",
 										}}
 									>
-										<div className="mb-3 flex gap-0.5">
-											{Array.from({ length: t.rating }).map((_, i) => (
-												<Star
-													key={i}
-													className="h-4 w-4 fill-current shrink-0"
-													style={{ color: "#f59e0b" }}
-												/>
-											))}
-										</div>
-										<p
-											className={`flex-1 font-semibold leading-relaxed mb-4 ${t.text.length > 120 ? "text-lg sm:text-2xl" : "text-base sm:text-lg"}`}
-											style={{ color: "var(--text-primary)" }}
-										>
-											&ldquo;{t.text}&rdquo;
-										</p>
-										<div className="flex items-center gap-3 mt-auto">
-											<div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full">
-												<img
-													src={t.avatar}
-													alt={t.name}
-													className="h-full w-full object-cover"
-												/>
-											</div>
-											<div>
-												<p
-													className="text-base font-bold"
-													style={{ color: "var(--text-primary)" }}
+									<div className="mb-4 flex items-center gap-3">
+										<div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-slate-200">
+											{review.userAvatar ? (
+												<img src={review.userAvatar} alt={name} className="h-full w-full object-cover" />
+											) : (
+												<div
+													className="flex h-full w-full items-center justify-center text-sm font-bold"
+													style={{ color: "var(--accent-primary)" }}
 												>
-													{t.name}
-												</p>
-											</div>
+													{name.charAt(0).toUpperCase()}
+												</div>
+											)}
 										</div>
+										<p className="min-w-0 flex-1 truncate text-base font-bold" style={{ color: "var(--text-primary)" }}>
+											{name}
+										</p>
+										<div className="flex shrink-0 gap-0.5">{renderStars(rating)}</div>
+									</div>
+									<p
+										className="flex-1 leading-relaxed italic text-[0.9375rem]"
+										style={{ color: "var(--text-primary)", overflowWrap: "break-word" }}
+									>
+										&ldquo;{review.description}&rdquo;
+									</p>
 									</div>
 								);
 							})}
 						</div>
+
+						{reviewsHasMore && (
+							<div className="mt-10 flex justify-center">
+								<button
+									onClick={() => fetchReviews(reviews.length)}
+									disabled={reviewsMoreLoading}
+									className="btn-secondary btn-lg"
+								>
+									{reviewsMoreLoading ? "Загружаем..." : "Показать ещё"}
+								</button>
+							</div>
+						)}
 					</div>
 				</section>
 			)}

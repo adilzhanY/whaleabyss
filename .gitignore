@@ -49,3 +49,6 @@ LEARNING_PATH.md
 
 # public assets (managed/served separately; new files not tracked)
 /public
+
+# lavish review artifacts
+.lavish/

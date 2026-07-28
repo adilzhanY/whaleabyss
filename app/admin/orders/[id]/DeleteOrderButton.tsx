@@ -126,6 +126,7 @@ export default function DeleteOrderButton({
               >
                 Отмена
               </button>
+              
               <button
                 onClick={handleDelete}
                 disabled={isDeleting || !canDelete}

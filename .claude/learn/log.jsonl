@@ -1,0 +1,25 @@
+{"at":"2026-07-26T21:35:07.389Z","event":"add","id":"js.string-immutability","grade":"again","note":"Tried newList[i][0].toUpperCase() expecting in-place change. This is WHY slug.ts chains."}
+{"at":"2026-07-26T21:35:07.412Z","event":"add","id":"js.length-property","grade":"again","note":"Wrote newList.length() -> TypeError: not a function"}
+{"at":"2026-07-26T21:35:07.434Z","event":"add","id":"js.discarded-result","grade":"again","note":"newList[i][0].toUpperCase(); silently did nothing"}
+{"at":"2026-07-26T21:35:07.457Z","event":"add","id":"js.falsy-values","grade":"hard","note":"Recalled 3 of 6 unaided. '' being falsy is the cause of the live slug bug."}
+{"at":"2026-07-26T21:35:07.479Z","event":"add","id":"js.const-vs-let","grade":"hard","note":"Used let where const was correct in unslug attempt"}
+{"at":"2026-07-26T21:35:07.501Z","event":"add","id":"js.for-loop","grade":"easy","note":"Typed from memory, syntactically perfect"}
+{"at":"2026-07-26T21:35:07.522Z","event":"add","id":"js.method-chaining","grade":"good","note":""}
+{"at":"2026-07-26T21:35:07.544Z","event":"add","id":"js.tolowercase","grade":"good","note":""}
+{"at":"2026-07-26T21:35:07.566Z","event":"add","id":"js.split","grade":"good","note":""}
+{"at":"2026-07-26T21:35:07.589Z","event":"add","id":"js.join","grade":"good","note":""}
+{"at":"2026-07-26T21:35:07.610Z","event":"add","id":"js.array-map","grade":"good","note":""}
+{"at":"2026-07-26T21:35:07.631Z","event":"add","id":"js.bracket-vs-dot-access","grade":"good","note":""}
+{"at":"2026-07-26T21:35:07.652Z","event":"add","id":"js.logical-or-fallback","grade":"good","note":""}
+{"at":"2026-07-26T21:35:07.674Z","event":"add","id":"js.undefined","grade":"good","note":""}
+{"at":"2026-07-26T21:35:07.697Z","event":"add","id":"ts.type-annotations","grade":"good","note":"Wrote them correctly unprompted in unslug.ts"}
+{"at":"2026-07-26T21:35:07.719Z","event":"add","id":"regex.negation-vs-anchor","grade":"good","note":""}
+{"at":"2026-07-26T21:35:07.741Z","event":"add","id":"regex.character-class","grade":"good","note":""}
+{"at":"2026-07-26T21:35:07.763Z","event":"add","id":"regex.plus-quantifier","grade":"good","note":"Correctly predicted 'ь ' collapsing into one hyphen"}
+{"at":"2026-07-26T21:35:07.785Z","event":"add","id":"regex.g-flag","grade":null,"note":"OPEN HOMEWORK: question 6 from lesson 1, still unanswered"}
+{"at":"2026-07-26T21:35:07.807Z","event":"add","id":"ts.record-type","grade":null,"note":""}
+{"at":"2026-07-26T21:35:07.831Z","event":"add","id":"js.arrow-function","grade":null,"note":""}
+{"at":"2026-07-26T21:35:07.853Z","event":"add","id":"js.export-import","grade":null,"note":""}
+{"at":"2026-07-26T21:35:07.875Z","event":"add","id":"js.array-mutability","grade":"again","note":"Pair with js.string-immutability; the contrast is the point"}
+{"at":"2026-07-26T21:35:07.897Z","event":"add","id":"js.slice","grade":null,"note":"Met via AI answer, never used unaided"}
+{"at":"2026-07-26T21:35:07.914Z","event":"note","text":"Lesson 1 — lib/slug.ts, taught line by line. Homework open: (a) regex g-flag question, (b) rewrite the for-loop unslug correctly, (c) predict string-immutability vs array-mutability snippets. Found a real production bug: '' is falsy so 'ъ'/'ь' survive the map and become hyphens — see /service/dolina-chen-yuy-100. NOT fixed; changing it would move live URLs."}

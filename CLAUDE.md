@@ -2,6 +2,37 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Start every session with a 2-minute review
+
+The owner of this repo is learning to write code by hand. `.claude/learn/` is a
+spaced-repetition database of what they know, when they last proved it, and how they got
+it wrong. **Before doing anything else in a new session:**
+
+```bash
+node .claude/learn/bin/learn.mjs due
+```
+
+Pick the **one or two** most overdue concepts and open with either a short question or a
+tiny piece of code for them to write — 2 minutes, not a lesson. Prefer a concept they
+have actually failed before (`status: shaky`), and use its `note` field to target the
+exact mistake they made rather than asking something generic. If nothing is due, run
+`stale` and ask about the least recently touched concept instead.
+
+Then grade the answer and get on with whatever they came here to do:
+
+```bash
+node .claude/learn/bin/learn.mjs grade <id> <again|hard|good|easy> --note "what happened"
+```
+
+Rules:
+- **One warm-up per session, then stop.** Never re-quiz mid-session unprompted.
+- If they say "skip review", drop it immediately and don't ask again that session.
+- If the session then teaches them something new, `add` it before finishing — see
+  `.claude/skills/learn/SKILL.md`.
+- Grade honestly from evidence. A hint given means `hard`, not `good`.
+
+Full teaching protocol: `/learn` or `.claude/skills/learn/SKILL.md`.
+
 ## Project Overview
 
 Whale Abyss (genshin_abyss) is a Next.js e-commerce platform for Genshin Impact boosting services. The application handles service listings, user authentication, order management, payment processing via Freekassa, and Telegram bot notifications for admins.

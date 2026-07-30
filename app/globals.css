@@ -18,6 +18,8 @@
 @import "@heroui/styles/components/range-calendar.css" layer(components);
 @import "@heroui/styles/components/calendar-year-picker.css" layer(components);
 @import "@heroui/styles/components/search-field.css" layer(components);
+/* Badges on the service cards (components/ServiceCard.tsx). */
+@import "@heroui/styles/components/chip.css" layer(components);
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
@@ -1964,4 +1966,23 @@ body:has(#admin-root.admin-dark) .custom-select__option--selected:hover,
 body:has(#admin-root.admin-dark) .custom-select__option--selected.custom-select__option--active {
   background-color: rgba(37, 99, 235, 0.22);
   color: #bfdbfe;
+}
+
+/* ---------------------------------------------------------------------------
+ * HeroUI Chip (badges on components/ServiceCard.tsx).
+ * HeroUI's colour tokens only flip on its own `.dark` / `[data-theme="dark"]`
+ * selector, which this site does not use — it has its own `site-dark` class.
+ * Without these, the neutral chip keeps its near-white `--default` (#ebebec)
+ * background on the near-black card, and the amber chip keeps dark-amber text
+ * on a 15%-alpha wash. Both are unreadable.
+ * ------------------------------------------------------------------------- */
+html.site-dark body:has(#site-header) .chip--default,
+body:has(#admin-root.admin-dark) .chip--default {
+  --chip-bg: #262626;
+  --chip-fg: #d4d4d4;
+}
+html.site-dark body:has(#site-header) .chip--warning.chip--soft,
+body:has(#admin-root.admin-dark) .chip--warning.chip--soft {
+  --chip-bg: rgba(245, 165, 36, 0.18);
+  --chip-fg: #fbbf24;
 }

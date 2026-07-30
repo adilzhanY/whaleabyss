@@ -1,6 +1,7 @@
 "use client";
 
 import { ShoppingBag, Loader2, CalendarDays, Sparkles } from "lucide-react";
+import { Chip } from "@heroui/react";
 import { useAddToCartWithAddons } from "@/components/QuestAddonModal";
 import Link from "next/link";
 import { ServiceItem } from "@/lib/services";
@@ -86,25 +87,35 @@ export default function ServiceCard({ item, categorySlug, isBestseller }: Servic
           className="absolute inset-0"
           style={{ background: "linear-gradient(to top, rgba(9, 14, 23, 0.4), transparent 45%)" }}
         />
+        {/* These three sit on the artwork, so they carry their own colours
+            instead of the theme tokens: the image behind them is arbitrary and
+            a soft/muted chip would be unreadable on a light screenshot. */}
         {item.categoryTitle && (
-          <span className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] truncate rounded-md bg-slate-950/55 px-2 py-0.5 text-[10px] sm:text-[11px] font-bold text-white backdrop-blur-sm">
-            {item.categoryTitle}
-          </span>
+          <Chip
+            size="sm"
+            className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] bg-slate-950/55 text-[10px] font-bold text-white backdrop-blur-sm sm:text-[11px]"
+          >
+            <Chip.Label className="truncate">{item.categoryTitle}</Chip.Label>
+          </Chip>
         )}
         {isOnDiscount && activeEvent && (
-          <span className="absolute top-2 left-2 rounded-md bg-red-600 px-2 py-0.5 text-[11px] font-extrabold text-white">
-            -{activeEvent.discountPercent}%
-          </span>
+          <Chip
+            size="sm"
+            className="absolute top-2 left-2 bg-red-600 text-[11px] font-extrabold text-white"
+          >
+            <Chip.Label>-{activeEvent.discountPercent}%</Chip.Label>
+          </Chip>
         )}
         {/* Top-right so it never collides with the discount ribbon. */}
         {isBestseller && (
-          <span
-            className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-md bg-orange-500 px-1.5 py-0.5 text-[10px] sm:text-[11px] font-extrabold text-white shadow-sm"
+          <Chip
+            size="sm"
+            className="absolute top-2 right-2 bg-orange-500 text-[10px] font-extrabold text-white shadow-sm sm:text-[11px]"
             title="Одна из самых заказываемых услуг"
           >
             <Sparkles className="h-3 w-3" strokeWidth={2.6} />
-            Хит
-          </span>
+            <Chip.Label>Хит</Chip.Label>
+          </Chip>
         )}
       </div>
 
@@ -117,10 +128,17 @@ export default function ServiceCard({ item, categorySlug, isBestseller }: Servic
           <p className="min-w-0 flex-1 text-[15px] sm:text-base font-semibold leading-snug line-clamp-2 min-h-[2.75em] text-slate-900">
             {displayName}
           </p>
+          {/* Solid `default` rather than `soft`: the soft token is 50%
+              transparent, which on the white card reads as bare text. */}
           {isHundred && (
-            <span className="mt-0.5 shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">
-              100%
-            </span>
+            <Chip
+              size="sm"
+              color="default"
+              variant="secondary"
+              className="mt-0.5 text-[10px] font-bold text-slate-500"
+            >
+              <Chip.Label>100%</Chip.Label>
+            </Chip>
           )}
         </div>
         {(minRank !== null || item.hasQuestAddons) && (
@@ -129,17 +147,25 @@ export default function ServiceCard({ item, categorySlug, isBestseller }: Servic
                 rejected by the checkout AR gate (422), so it reads as a warning
                 rather than as another blue info chip. */}
             {minRank !== null && (
-              <span
-                className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[11px] font-bold text-amber-700 whitespace-nowrap"
+              <Chip
+                size="sm"
+                color="warning"
+                variant="soft"
+                className="whitespace-nowrap text-[11px] font-bold"
                 title={`Нужен ранг приключений ${minRank} или выше`}
               >
-                Нужен РП {minRank}+
-              </span>
+                <Chip.Label>Нужен РП {minRank}+</Chip.Label>
+              </Chip>
             )}
             {item.hasQuestAddons && (
-              <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-600 whitespace-nowrap">
-                Квесты нужны
-              </span>
+              <Chip
+                size="sm"
+                color="default"
+                variant="secondary"
+                className="whitespace-nowrap text-[11px] font-bold text-slate-600"
+              >
+                <Chip.Label>Квесты нужны</Chip.Label>
+              </Chip>
             )}
           </div>
         )}

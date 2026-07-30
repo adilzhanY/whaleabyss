@@ -1,6 +1,6 @@
 "use client";
 
-import { ShoppingBag, Loader2, CalendarDays, Flame } from "lucide-react";
+import { ShoppingBag, Loader2, CalendarDays, Sparkles } from "lucide-react";
 import { useAddToCartWithAddons } from "@/components/QuestAddonModal";
 import Link from "next/link";
 import { ServiceItem } from "@/lib/services";
@@ -102,7 +102,7 @@ export default function ServiceCard({ item, categorySlug, isBestseller }: Servic
             className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-md bg-orange-500 px-1.5 py-0.5 text-[10px] sm:text-[11px] font-extrabold text-white shadow-sm"
             title="Одна из самых заказываемых услуг"
           >
-            <Flame className="h-3 w-3" strokeWidth={2.6} />
+            <Sparkles className="h-3 w-3" strokeWidth={2.6} />
             Хит
           </span>
         )}

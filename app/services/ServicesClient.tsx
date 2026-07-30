@@ -11,7 +11,7 @@ import SuggestServiceModal from "@/components/SuggestServiceModal";
 import Breadcrumb from "@/components/Breadcrumb";
 import CustomSearchField from "@/components/CustomSearchField";
 import CustomSelect from "@/components/CustomSelect";
-import { Flame, FilterX } from "lucide-react";
+import { Sparkles, FilterX } from "lucide-react";
 import valleSad from "@/public/images/valle_chibi_sad.png";
 import type { ServiceCategory, ServiceItem } from "@/lib/services";
 
@@ -258,7 +258,7 @@ export default function ServicesClient({
           {bestsellers.length > 0 && !isFiltered && (
             <div className="mb-7">
               <h2 className="mb-3 flex items-center gap-2 text-lg font-extrabold text-blue-950">
-                <Flame className="h-5 w-5 text-orange-500" strokeWidth={2.2} />
+                <Sparkles className="h-5 w-5 text-orange-500" strokeWidth={2.2} />
                 Чаще всего заказывают
               </h2>
               <div className={`grid gap-3 sm:gap-6 ${gridClassFor(bestsellers.length)}`}>
@@ -271,11 +271,7 @@ export default function ServicesClient({
             </div>
           )}
 
-          {/* Sticky so the filters stay reachable through a 100+ card catalog. */}
-          <div
-            className="sticky top-20 z-30 -mx-4 mb-5 border-b border-slate-200 px-4 pb-3 pt-3 shadow-[0_6px_16px_-12px_rgba(15,23,42,0.4)] backdrop-blur-md sm:-mx-6 sm:px-6"
-            style={{ backgroundColor: "color-mix(in srgb, var(--bg-main) 96%, transparent)" }}
-          >
+          <div className="mb-5 border-b border-slate-200 pb-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <CustomSearchField
                 value={searchInput}

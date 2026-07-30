@@ -1,8 +1,15 @@
 import { getServiceCategories } from "@/lib/services";
+import { getBestsellerSlugs } from "@/lib/bestsellers";
 import ServicesClient from "./ServicesClient";
 import { generateMetadata as genMeta } from "@/lib/seo";
 
-export const revalidate = 0;
+/**
+ * Rendered per request: the catalog and the bestseller ranking are both live DB
+ * reads, and the client reads its initial filter state out of the query string
+ * with `useSearchParams` — which on a prerendered route would need its own
+ * Suspense boundary and a client-side bailout.
+ */
+export const dynamic = "force-dynamic";
 
 export const metadata = genMeta({
   title: "Услуги прокачки Genshin Impact",
@@ -12,6 +19,10 @@ export const metadata = genMeta({
 });
 
 export default async function ServicesPage() {
-  const categories = await getServiceCategories();
-  return <ServicesClient categories={categories} />;
+  const [categories, bestsellerSlugs] = await Promise.all([
+    getServiceCategories(),
+    getBestsellerSlugs(10),
+  ]);
+
+  return <ServicesClient categories={categories} bestsellerSlugs={bestsellerSlugs} />;
 }

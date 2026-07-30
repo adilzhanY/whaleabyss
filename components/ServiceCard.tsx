@@ -1,6 +1,6 @@
 "use client";
 
-import { ShoppingBag, Loader2, CalendarDays } from "lucide-react";
+import { ShoppingBag, Loader2, CalendarDays, Flame } from "lucide-react";
 import { useAddToCartWithAddons } from "@/components/QuestAddonModal";
 import Link from "next/link";
 import { ServiceItem } from "@/lib/services";
@@ -10,6 +10,8 @@ import { parseMinAdventureRank } from "@/lib/adventureRank";
 interface ServiceCardProps {
   item: ServiceItem;
   categorySlug?: string;
+  /** Among the most-ordered services — see `lib/bestsellers.ts`. */
+  isBestseller?: boolean;
 }
 
 /**
@@ -22,7 +24,7 @@ function splitName(raw: string): { name: string; full: boolean } {
 	return m ? { name: raw.slice(0, m.index).trim(), full: true } : { name: raw, full: false };
 }
 
-export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
+export default function ServiceCard({ item, categorySlug, isBestseller }: ServiceCardProps) {
   const { name: displayName, full: isHundred } = splitName(item.subtitle || item.title || "");
   const { add: addToCartWithAddons, pending } = useAddToCartWithAddons();
   const minRank = parseMinAdventureRank(item.description);
@@ -94,6 +96,16 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
             -{activeEvent.discountPercent}%
           </span>
         )}
+        {/* Top-right so it never collides with the discount ribbon. */}
+        {isBestseller && (
+          <span
+            className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-md bg-orange-500 px-1.5 py-0.5 text-[10px] sm:text-[11px] font-extrabold text-white shadow-sm"
+            title="Одна из самых заказываемых услуг"
+          >
+            <Flame className="h-3 w-3" strokeWidth={2.6} />
+            Хит
+          </span>
+        )}
       </div>
 
       {/* Name leads, price supports. The name is clamped to two lines with a
@@ -113,9 +125,15 @@ export default function ServiceCard({ item, categorySlug }: ServiceCardProps) {
         </div>
         {(minRank !== null || item.hasQuestAddons) && (
           <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {/* A requirement, not a feature: an account below this rank is
+                rejected by the checkout AR gate (422), so it reads as a warning
+                rather than as another blue info chip. */}
             {minRank !== null && (
-              <span className="rounded-md bg-blue-50 px-1.5 py-0.5 text-[11px] font-bold text-blue-900 whitespace-nowrap">
-                РП {minRank}+
+              <span
+                className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[11px] font-bold text-amber-700 whitespace-nowrap"
+                title={`Нужен ранг приключений ${minRank} или выше`}
+              >
+                Нужен РП {minRank}+
               </span>
             )}
             {item.hasQuestAddons && (

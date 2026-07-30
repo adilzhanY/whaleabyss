@@ -24,6 +24,7 @@ import EventBanner from "@/components/EventBanner";
 import DivePath from "@/components/DivePath";
 import { useCart } from "@/store/useCart";
 import { useSession } from "next-auth/react";
+import type { Session } from "next-auth";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getActiveEvent } from "@/lib/events";
@@ -89,12 +90,21 @@ export default function HomeClient({
 	tiles,
 	bestsellers,
 	stats,
+	initialSession,
 }: {
 	tiles: CategoryTile[];
 	bestsellers: ServiceItem[];
 	stats?: SiteStats;
+	/** Resolved from the auth cookie on the server (see app/page.tsx). */
+	initialSession: Session | null;
 }) {
-	const { data: session } = useSession();
+	// `useSession()` starts as `loading` with no data, so branching on it alone
+	// renders the guest hero first and corrects itself a tick later — that was
+	// the Valle flash. The server already answered this question, so use its
+	// answer until the provider has a real one; after that the hook owns it, so
+	// signing in or out without a reload still updates instantly.
+	const { data: clientSession, status } = useSession();
+	const session = status === "loading" ? initialSession : clientSession;
 	const searchParams = useSearchParams();
 	const router = useRouter();
 	const clearCart = useCart((state) => state.clearCart);
@@ -185,35 +195,48 @@ export default function HomeClient({
 	const [showSuccessToast, setShowSuccessToast] = useState(false);
 	const [activeOrders, setActiveOrders] = useState<OrderData[]>([]);
 	const [pastOrders, setPastOrders] = useState<OrderData[]>([]);
-	const [loadingOrders, setLoadingOrders] = useState(true);
+	// A guest never fetches orders, so it must not start in a loading state —
+	// the server already told us there's nobody signed in.
+	const [loadingOrders, setLoadingOrders] = useState(!!initialSession?.user);
 
 	// Check for active event
 	const activeEvent = getActiveEvent();
 
-	useEffect(() => {
-		if (session?.user) {
-			fetch("/api/user/orders/active")
-				.then((res) => res.json())
-				.then((data) => {
-					if (Array.isArray(data)) {
-						setActiveOrders(data);
-					}
-				})
-				.catch(console.error)
-				.finally(() => setLoadingOrders(false));
+	// Keyed on the user id, NOT the session object: the object identity changes
+	// when the client provider takes over from the server value (and on every
+	// next-auth refetch), which would fire a second identical pair of requests.
+	const userId = session?.user?.id;
 
-			fetch("/api/user/orders/past")
-				.then((res) => res.json())
-				.then((data) => {
-					if (Array.isArray(data)) {
-						setPastOrders(data);
-					}
-				})
-				.catch(console.error);
-		} else {
+	useEffect(() => {
+		if (!userId) {
 			setLoadingOrders(false);
+			return;
 		}
-	}, [session]);
+
+		let cancelled = false;
+		setLoadingOrders(true);
+
+		fetch("/api/user/orders/active")
+			.then((res) => res.json())
+			.then((data) => {
+				if (!cancelled && Array.isArray(data)) setActiveOrders(data);
+			})
+			.catch(console.error)
+			.finally(() => {
+				if (!cancelled) setLoadingOrders(false);
+			});
+
+		fetch("/api/user/orders/past")
+			.then((res) => res.json())
+			.then((data) => {
+				if (!cancelled && Array.isArray(data)) setPastOrders(data);
+			})
+			.catch(console.error);
+
+		return () => {
+			cancelled = true;
+		};
+	}, [userId]);
 
 	return (
 		<div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
@@ -698,6 +721,14 @@ export default function HomeClient({
 
 			<Footer />
 			<Toast show={showSuccessToast} onClose={() => setShowSuccessToast(false)} />
+			{/* `?deleted=true` (the redirect after deleting an account) set this
+			    flag but nothing ever rendered it, so the account was deleted
+			    with no confirmation at all. */}
+			<Toast
+				show={showDeletedModal}
+				onClose={() => setShowDeletedModal(false)}
+				message="Аккаунт удалён. Будем рады видеть вас снова!"
+			/>
 		</div>
 	);
 }

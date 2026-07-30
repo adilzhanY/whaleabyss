@@ -1,3 +1,5 @@
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getSiteStats } from "@/lib/siteStats";
 import { getBestsellers, getCategoryTiles } from "@/lib/homeShowcase";
 import HomeClient from "@/app/HomeClient";
@@ -14,7 +16,14 @@ export const metadata = genMeta({
 });
 
 export default async function Home() {
-  const [stats, tiles, bestsellers] = await Promise.all([
+  // The session is read HERE, on the server, because the auth cookie already
+  // arrives with the request — so the very first render (and the RSC payload
+  // for a client-side navigation) already knows whether this is a guest or a
+  // signed-in customer. Deciding that on the client instead is what made the
+  // guest hero flash before being replaced by the dashboard.
+  // This costs nothing: the page is already dynamic (`revalidate = 0` above).
+  const [session, stats, tiles, bestsellers] = await Promise.all([
+    getServerSession(authOptions),
     getSiteStats(),
     getCategoryTiles(),
     getBestsellers(5),
@@ -25,7 +34,12 @@ export default async function Home() {
     <>
       <StructuredData data={businessSchema} />
       <Suspense fallback={<div>Loading...</div>}>
-        <HomeClient stats={stats} tiles={tiles} bestsellers={bestsellers} />
+        <HomeClient
+          stats={stats}
+          tiles={tiles}
+          bestsellers={bestsellers}
+          initialSession={session}
+        />
       </Suspense>
     </>
   );

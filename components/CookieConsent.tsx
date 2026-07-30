@@ -23,6 +23,33 @@ const ACCEPTED = `accepted:${CONSENT_VERSION}`;
 // keep them in sync if CONSENT_VERSION changes.
 const DECLINED = `declined:${CONSENT_VERSION}`;
 
+/** Event that re-opens the banner so a choice can be revisited (see /profile). */
+const REOPEN_EVENT = "wa:cookie-settings";
+/** Fired after a choice is stored, so surfaces showing it can refresh. */
+export const COOKIE_CONSENT_CHANGED = "wa:cookie-consent-changed";
+
+export type CookieChoice = "accepted" | "declined" | "unset";
+
+/** Current stored choice. Safe to call in a client effect only. */
+export function readCookieConsent(): CookieChoice {
+  try {
+    const choice = localStorage.getItem(CONSENT_KEY);
+    if (choice === ACCEPTED) return "accepted";
+    if (choice === DECLINED) return "declined";
+  } catch {}
+  return "unset";
+}
+
+/**
+ * Re-open the consent banner from anywhere (the profile's privacy row).
+ * Uses an event rather than a store because the banner is mounted once in the
+ * root layout and the caller may be several trees away.
+ */
+export function openCookieSettings() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(REOPEN_EVENT));
+}
+
 /** Best-effort removal of Metrika's `_ym_*` cookies after a decline. */
 function clearMetrikaCookies() {
   if (typeof document === "undefined") return;
@@ -48,12 +75,18 @@ export default function CookieConsent() {
 
     // Show the banner only until a current-version choice exists.
     if (choice !== ACCEPTED && choice !== DECLINED) setShow(true);
+
+    // …but always re-open on request, so a decided choice stays changeable.
+    const reopen = () => setShow(true);
+    window.addEventListener(REOPEN_EVENT, reopen);
+    return () => window.removeEventListener(REOPEN_EVENT, reopen);
   }, []);
 
   const persist = (value: string) => {
     try {
       localStorage.setItem(CONSENT_KEY, value);
     } catch {}
+    window.dispatchEvent(new Event(COOKIE_CONSENT_CHANGED));
   };
 
   const accept = () => {

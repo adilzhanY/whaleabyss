@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Checkbox from "@/components/Checkbox";
-import Input from "@/components/Input";
+import CustomInput from "@/components/CustomInput";
 import Textarea from "@/components/Textarea";
 import PageHeader from "../../_components/PageHeader";
 
@@ -182,7 +182,7 @@ export default function EditEventPage() {
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Название события *
               </label>
-              <Input
+              <CustomInput
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -196,7 +196,7 @@ export default function EditEventPage() {
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Slug (для URL) *
               </label>
-              <Input
+              <CustomInput
                 type="text"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))}
@@ -225,7 +225,7 @@ export default function EditEventPage() {
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Скидка (%) *
               </label>
-              <Input
+              <CustomInput
                 type="number"
                 value={discountPercent}
                 onChange={(e) => setDiscountPercent(Number(e.target.value))}
@@ -261,7 +261,7 @@ export default function EditEventPage() {
             <label className="block text-sm font-semibold text-slate-700 mb-2">
               URL фона
             </label>
-            <Input
+            <CustomInput
               type="text"
               value={backgroundUrl}
               onChange={(e) => setBackgroundUrl(e.target.value)}
@@ -278,7 +278,7 @@ export default function EditEventPage() {
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Начало события *
               </label>
-              <Input
+              <CustomInput
                 type="datetime-local"
                 value={startsAt}
                 onChange={(e) => setStartsAt(e.target.value)}
@@ -291,7 +291,7 @@ export default function EditEventPage() {
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Конец события *
               </label>
-              <Input
+              <CustomInput
                 type="datetime-local"
                 value={endsAt}
                 onChange={(e) => setEndsAt(e.target.value)}

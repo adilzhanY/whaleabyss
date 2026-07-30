@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { CreditCard } from "lucide-react";
-import Input from "@/components/Input";
+import CustomInput from "@/components/CustomInput";
 import PageHeader from "../../_components/PageHeader";
 
 interface TestService {
@@ -126,15 +126,15 @@ export default function TestingCheckoutClient({ service }: { service: TestServic
           <div className="grid grid-cols-1 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Ранг приключений:</label>
-              <Input type="text" inputMode="numeric" value={adventureRank} onChange={(e) => setAdventureRank(e.target.value.replace(/\D/g, "").slice(0, 2))} placeholder="Например, 45" className="text-sm font-medium" />
+              <CustomInput type="text" inputMode="numeric" value={adventureRank} onChange={(e) => setAdventureRank(e.target.value.replace(/\D/g, "").slice(0, 2))} placeholder="Например, 45" className="text-sm font-medium" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Username в Telegram:</label>
-              <Input type="text" value={telegram} onChange={(e) => handleTelegramChange(e.target.value)} placeholder="@username" className="text-sm font-medium" />
+              <CustomInput type="text" value={telegram} onChange={(e) => handleTelegramChange(e.target.value)} placeholder="@username" className="text-sm font-medium" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">E-mail для чека:</label>
-              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" className="text-sm font-medium" />
+              <CustomInput type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" className="text-sm font-medium" />
             </div>
           </div>
 

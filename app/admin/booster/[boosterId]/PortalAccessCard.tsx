@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { KeyRound, Link2, Unlink, Loader2 } from "lucide-react";
-import Input from "@/components/Input";
+import CustomInput from "@/components/CustomInput";
 import CopyableText from "../../_components/CopyableText";
 import { confirmDialog } from "@/store/useConfirm";
 
@@ -111,7 +111,7 @@ export default function PortalAccessCard({
       ) : (
         <div className="flex items-center gap-2">
           <div className="flex-1">
-            <Input
+            <CustomInput
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}

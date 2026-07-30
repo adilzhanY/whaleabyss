@@ -4,7 +4,7 @@ import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import Input from "@/components/Input";
+import CustomInput from "@/components/CustomInput";
 import Textarea from "@/components/Textarea";
 import PageHeader from "../../_components/PageHeader";
 
@@ -84,30 +84,30 @@ export default function NewBoosterPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Имя</label>
-              <Input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Иван" required />
+              <CustomInput type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Иван" required />
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Фамилия</label>
-              <Input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Петров" required />
+              <CustomInput type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Петров" required />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Дата рождения</label>
-              <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} max={new Date().toISOString().split("T")[0]} />
+              <CustomInput type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} max={new Date().toISOString().split("T")[0]} />
               <p className="text-xs text-slate-500 mt-1">Для проверки 18+</p>
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Telegram</label>
-              <Input type="text" value={telegramUsername} onChange={(e) => setTelegramUsername(e.target.value)} placeholder="@username" />
+              <CustomInput type="text" value={telegramUsername} onChange={(e) => setTelegramUsername(e.target.value)} placeholder="@username" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">ИНН (самозанятый)</label>
-              <Input
+              <CustomInput
                 type="text"
                 value={inn}
                 onChange={(e) => setInn(e.target.value.replace(/\D/g, "").slice(0, 12))}
@@ -119,13 +119,13 @@ export default function NewBoosterPage() {
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Реквизиты для выплат</label>
-              <Input type="text" value={payoutDetails} onChange={(e) => setPayoutDetails(e.target.value)} placeholder="Карта или телефон для СБП" />
+              <CustomInput type="text" value={payoutDetails} onChange={(e) => setPayoutDetails(e.target.value)} placeholder="Карта или телефон для СБП" />
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2">Комиссия качера (%)</label>
-            <Input
+            <CustomInput
               type="number"
               value={commissionPercent}
               onChange={(e) => setCommissionPercent(Number(e.target.value))}

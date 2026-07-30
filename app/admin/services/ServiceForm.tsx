@@ -5,7 +5,7 @@ import { useRef, useState, useTransition } from "react";
 import { Trash2, Upload, Sparkles, X, ImageIcon, Check, Map } from "lucide-react";
 import { generateSlug } from "@/lib/slug";
 import CustomSelect from "@/components/CustomSelect";
-import Input from "@/components/Input";
+import CustomInput from "@/components/CustomInput";
 import Textarea from "@/components/Textarea";
 import { confirmDialog } from "@/store/useConfirm";
 
@@ -259,7 +259,7 @@ export default function ServiceForm({
   return (
     <form onSubmit={submit} className="space-y-6 max-w-3xl">
       <Field label="Название" required>
-        <Input
+        <CustomInput
           type="text"
           value={form.title}
           onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -273,7 +273,7 @@ export default function ServiceForm({
         hint="Латиницей, строчные буквы, дефисы. Пример: my-service"
       >
         <div className="flex gap-2">
-          <Input
+          <CustomInput
             type="text"
             value={form.slug}
             onChange={(e) => setForm({ ...form, slug: e.target.value })}
@@ -300,7 +300,7 @@ export default function ServiceForm({
       </Field>
 
       <Field label="Подзаголовок">
-        <Input
+        <CustomInput
           type="text"
           value={form.subtitle ?? ""}
           onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
@@ -317,7 +317,7 @@ export default function ServiceForm({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field label="Цена (₽)" required>
-          <Input
+          <CustomInput
             type="number"
             value={form.price}
             onChange={(e) => setForm({ ...form, price: e.target.value })}

@@ -1,6 +1,6 @@
 "use client";
 
-import Input, { type InputProps } from "@/components/Input";
+import CustomInput, { type CustomInputProps } from "@/components/CustomInput";
 
 /**
  * Branded date input that always displays its value as dd/mm/yyyy, regardless
@@ -10,14 +10,14 @@ import Input, { type InputProps } from "@/components/Input";
  * (calendar picker, min/max, mobile wheels); its own text is made transparent
  * and the formatted value is drawn on top as a pointer-events-none overlay.
  */
-export default function DateInput({ className = "", ...props }: InputProps) {
+export default function DateInput({ className = "", ...props }: CustomInputProps) {
   const value = typeof props.value === "string" ? props.value : "";
   const display = /^\d{4}-\d{2}-\d{2}$/.test(value)
     ? `${value.slice(8, 10)}/${value.slice(5, 7)}/${value.slice(0, 4)}`
     : "";
   return (
     <div className="relative">
-      <Input type="date" className={`text-transparent ${className}`} {...props} />
+      <CustomInput type="date" className={`text-transparent ${className}`} {...props} />
       {/* left-5 matches .input-field's 1.25rem horizontal padding */}
       <span
         aria-hidden

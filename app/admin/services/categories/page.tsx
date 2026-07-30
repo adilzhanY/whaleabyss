@@ -21,7 +21,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import Input from "@/components/Input";
+import CustomInput from "@/components/CustomInput";
 import Textarea from "@/components/Textarea";
 import { confirmDialog } from "@/store/useConfirm";
 
@@ -243,7 +243,7 @@ export default function CategoriesPage() {
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Название *
               </label>
-              <Input
+              <CustomInput
                 type="text"
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
@@ -256,7 +256,7 @@ export default function CategoriesPage() {
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Slug (для URL) *
               </label>
-              <Input
+              <CustomInput
                 type="text"
                 value={newSlug}
                 onChange={(e) => setNewSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))}

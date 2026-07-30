@@ -3,7 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, ImageIcon, UserX, Star } from "lucide-react";
-import Input from "@/components/Input";
+import CustomInput from "@/components/CustomInput";
 import Textarea from "@/components/Textarea";
 
 /**
@@ -136,7 +136,7 @@ export default function ReviewForm() {
 
       <div>
         <label className="block text-sm font-semibold text-slate-700 mb-1.5">Имя</label>
-        <Input
+        <CustomInput
           type="text"
           value={authorName}
           onChange={(e) => setAuthorName(e.target.value)}
@@ -160,7 +160,7 @@ export default function ReviewForm() {
 
       <div>
         <label className="block text-sm font-semibold text-slate-700 mb-1.5">Дата</label>
-        <Input
+        <CustomInput
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}

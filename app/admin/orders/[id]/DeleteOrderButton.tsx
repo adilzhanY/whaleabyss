@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import CustomInput from "@/components/CustomInput";
 import {
   Dialog,
   DialogContent,
@@ -134,7 +135,7 @@ export default function DeleteOrderButton({
                 {confirmKey}
               </span>
             </label>
-            <input
+            <CustomInput
               id="delete-order-confirm"
               type="text"
               value={confirmText}
@@ -142,7 +143,7 @@ export default function DeleteOrderButton({
               autoFocus
               disabled={isDeleting}
               placeholder={confirmKey}
-              className="input-field font-mono !text-sm disabled:opacity-50"
+              className="font-mono !text-sm"
             />
           </div>
 

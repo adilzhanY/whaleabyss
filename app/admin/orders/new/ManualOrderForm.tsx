@@ -14,7 +14,7 @@ import {
   Check,
   Tag,
 } from "lucide-react";
-import Input from "@/components/Input";
+import CustomInput from "@/components/CustomInput";
 
 interface UserOption {
   id: string;
@@ -208,7 +208,7 @@ export default function ManualOrderForm({
               <div className="fixed inset-0 z-10" onClick={() => setUserMenuOpen(false)} />
             )}
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 z-30 pointer-events-none" />
-            <Input
+            <CustomInput
               type="text"
               value={userSearch}
               onChange={(e) => {
@@ -247,7 +247,7 @@ export default function ManualOrderForm({
 
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 z-10" />
-          <Input
+          <CustomInput
             type="text"
             value={serviceSearch}
             onChange={(e) => setServiceSearch(e.target.value)}
@@ -348,7 +348,7 @@ export default function ManualOrderForm({
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 z-10" />
-                <Input
+                <CustomInput
                   type="text"
                   value={promoInput}
                   onChange={(e) => setPromoInput(e.target.value.toUpperCase())}

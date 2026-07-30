@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Eye, EyeOff, Lock, CheckCircle } from "lucide-react";
-import Input from "@/components/Input";
+import CustomInput from "@/components/CustomInput";
 import { stripNonLatin } from "@/lib/validators";
 
 function ResetPasswordForm() {
@@ -120,7 +120,7 @@ function ResetPasswordForm() {
                 Новый пароль
               </label>
               <div className="relative">
-                <Input
+                <CustomInput
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -145,7 +145,7 @@ function ResetPasswordForm() {
                 Подтвердите пароль
               </label>
               <div className="relative">
-                <Input
+                <CustomInput
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}

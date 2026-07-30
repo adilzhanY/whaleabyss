@@ -8,9 +8,10 @@ import ServiceCard from "@/components/ServiceCard";
 import SuggestServiceModal from "@/components/SuggestServiceModal";
 import { Search, X } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
-import Input from "@/components/Input";
+import CustomInput from "@/components/CustomInput";
+import type { ServiceCategory, ServiceItem } from "@/lib/services";
 
-export default function ServicesClient({ categories }: { categories: any[] }) {
+export default function ServicesClient({ categories }: { categories: ServiceCategory[] }) {
   const [authOpen, setAuthOpen] = useState(false);
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,17 +36,17 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
     return categories
       .filter((c) => activeCat === "all" || c.slug === activeCat)
       .map((category) => {
-        let items = query
+        const items = query
           ? category.items.filter(
-              (item: any) =>
+              (item) =>
                 item.title?.toLowerCase().includes(query) ||
                 item.subtitle?.toLowerCase().includes(query)
             )
           : [...category.items];
-        if (sort === "price-asc") items.sort((a: any, b: any) => a.price - b.price);
-        else if (sort === "price-desc") items.sort((a: any, b: any) => b.price - a.price);
+        if (sort === "price-asc") items.sort((a, b) => a.price - b.price);
+        else if (sort === "price-desc") items.sort((a, b) => b.price - a.price);
         else if (sort === "name")
-          items.sort((a: any, b: any) =>
+          items.sort((a, b) =>
             (a.subtitle || a.title).localeCompare(b.subtitle || b.title, "ru")
           );
         return { ...category, items };
@@ -112,7 +113,7 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative w-full sm:max-w-md">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
-              <Input
+              <CustomInput
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -134,7 +135,7 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value as typeof sort)}
-                className="input-field !py-2 !px-3 !text-sm !w-auto"
+                className="custom-input custom-input--md !w-auto !text-sm"
               >
                 <option value="default">По умолчанию</option>
                 <option value="price-asc">Сначала дешевле</option>
@@ -190,7 +191,7 @@ export default function ServicesClient({ categories }: { categories: any[] }) {
                     be a 1-2 column layout, so a single item rendered as one
                     lonely half-width card that looked like a failed load. */}
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
-                  {category.items.map((item: any) => (
+                  {category.items.map((item: ServiceItem) => (
                     <div
                       key={item.id}
                       className="w-full h-full"

@@ -21,7 +21,7 @@ import Footer from "@/components/Footer";
 import DataSecurityModal from "@/components/DataSecurityModal";
 import AuthModal from "@/components/AuthModal";
 import Checkbox from "@/components/Checkbox";
-import Input from "@/components/Input";
+import CustomInput from "@/components/CustomInput";
 import { useSession } from "next-auth/react";
 import Breadcrumb from "@/components/Breadcrumb";
 import { useAddonPrompt } from "@/store/useAddonPrompt";
@@ -712,7 +712,7 @@ export default function CartPage() {
                   <div className="col-span-2 sm:col-span-1">
                     <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Ранг приключений:</label>
                     {isEditingAdventureRank ? (
-                      <Input type="text" inputMode="numeric" value={adventureRank} onChange={e => handleAdventureRankChange(e.target.value)} placeholder="Например, 45" className="text-sm font-medium" />
+                      <CustomInput type="text" inputMode="numeric" value={adventureRank} onChange={e => handleAdventureRankChange(e.target.value)} placeholder="Например, 45" className="text-sm font-medium" />
                     ) : (
                       readOnlyField(adventureRank, () => setIsEditingAdventureRank(true))
                     )}
@@ -720,7 +720,7 @@ export default function CartPage() {
                   <div className="col-span-2 sm:col-span-1">
                     <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Username в Telegram:</label>
                     {isEditingTelegram ? (
-                      <Input type="text" value={telegram} onChange={e => handleTelegramChange(e.target.value)} placeholder="@username" className="text-sm font-medium" />
+                      <CustomInput type="text" value={telegram} onChange={e => handleTelegramChange(e.target.value)} placeholder="@username" className="text-sm font-medium" />
                     ) : (
                       readOnlyField(telegram, () => setIsEditingTelegram(true))
                     )}
@@ -731,7 +731,7 @@ export default function CartPage() {
                   <div className="col-span-2">
                     <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">E-mail для чека:</label>
                     {isEditingEmail ? (
-                      <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@example.com" className="text-sm font-medium" />
+                      <CustomInput type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@example.com" className="text-sm font-medium" />
                     ) : (
                       readOnlyField(email, () => setIsEditingEmail(true))
                     )}
@@ -920,7 +920,7 @@ export default function CartPage() {
                     </div>
                   ) : isPromoOpen ? (
                     <div className="mt-2 space-y-2">
-                      <Input
+                      <CustomInput
                         type="text"
                         value={promocode}
                         onChange={(e) => setPromocode(e.target.value.toUpperCase())}

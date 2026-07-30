@@ -4,7 +4,7 @@ import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import Input from "@/components/Input";
+import CustomInput from "@/components/CustomInput";
 import PageHeader from "../../_components/PageHeader";
 
 export default function NewPromocodePage() {
@@ -83,7 +83,7 @@ export default function NewPromocodePage() {
             <label className="block text-sm font-semibold text-slate-700 mb-2">
               Код промокода
             </label>
-            <Input
+            <CustomInput
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
@@ -101,7 +101,7 @@ export default function NewPromocodePage() {
             <label className="block text-sm font-semibold text-slate-700 mb-2">
               Скидка (%)
             </label>
-            <Input
+            <CustomInput
               type="number"
               value={discountPercent}
               onChange={(e) => setDiscountPercent(Number(e.target.value))}
@@ -119,7 +119,7 @@ export default function NewPromocodePage() {
             <label className="block text-sm font-semibold text-slate-700 mb-2">
               Действует до
             </label>
-            <Input
+            <CustomInput
               type="date"
               value={expiresAt}
               onChange={(e) => setExpiresAt(e.target.value)}

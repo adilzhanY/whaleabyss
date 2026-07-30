@@ -119,7 +119,7 @@ async function handle(req: NextRequest) {
 
     const order = orderRows[0];
     console.log('[Freekassa] Order found:', { id: order.id, status: order.status, totalPrice: order.totalPrice });
-
+    // Check the amount
     if (parseFloat(amount) !== parseFloat(order.totalPrice.toString())) {
       console.warn(
         `[Freekassa] Amount mismatch for order ${merchantOrderId}. Expected ${order.totalPrice}, got ${amount}`

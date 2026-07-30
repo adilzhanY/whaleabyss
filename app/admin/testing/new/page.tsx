@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import Link from "next/link";
-import Input from "@/components/Input";
+import CustomInput from "@/components/CustomInput";
 import Textarea from "@/components/Textarea";
 import PageHeader from "../../_components/PageHeader";
 
@@ -90,7 +90,7 @@ export default function NewTestServicePage() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Slug (URL)
             </label>
-            <Input
+            <CustomInput
               type="text"
               name="slug"
               required
@@ -102,7 +102,7 @@ export default function NewTestServicePage() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Название
             </label>
-            <Input
+            <CustomInput
               type="text"
               name="title"
               required
@@ -114,7 +114,7 @@ export default function NewTestServicePage() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Подзаголовок
             </label>
-            <Input
+            <CustomInput
               type="text"
               name="subtitle"
               placeholder="Тестовая услуга"
@@ -136,7 +136,7 @@ export default function NewTestServicePage() {
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Цена (₽)
             </label>
-            <Input
+            <CustomInput
               type="number"
               name="price"
               required

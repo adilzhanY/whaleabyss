@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import Checkbox from "@/components/Checkbox";
-import Input from "@/components/Input";
+import CustomInput from "@/components/CustomInput";
 import { stripNonLatin, passwordSchema, firstError } from "@/lib/validators";
 
 interface AuthModalProps {
@@ -499,7 +499,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <label className="mb-1 block text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
                 Email
               </label>
-              <Input
+              <CustomInput
                 type="email"
                 placeholder="example@mail.com"
                 value={forgotPasswordEmail}
@@ -568,7 +568,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <label className="mb-1 block text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
                   Имя пользователя
                 </label>
-                <Input
+                <CustomInput
                   type="text"
                   placeholder="Введите имя"
                   value={username}
@@ -583,7 +583,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <label className="mb-1 block text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
                 Email
               </label>
-              <Input
+              <CustomInput
                 type="email"
                 placeholder="example@mail.com"
                 value={email}
@@ -597,7 +597,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 Пароль
               </label>
               <div className="relative">
-                <Input
+                <CustomInput
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
@@ -622,7 +622,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   Повторите пароль
                 </label>
                 <div className="relative">
-                  <Input
+                  <CustomInput
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={confirmPassword}

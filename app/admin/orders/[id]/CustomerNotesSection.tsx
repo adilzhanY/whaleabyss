@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { MessageSquare, Pencil, X } from "lucide-react";
-import Input from "@/components/Input";
+import CustomInput from "@/components/CustomInput";
 
 /** Pulls the first `Email:` / `Telegram:` values out of the notes blob. */
 function parseContact(notes: string) {
@@ -76,7 +76,7 @@ export default function CustomerNotesSection({
         <div className="space-y-4">
           <div>
             <label className="mb-1 block text-xs font-semibold text-slate-600">Email</label>
-            <Input
+            <CustomInput
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -86,7 +86,7 @@ export default function CustomerNotesSection({
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold text-slate-600">Telegram</label>
-            <Input
+            <CustomInput
               type="text"
               value={telegram}
               onChange={(e) => setTelegram(e.target.value)}

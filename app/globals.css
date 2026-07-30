@@ -1828,3 +1828,40 @@ html.site-dark body:has(#site-header) .dive-node{background:#101828;color:#60a5f
 @media (min-width: 820px) {
   .home-tile-wide { grid-column: span 2; }
 }
+
+/* ---------------------------------------------------------------------------
+ * CustomInput - the site-wide text field (components/CustomInput.tsx).
+ * Copies the /admin/orders SearchField recipe the owner picked: filled,
+ * borderless, control radius, and a soft blue glow that eases in on focus.
+ * `--md` (forms everywhere) is one step taller than the table search; `--sm`
+ * matches the admin table toolbar height exactly.
+ * ------------------------------------------------------------------------- */
+.custom-input {
+  display: block;
+  background-color: #f1f5f9;
+  border: none;
+  border-radius: var(--r-card);
+  color: #334155;
+  font-family: var(--font-primary), sans-serif;
+  outline: none;
+  box-shadow: none;
+  transition: box-shadow 150ms ease, background-color 150ms ease;
+}
+.custom-input::placeholder { color: #94a3b8; }
+.custom-input:focus { box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15); }
+.custom-input:disabled { opacity: 0.5; cursor: not-allowed; }
+.custom-input--md { height: 2.75rem; padding: 0 1rem; font-size: 0.9375rem; }
+.custom-input--sm { height: 2rem; padding: 0 0.875rem; font-size: 0.875rem; }
+
+/* Dark palettes - the same field on the public site-dark theme and admin-dark. */
+html.site-dark body:has(#site-header) .custom-input,
+body:has(#admin-root.admin-dark) .custom-input {
+  background-color: #171717;
+  color: #f5f5f5;
+}
+html.site-dark body:has(#site-header) .custom-input::placeholder,
+body:has(#admin-root.admin-dark) .custom-input::placeholder { color: #737373; }
+html.site-dark body:has(#site-header) .custom-input:focus,
+body:has(#admin-root.admin-dark) .custom-input:focus {
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25);
+}

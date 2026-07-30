@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import Input from "@/components/Input";
+import CustomInput from "@/components/CustomInput";
 import Textarea from "@/components/Textarea";
 import CustomSelect from "@/components/CustomSelect";
 
@@ -114,29 +114,29 @@ export default function EditBoosterModal({ booster, onClose, onSaved }: EditBoos
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Имя</label>
-              <Input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+              <CustomInput type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Фамилия</label>
-              <Input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+              <CustomInput type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Дата рождения</label>
-              <Input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} max={new Date().toISOString().split("T")[0]} />
+              <CustomInput type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} max={new Date().toISOString().split("T")[0]} />
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Telegram</label>
-              <Input type="text" value={telegramUsername} onChange={(e) => setTelegramUsername(e.target.value)} placeholder="@username" />
+              <CustomInput type="text" value={telegramUsername} onChange={(e) => setTelegramUsername(e.target.value)} placeholder="@username" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">ИНН (самозанятый)</label>
-              <Input
+              <CustomInput
                 type="text"
                 value={inn}
                 onChange={(e) => setInn(e.target.value.replace(/\D/g, "").slice(0, 12))}
@@ -147,18 +147,18 @@ export default function EditBoosterModal({ booster, onClose, onSaved }: EditBoos
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Реквизиты для выплат</label>
-              <Input type="text" value={payoutDetails} onChange={(e) => setPayoutDetails(e.target.value)} placeholder="Карта или телефон для СБП" />
+              <CustomInput type="text" value={payoutDetails} onChange={(e) => setPayoutDetails(e.target.value)} placeholder="Карта или телефон для СБП" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Комиссия (%)</label>
-              <Input type="number" value={commissionPercent} onChange={(e) => setCommissionPercent(Number(e.target.value))} min={0} max={100} />
+              <CustomInput type="number" value={commissionPercent} onChange={(e) => setCommissionPercent(Number(e.target.value))} min={0} max={100} />
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Баланс (₽)</label>
-              <Input type="number" value={balance} onChange={(e) => setBalance(e.target.value)} min={0} step="0.01" />
+              <CustomInput type="number" value={balance} onChange={(e) => setBalance(e.target.value)} min={0} step="0.01" />
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Статус</label>

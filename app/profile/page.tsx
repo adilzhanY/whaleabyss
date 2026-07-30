@@ -8,7 +8,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Settings, Edit3 } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
-import Input from "@/components/Input";
+import CustomInput from "@/components/CustomInput";
 
 export default function ProfilePage() {
   const { data: session, status, update } = useSession();
@@ -161,7 +161,7 @@ export default function ProfilePage() {
               <form onSubmit={handleSave} className="space-y-6 max-w-xl">
                 <div>
                   <label className="mb-2 block text-sm font-medium" style={{ color: "var(--text-secondary)" }}>E-mail (нельзя изменить)</label>
-                  <Input
+                  <CustomInput
                     type="email"
                     value={email}
                     disabled
@@ -170,7 +170,7 @@ export default function ProfilePage() {
 
                 <div>
                   <label className="mb-2 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>Имя</label>
-                  <Input
+                  <CustomInput
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -180,7 +180,7 @@ export default function ProfilePage() {
 
                 <div>
                   <label className="mb-2 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>Ранг приключений</label>
-                  <Input
+                  <CustomInput
                     type="text"
                     inputMode="numeric"
                     value={adventureRank}
@@ -191,7 +191,7 @@ export default function ProfilePage() {
 
                 <div>
                   <label className="mb-2 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>Telegram</label>
-                  <Input
+                  <CustomInput
                     type="text"
                     value={telegramUsername}
                     onChange={(e) => setTelegramUsername(e.target.value)}
@@ -201,7 +201,7 @@ export default function ProfilePage() {
 
                 <div>
                   <label className="mb-2 block text-sm font-medium" style={{ color: "var(--text-primary)" }}>E-mail для чека</label>
-                  <Input
+                  <CustomInput
                     type="email"
                     value={receiptEmail}
                     onChange={(e) => setReceiptEmail(e.target.value)}
@@ -276,7 +276,7 @@ export default function ProfilePage() {
 
                 <div className="mb-6 text-left">
                   <label className="block text-sm font-bold text-gray-700 mb-2">Для подтверждения напишите слово «удалить»:</label>
-                  <Input
+                  <CustomInput
                     type="text"
                     value={deleteConfirmationText}
                     onChange={(e) => setDeleteConfirmationText(e.target.value)}

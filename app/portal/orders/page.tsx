@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Search, Loader2 } from "lucide-react";
-import Input from "@/components/Input";
+import CustomInput from "@/components/CustomInput";
 import CustomSelect from "@/components/CustomSelect";
 import PortalOrderCard, { type PortalOrder } from "../_components/PortalOrderCard";
 
@@ -126,7 +126,7 @@ export default function PortalPastOrdersPage() {
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
+          <CustomInput
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

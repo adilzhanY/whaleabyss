@@ -264,6 +264,29 @@ const result = await db.select().from(services).where(eq(services.id, id));
 - User roles: `user`, `admin`, `booster` (enum in DB)
 - Middleware (`middleware.ts`) protects `/admin/*` and `/api/admin/*` routes
 - Admin routes have two-layer protection: Edge middleware + server-side checks
+- **Never decide "logged in or not" from `useSession()` alone when it changes what
+  renders.** `SessionProvider` is not seeded, so `useSession()` starts as
+  `status:'loading'` with `data: undefined`; a `session?.user ? A : B` branch therefore
+  renders the **guest** variant first and corrects itself a tick later. On `/` that showed
+  the Valle welcome hero to signed-in customers for one frame on every visit, including
+  client-side navigations (e.g. `/orders` → `/`).
+  - **The fix, and the pattern for any new personalized page:** resolve the session on
+    the **server** — the auth cookie is already on the request — and pass it in as a prop.
+    `app/page.tsx` does `getServerSession(authOptions)` and hands `initialSession` to
+    `HomeClient`, which uses `status === 'loading' ? initialSession : clientSession`. The
+    server render, the hydration render, and the RSC payload used by client-side
+    navigation are then all correct on the first frame, while the hook still owns the
+    state afterwards so in-tab sign-in/sign-out updates instantly.
+  - **Cost check before copying this:** reading the session makes a route dynamic. `/` was
+    already dynamic (`revalidate = 0`), so this was free. Doing the same in
+    `app/layout.tsx` would fix the whole app at once (the Header still flashes
+    «Войти» → avatar) but would turn every currently-static page dynamic — only the
+    marketing/legal pages (`/about`, `/faq`, `/info`, `/contacts`, `/payment`,
+    `/public_offer`, `/reviews`) are prerendered, so it is a real but bounded trade-off.
+  - Effects that load per-user data must key on `session.user.id`, **not** the session
+    object — its identity changes when the client provider takes over from the server
+    value and on every next-auth refetch, firing duplicate requests (same class of bug as
+    the `CartSync` one under Cart Management).
 
 **Cart Management:**
 - Zustand store with localStorage persistence (`store/useCart.ts`)
@@ -681,7 +704,12 @@ TypeScript paths configured in `tsconfig.json`:
 - Admin panel is fully functional for managing services, orders, promocodes, reviews, events, and boosters
 - Fuzzy search was removed - search is now handled server-side without Fuse.js
 - Reusable form primitives: `components/Input.tsx`, `components/Textarea.tsx` (branded, rounded). Use the `components/TelegramIcon.tsx` brand glyph for any Telegram icon (tints via `currentColor`) — don't use the lucide `Send` icon for Telegram
-- Admin list pages (`/admin/users`, `/admin/boosters`) share a filter+search pattern: `CustomSelect` dropdowns + a debounced `Input` with a `Search` icon
+- **Every search input is `components/CustomSearchField.tsx`** (wraps HeroUI `SearchField`; icon + clear button live inside a flex group). `fieldSize="sm"` = admin toolbar rows, `"md"` = public/portal/forms; optional `onFocus` for typeahead dropdowns (see `ManualOrderForm`). Styled via `.custom-search-field` in globals.css (admin-dark + site-dark covered). Never hand-roll an absolutely-positioned `Search` icon over a `CustomInput` — Tailwind `pl-*` loses to the unlayered `.custom-input--*` padding and the icon overlaps the text (the original /orders defect)
+- **Every dropdown is `components/CustomSelect.tsx`; never a native `<select>`** (unstyleable OS chrome that breaks the brand). Full keyboard support (Enter/Space/arrows/Home/End/Esc) + `aria-activedescendant`, so it's a real replacement for the native control, not just a prettier one.
+  - **Call sites pass layout only** — `className` for width, `fieldSize` for height (`sm` = admin toolbars, `md` = public/portal/forms), `ariaLabel` when there's no visible `<label>`. There are deliberately **no** `buttonClassName`/`menuClassName`/`optionClassName` escape hatches: they existed once and 18 call sites drifted into 4 different looks, which is exactly what "shared component" is supposed to prevent. The whole look lives in the `.custom-select__*` block in globals.css — edit there and every dropdown changes at once.
+  - `role="listbox"` sits on the element that **directly** owns the option rows. Putting it on the outer menu (with the scroll container in between) silently drops every option from the accessibility tree.
+- **The three form primitives — `.custom-input`, `.custom-search-field`, `.custom-select` — are one family** in globals.css: same fill (`#f1f5f9`), same `var(--r-card)` radius, same focus glow, same `--sm`(2rem)/`--md`(2.75rem) heights, and each has the admin-dark + site-dark palettes. Add a new control by following that block, not by inventing per-page classes
+- Admin list pages (`/admin/users`, `/admin/boosters`) share a filter+search pattern: `CustomSelect` dropdowns + a debounced `CustomSearchField`
 - **Server-side pagination (orders + users lists):** `/admin/orders` and `/admin/users` do all
   filtering/sorting/paging in SQL — the API takes `?page&pageSize&sort&…&search` and returns
   `{ <rows>, total, page, pageSize }`, fetching only the current page (~10 rows + a `count(*)`)

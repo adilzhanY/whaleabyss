@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Plus, Sparkles } from "lucide-react";
-import { SearchField } from "@heroui/react";
+import CustomSearchField from "@/components/CustomSearchField";
 import CustomSelect from "@/components/CustomSelect";
 import DataTable, { type Column } from "../_components/DataTable";
 import PageHeader from "../_components/PageHeader";
@@ -235,9 +235,6 @@ export default function AdminServicesPage() {
               value={categoryFilter}
               onChange={setCategoryFilter}
               className="w-full"
-              buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
-              menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
-              optionClassName="rounded-2xl"
               options={[
                 { value: "all", label: "Все" },
                 ...categoryOptions.map((c) => ({ value: c, label: c })),
@@ -253,9 +250,6 @@ export default function AdminServicesPage() {
               value={regionFilter}
               onChange={setRegionFilter}
               className="w-full"
-              buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
-              menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
-              optionClassName="rounded-2xl"
               options={[
                 { value: "all", label: "Все" },
                 ...regionOptions.map((r) => ({ value: r, label: r })),
@@ -263,18 +257,12 @@ export default function AdminServicesPage() {
             />
           </div>
 
-          <SearchField
-            aria-label="Поиск"
+          <CustomSearchField
             value={searchQuery}
             onChange={setSearchQuery}
+            placeholder="Поиск по названию, slug, региону..."
             className="flex-1 min-w-[220px]"
-          >
-            <SearchField.Group className="w-full">
-              <SearchField.SearchIcon />
-              <SearchField.Input placeholder="Поиск по названию, slug, региону..." />
-              <SearchField.ClearButton />
-            </SearchField.Group>
-          </SearchField>
+          />
         </div>
       </div>
 

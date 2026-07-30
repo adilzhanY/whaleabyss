@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Trash2, Plus } from "lucide-react";
-import { SearchField } from "@heroui/react";
+import CustomSearchField from "@/components/CustomSearchField";
 import CustomSelect from "@/components/CustomSelect";
 import DataTable, { type Column } from "../_components/DataTable";
 import ReviewStatusCell from "../_components/ReviewStatusCell";
@@ -302,9 +302,6 @@ export default function AdminReviewsPage() {
               value={sortBy}
               onChange={(v) => setSortBy(v as "newest" | "oldest")}
               className="w-full"
-              buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
-              menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
-              optionClassName="rounded-2xl"
               options={[
                 { value: "newest", label: "Сначала новые" },
                 { value: "oldest", label: "Сначала старые" },
@@ -332,9 +329,6 @@ export default function AdminReviewsPage() {
               value={ratingFilter}
               onChange={setRatingFilter}
               className="w-full"
-              buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
-              menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
-              optionClassName="rounded-2xl"
               options={[
                 { value: "all", label: "Все" },
                 { value: "5", label: "5 звёзд" },
@@ -354,9 +348,6 @@ export default function AdminReviewsPage() {
               value={statusFilter}
               onChange={setStatusFilter}
               className="w-full"
-              buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
-              menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
-              optionClassName="rounded-2xl"
               options={[
                 { value: "all", label: "Все" },
                 { value: "pending", label: "На модерации" },
@@ -366,18 +357,12 @@ export default function AdminReviewsPage() {
             />
           </div>
 
-          <SearchField
-            aria-label="Поиск"
+          <CustomSearchField
             value={searchQuery}
             onChange={setSearchQuery}
+            placeholder="Поиск по ID, имени, тексту отзыва..."
             className="flex-1 min-w-[220px]"
-          >
-            <SearchField.Group className="w-full">
-              <SearchField.SearchIcon />
-              <SearchField.Input placeholder="Поиск по ID, имени, тексту отзыва..." />
-              <SearchField.ClearButton />
-            </SearchField.Group>
-          </SearchField>
+          />
         </div>
       </div>
 

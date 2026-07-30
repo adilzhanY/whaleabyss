@@ -217,8 +217,8 @@ export default function ServiceForm({
         router.push("/admin/services");
         router.refresh();
       });
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Не удалось сохранить");
       setSaving(false);
     }
   }
@@ -246,8 +246,8 @@ export default function ServiceForm({
         router.push("/admin/services");
         router.refresh();
       });
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Не удалось удалить");
       setDeleting(false);
     }
   }
@@ -331,7 +331,7 @@ export default function ServiceForm({
             value={form.categoryId ?? ""}
             onChange={(v) => setForm({ ...form, categoryId: v })}
             className="w-full"
-            buttonClassName="bg-white px-4 py-2.5 rounded-xl border border-slate-200 text-sm"
+            fieldSize="md"
             options={[
               { value: "", label: "— без категории —" },
               ...categories.map((c) => ({ value: c.id, label: c.title })),

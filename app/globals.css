@@ -662,27 +662,6 @@ h6 {
   }
 }
 
-/* Homepage services section: soft blurred corner fog over the white overlay. */
-.services-fog {
-  background:
-    radial-gradient(circle at 0% 0%, rgba(220, 235, 255, 0.5) 0%, transparent 50%),
-    radial-gradient(circle at 100% 100%, rgba(200, 225, 250, 0.4) 0%, transparent 50%);
-  filter: blur(40px);
-}
-
-/* Homepage services section: two-tier graph-paper grid (fine 40px cells +
- * bolder 200px lines), faded toward the left/right edges via mask. */
-.services-grid {
-  background-image:
-    linear-gradient(to right, rgba(51, 65, 85, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(51, 65, 85, 0.05) 1px, transparent 1px),
-    linear-gradient(to right, rgba(51, 65, 85, 0.08) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(51, 65, 85, 0.08) 1px, transparent 1px);
-  background-size: 40px 40px, 40px 40px, 200px 200px, 200px 200px;
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
-  mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
-}
-
 /* Service card: white body + gradient border via the padding-box/border-box
  * trick (the card element has border-2 border-transparent). Hover swaps to a
  * light-blue body and saturated border — previously done with JS handlers. */
@@ -1230,8 +1209,9 @@ html:has(#admin-root) { scrollbar-gutter: stable; }
   background-color: #ffffff;
 }
 
-/* HeroUI SearchField (admin orders filter) — same palette alignment. */
-#admin-root .search-field__group {
+/* HeroUI SearchField via components/CustomSearchField — same palette alignment.
+   Shared by the admin filter rows and public pages (e.g. /orders). */
+.custom-search-field .search-field__group {
   background-color: #f1f5f9; /* filled, borderless — like the select triggers */
   border: none;
   border-radius: var(--r-card); /* matches the select triggers */
@@ -1242,10 +1222,10 @@ html:has(#admin-root) { scrollbar-gutter: stable; }
   gap: 0.5rem;
   box-shadow: none;
 }
-#admin-root .search-field__group:focus-within {
+.custom-search-field .search-field__group:focus-within {
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
 }
-#admin-root .search-field__input {
+.custom-search-field .search-field__input {
   background: transparent;
   border: none;
   outline: none;
@@ -1253,44 +1233,60 @@ html:has(#admin-root) { scrollbar-gutter: stable; }
   font-size: 0.875rem;
   color: #334155;
 }
-#admin-root .search-field__input::placeholder {
+.custom-search-field .search-field__input::placeholder {
   color: #94a3b8;
 }
-#admin-root .search-field__search-icon {
+.custom-search-field .search-field__search-icon {
   color: #94a3b8;
   flex-shrink: 0;
 }
-#admin-root .search-field__clear-button {
+.custom-search-field .search-field__clear-button {
   color: #94a3b8;
   cursor: pointer;
   border-radius: 9999px;
   flex-shrink: 0;
   transition: color 120ms ease;
 }
-#admin-root .search-field__clear-button:hover {
+.custom-search-field .search-field__clear-button:hover {
   color: #334155;
 }
+/* `md` — matches .custom-input--md so it can sit next to public-site controls. */
+.custom-search-field--md .search-field__group {
+  height: 2.75rem;
+  padding: 0 1rem;
+}
+.custom-search-field--md .search-field__input {
+  font-size: 0.9375rem;
+}
 
-/* Dark theme (mirrors the admin-dark palette above). */
-body:has(#admin-root.admin-dark) .search-field__group {
+/* Dark palettes — admin-dark and the public site-dark theme (same recipe as
+   .custom-input). */
+body:has(#admin-root.admin-dark) .custom-search-field .search-field__group,
+html.site-dark body:has(#site-header) .custom-search-field .search-field__group {
   background-color: #171717;
 }
-body:has(#admin-root.admin-dark) .search-field__group:focus-within {
+body:has(#admin-root.admin-dark) .custom-search-field .search-field__group:focus-within,
+html.site-dark body:has(#site-header) .custom-search-field .search-field__group:focus-within {
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25);
 }
-body:has(#admin-root.admin-dark) .search-field__input {
+body:has(#admin-root.admin-dark) .custom-search-field .search-field__input,
+html.site-dark body:has(#site-header) .custom-search-field .search-field__input {
   color: #f5f5f5;
 }
-body:has(#admin-root.admin-dark) .search-field__input::placeholder {
+body:has(#admin-root.admin-dark) .custom-search-field .search-field__input::placeholder,
+html.site-dark body:has(#site-header) .custom-search-field .search-field__input::placeholder {
   color: #737373;
 }
-body:has(#admin-root.admin-dark) .search-field__search-icon {
+body:has(#admin-root.admin-dark) .custom-search-field .search-field__search-icon,
+html.site-dark body:has(#site-header) .custom-search-field .search-field__search-icon {
   color: #737373;
 }
-body:has(#admin-root.admin-dark) .search-field__clear-button {
+body:has(#admin-root.admin-dark) .custom-search-field .search-field__clear-button,
+html.site-dark body:has(#site-header) .custom-search-field .search-field__clear-button {
   color: #a3a3a3;
 }
-body:has(#admin-root.admin-dark) .search-field__clear-button:hover {
+body:has(#admin-root.admin-dark) .custom-search-field .search-field__clear-button:hover,
+html.site-dark body:has(#site-header) .custom-search-field .search-field__clear-button:hover {
   color: #f5f5f5;
 }
 body:has(#admin-root.admin-dark) .date-input-group {
@@ -1579,18 +1575,6 @@ html.site-dark body:has(#site-header) {
         transparent 72%
       );
   }
-  .services-fog {
-    background:
-      radial-gradient(circle at 0% 0%, rgba(37, 99, 235, 0.12) 0%, transparent 50%),
-      radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
-  }
-  .services-grid {
-    background-image:
-      linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
-      linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
-  }
   .service-card {
     background: #0a0a0a;
     border-color: rgba(255, 255, 255, 0.14);
@@ -1655,15 +1639,27 @@ html.site-dark body:has(#site-header) {
   .hover\:bg-red-50:hover { background-color: rgba(239, 68, 68, 0.25); }
   .bg-green-50, .bg-green-100 { background-color: rgba(34, 197, 94, 0.15); }
   .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.15); }
+  .border-red-100 { border-color: rgba(248, 113, 113, 0.25); }
   .border-red-200 { border-color: rgba(248, 113, 113, 0.4); }
   .border-green-200 { border-color: rgba(74, 222, 128, 0.4); }
   .text-red-500, .text-red-600, .text-red-700, .hover\:text-red-500:hover { color: #f87171; }
   .text-green-500, .text-green-600, .text-green-700, .text-green-800,
   .hover\:text-green-900:hover,
   .group:hover .group-hover\:text-green-700 { color: #4ade80; }
-  .text-emerald-700 { color: #34d399; }
+  .text-emerald-600, .text-emerald-700 { color: #34d399; }
   .text-amber-600 { color: #fbbf24; }
   .text-sky-600 { color: #38bdf8; }
+
+  /* Order/review status pills (lib/orderStatus.ts + the profile's review
+     chips). Without these the light `*-50` fills stay near-white and the pills
+     read as bright slabs on black — visible on /orders, /profile and admin. */
+  .bg-indigo-50 { background-color: rgba(99, 102, 241, 0.18); }
+  .bg-rose-50 { background-color: rgba(244, 63, 94, 0.15); }
+  .bg-amber-50 { background-color: rgba(245, 158, 11, 0.15); }
+  .text-indigo-700 { color: #a5b4fc; }
+  .text-rose-700 { color: #fda4af; }
+  .text-amber-700 { color: #fbbf24; }
+  /* text-blue-700 is already remapped with the blue family above. */
 
   /* ── Brand hexes used as arbitrary-value utilities ─────────────────────── */
   .text-\[\#1e3a8a\] { color: #f5f5f5; }
@@ -1864,4 +1860,108 @@ body:has(#admin-root.admin-dark) .custom-input::placeholder { color: #737373; }
 html.site-dark body:has(#site-header) .custom-input:focus,
 body:has(#admin-root.admin-dark) .custom-input:focus {
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25);
+}
+
+/* ---------------------------------------------------------------------------
+ * CustomSelect - the site-wide dropdown (components/CustomSelect.tsx), the
+ * third member of the family above. Same filled/borderless trigger as
+ * .custom-input at matching `--sm`/`--md` heights, so a select and a text
+ * field sit on the same line without drifting apart.
+ * The whole look lives here on purpose: call sites pass layout only, so a
+ * change in this block restyles every dropdown on the site at once.
+ * ------------------------------------------------------------------------- */
+.custom-select__trigger {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background-color: #f1f5f9;
+  border: none;
+  border-radius: var(--r-card);
+  color: #334155;
+  font-family: var(--font-primary), sans-serif;
+  text-align: left;
+  outline: none;
+  box-shadow: none;
+  cursor: pointer;
+  transition: box-shadow 150ms ease, background-color 150ms ease;
+}
+.custom-select__trigger:focus-visible,
+.custom-select--open .custom-select__trigger {
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+.custom-select__trigger:disabled { opacity: 0.5; cursor: not-allowed; }
+.custom-select__placeholder { color: #94a3b8; }
+/* Right padding clears the absolutely-positioned chevron. */
+.custom-select--md .custom-select__trigger {
+  height: 2.75rem;
+  padding: 0 2.75rem 0 1rem;
+  font-size: 0.9375rem;
+}
+.custom-select--sm .custom-select__trigger {
+  height: 2rem;
+  padding: 0 2.5rem 0 0.875rem;
+  font-size: 0.875rem;
+}
+.custom-select__chevron { color: #94a3b8; }
+
+.custom-select__menu {
+  background-color: #ffffff;
+  border-radius: var(--r-card);
+  box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.12),
+    0 8px 10px -6px rgba(15, 23, 42, 0.1);
+}
+.custom-select__option {
+  border-radius: var(--r-card);
+  color: #334155;
+  font-size: 0.875rem;
+}
+/* `--active` is the keyboard cursor; hover sets it too, so the two never
+   disagree about which row is "current". */
+.custom-select__option:hover,
+.custom-select__option--active { background-color: #f1f5f9; }
+.custom-select__option--selected,
+.custom-select__option--selected:hover,
+.custom-select__option--selected.custom-select__option--active {
+  background-color: #eff6ff;
+  color: #1e3a8a;
+  font-weight: 600;
+}
+
+/* Dark palettes - public site-dark and admin-dark, as above. */
+html.site-dark body:has(#site-header) .custom-select__trigger,
+body:has(#admin-root.admin-dark) .custom-select__trigger {
+  background-color: #171717;
+  color: #f5f5f5;
+}
+html.site-dark body:has(#site-header) .custom-select__trigger:focus-visible,
+html.site-dark body:has(#site-header) .custom-select--open .custom-select__trigger,
+body:has(#admin-root.admin-dark) .custom-select__trigger:focus-visible,
+body:has(#admin-root.admin-dark) .custom-select--open .custom-select__trigger {
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25);
+}
+html.site-dark body:has(#site-header) .custom-select__placeholder,
+html.site-dark body:has(#site-header) .custom-select__chevron,
+body:has(#admin-root.admin-dark) .custom-select__placeholder,
+body:has(#admin-root.admin-dark) .custom-select__chevron { color: #737373; }
+html.site-dark body:has(#site-header) .custom-select__menu,
+body:has(#admin-root.admin-dark) .custom-select__menu {
+  background-color: #171717;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+}
+html.site-dark body:has(#site-header) .custom-select__option,
+body:has(#admin-root.admin-dark) .custom-select__option { color: #d4d4d4; }
+html.site-dark body:has(#site-header) .custom-select__option:hover,
+html.site-dark body:has(#site-header) .custom-select__option--active,
+body:has(#admin-root.admin-dark) .custom-select__option:hover,
+body:has(#admin-root.admin-dark) .custom-select__option--active {
+  background-color: #262626;
+}
+html.site-dark body:has(#site-header) .custom-select__option--selected,
+html.site-dark body:has(#site-header) .custom-select__option--selected:hover,
+html.site-dark body:has(#site-header) .custom-select__option--selected.custom-select__option--active,
+body:has(#admin-root.admin-dark) .custom-select__option--selected,
+body:has(#admin-root.admin-dark) .custom-select__option--selected:hover,
+body:has(#admin-root.admin-dark) .custom-select__option--selected.custom-select__option--active {
+  background-color: rgba(37, 99, 235, 0.22);
+  color: #bfdbfe;
 }

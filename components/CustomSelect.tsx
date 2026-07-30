@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useId } from "react";
 import { ChevronDown } from "lucide-react";
 
 export interface SelectOption {
@@ -12,44 +12,46 @@ interface CustomSelectProps {
   value: string;
   onChange: (value: string) => void;
   options: SelectOption[];
-  /** Classes for the outer wrapper — use this to control width/layout (e.g. "w-full"). */
+  /** Layout only (width, margins). The look is owned by `.custom-select__*`
+   *  in globals.css so every dropdown on the site changes together. */
   className?: string;
-  /** Classes for the trigger button — use this to control its look (bg, border, padding). */
-  buttonClassName?: string;
-  /** Classes for the dropdown panel — use this to control its look (bg, radius, shadow). */
-  menuClassName?: string;
-  /** Classes for each option row — use this to control its rounding. */
-  optionClassName?: string;
+  /**
+   * `sm` (default) - toolbar/table height, as on the admin filter rows.
+   * `md` - one step taller, matches `CustomInput`/`CustomSearchField` `md`.
+   */
+  fieldSize?: "sm" | "md";
   placeholder?: string;
   disabled?: boolean;
+  ariaLabel?: string;
 }
 
-const DEFAULT_BUTTON_CLASS =
-  "bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 hover:border-slate-300";
-
-const DEFAULT_MENU_CLASS =
-  "bg-white rounded-[14px] border border-slate-200 shadow-lg shadow-slate-900/5";
-
 /**
- * A modern, accessible dropdown that replaces the native <select>.
+ * The site-wide dropdown - replaces the native <select>, which can't be
+ * styled to match the brand and renders as raw OS chrome.
  * - hover cursor on the trigger
  * - chevron inset from the edge (not flush against it)
- * - animated open/close, click-outside to dismiss, rounded option rows
+ * - animated open/close, click-outside and Escape to dismiss, rounded rows
  */
 export default function CustomSelect({
   value,
   onChange,
   options,
   className = "",
-  buttonClassName = DEFAULT_BUTTON_CLASS,
-  menuClassName = DEFAULT_MENU_CLASS,
-  optionClassName = "rounded-lg",
+  fieldSize = "sm",
   placeholder = "Выберите...",
   disabled = false,
+  ariaLabel,
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  // Index highlighted by the keyboard. Focus stays on the trigger and the
+  // active row is advertised via aria-activedescendant, so the listbox needs
+  // no focus juggling of its own.
+  const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const baseId = useId();
+  const optionId = (index: number) => `${baseId}-option-${index}`;
 
   const selectedOption = options.find((opt) => opt.value === value);
 
@@ -87,47 +89,137 @@ export default function CustomSelect({
     handleClose();
   };
 
+  const openMenu = () => {
+    // Start the highlight on the current value so arrow keys continue from
+    // where the user already is, not from the top of the list.
+    const selectedIndex = options.findIndex((opt) => opt.value === value);
+    setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0);
+    setIsOpen(true);
+  };
+
   const toggleOpen = () => {
     if (disabled) return;
     if (isOpen) handleClose();
-    else setIsOpen(true);
+    else openMenu();
+  };
+
+  const open = isOpen && !isClosing;
+
+  // Keep the highlighted row inside the scroll viewport.
+  useEffect(() => {
+    if (!isOpen || activeIndex < 0) return;
+    listRef.current
+      ?.querySelector(`#${CSS.escape(optionId(activeIndex))}`)
+      ?.scrollIntoView({ block: "nearest" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, activeIndex]);
+
+  /** Full keyboard operation, matching what the native <select> gave us. */
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (disabled) return;
+
+    if (!isOpen) {
+      if (["ArrowDown", "ArrowUp", "Enter", " "].includes(event.key)) {
+        event.preventDefault();
+        openMenu();
+      }
+      return;
+    }
+
+    switch (event.key) {
+      case "ArrowDown":
+        event.preventDefault();
+        setActiveIndex((i) => (i + 1) % options.length);
+        break;
+      case "ArrowUp":
+        event.preventDefault();
+        setActiveIndex((i) => (i - 1 + options.length) % options.length);
+        break;
+      case "Home":
+        event.preventDefault();
+        setActiveIndex(0);
+        break;
+      case "End":
+        event.preventDefault();
+        setActiveIndex(options.length - 1);
+        break;
+      case "Enter":
+      case " ":
+        event.preventDefault();
+        if (options[activeIndex]) handleSelect(options[activeIndex].value);
+        break;
+      case "Tab":
+        // Let focus leave, but don't strand an open menu behind it.
+        handleClose();
+        break;
+    }
   };
 
   return (
-    <div ref={containerRef} className={`relative ${className}`}>
+    <div
+      ref={containerRef}
+      className={`custom-select custom-select--${fieldSize} ${
+        open ? "custom-select--open" : ""
+      } relative ${className}`}
+    >
       <button
         type="button"
         onClick={toggleOpen}
+        onKeyDown={handleKeyDown}
         disabled={disabled}
-        className={`w-full text-left flex items-center pr-10 outline-none transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-blue-100 ${buttonClassName}`}
+        aria-label={ariaLabel}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-activedescendant={
+          open && activeIndex >= 0 ? optionId(activeIndex) : undefined
+        }
+        className="custom-select__trigger"
       >
-        <span className={`truncate ${!selectedOption ? "text-slate-400" : ""}`}>
+        <span
+          className={`truncate ${
+            selectedOption ? "" : "custom-select__placeholder"
+          }`}
+        >
           {selectedOption?.label || placeholder}
         </span>
       </button>
 
       <ChevronDown
-        className={`absolute right-3.5 top-1/2 w-4 h-4 text-slate-400 pointer-events-none -translate-y-1/2 transition-transform duration-200 ease-in-out ${
-          isOpen && !isClosing ? "rotate-180" : "rotate-0"
+        className={`custom-select__chevron absolute right-3.5 top-1/2 w-4 h-4 pointer-events-none -translate-y-1/2 transition-transform duration-200 ease-in-out ${
+          open ? "rotate-180" : "rotate-0"
         }`}
       />
 
       {isOpen && (
         <div
-          className={`${
+          className={`custom-select__menu ${
             isClosing ? "cs-dropdown-exit" : "cs-dropdown-enter"
-          } absolute z-50 min-w-full mt-2 overflow-hidden ${menuClassName}`}
+          } absolute z-50 min-w-full mt-2 overflow-hidden`}
         >
-          <div className="max-h-60 overflow-y-auto py-1.5">
-            {options.map((option) => (
+          {/* role="listbox" belongs on the element that directly owns the
+              options — with the scroll container in between, the options drop
+              out of the accessibility tree entirely. */}
+          <div
+            ref={listRef}
+            role="listbox"
+            aria-label={ariaLabel}
+            className="max-h-60 overflow-y-auto py-1.5"
+          >
+            {options.map((option, index) => (
               <div
                 key={option.value}
+                id={optionId(index)}
+                role="option"
+                aria-selected={option.value === value}
                 onClick={() => handleSelect(option.value)}
-                className={`mx-1.5 my-0.5 px-3 py-2 ${optionClassName} cursor-pointer text-sm transition-colors select-none whitespace-nowrap ${
+                onMouseEnter={() => setActiveIndex(index)}
+                className={`custom-select__option ${
                   option.value === value
-                    ? "bg-blue-50 text-blue-900 font-semibold"
-                    : "text-slate-700 hover:bg-slate-100"
-                }`}
+                    ? "custom-select__option--selected"
+                    : ""
+                } ${
+                  index === activeIndex ? "custom-select__option--active" : ""
+                } mx-1.5 my-0.5 px-3 py-2 cursor-pointer transition-colors select-none whitespace-nowrap`}
               >
                 {option.label}
               </div>

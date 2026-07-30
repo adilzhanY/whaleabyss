@@ -89,8 +89,8 @@ export default function EditBoosterModal({ booster, onClose, onSaved }: EditBoos
       const updated = await res.json();
       onSaved(updated);
       onClose();
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Не удалось сохранить");
       setSaving(false);
     }
   };
@@ -166,6 +166,7 @@ export default function EditBoosterModal({ booster, onClose, onSaved }: EditBoos
                 value={status}
                 onChange={(v) => setStatus(v as "active" | "inactive")}
                 className="w-full"
+                fieldSize="md"
                 options={[
                   { value: "active", label: "Активен" },
                   { value: "inactive", label: "Неактивен" },

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { SearchField } from "@heroui/react";
+import CustomSearchField from "@/components/CustomSearchField";
 import CustomSelect from "@/components/CustomSelect";
 import DataTable, { type Column } from "../_components/DataTable";
 import PageHeader from "../_components/PageHeader";
@@ -203,9 +203,6 @@ export default function AdminUsersPage() {
               value={sortBy}
               onChange={(v) => setSortBy(v as "newest" | "oldest")}
               className="w-full"
-              buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
-              menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
-              optionClassName="rounded-2xl"
               options={[
                 { value: "newest", label: "Сначала новые" },
                 { value: "oldest", label: "Сначала старые" },
@@ -221,9 +218,6 @@ export default function AdminUsersPage() {
               value={roleFilter}
               onChange={setRoleFilter}
               className="w-full"
-              buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
-              menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
-              optionClassName="rounded-2xl"
               options={[
                 { value: "all", label: "Все" },
                 { value: "user", label: "Пользователь" },
@@ -245,18 +239,12 @@ export default function AdminUsersPage() {
             />
           </div>
 
-          <SearchField
-            aria-label="Поиск"
+          <CustomSearchField
             value={searchQuery}
             onChange={setSearchQuery}
+            placeholder="Поиск по ID, имени, email..."
             className="flex-1 min-w-[220px]"
-          >
-            <SearchField.Group className="w-full">
-              <SearchField.SearchIcon />
-              <SearchField.Input placeholder="Поиск по ID, имени, email..." />
-              <SearchField.ClearButton />
-            </SearchField.Group>
-          </SearchField>
+          />
         </div>
       </div>
 

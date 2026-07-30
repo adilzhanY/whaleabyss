@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { SearchField } from "@heroui/react";
+import CustomSearchField from "@/components/CustomSearchField";
 import {
   ORDER_STATUSES,
   orderStatusLabel,
@@ -118,9 +118,6 @@ export default function AdminOrdersPage() {
               value={sortBy}
               onChange={(v) => setSortBy(v as "newest" | "oldest")}
               className="w-full"
-              buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
-              menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
-              optionClassName="rounded-2xl"
               options={[
                 { value: "newest", label: "Сначала новые" },
                 { value: "oldest", label: "Сначала старые" },
@@ -136,9 +133,6 @@ export default function AdminOrdersPage() {
               value={statusFilter}
               onChange={setStatusFilter}
               className="w-full"
-              buttonClassName="bg-slate-100 px-4 h-8 rounded-2xl text-sm text-slate-700"
-              menuClassName="bg-white rounded-2xl shadow-xl shadow-slate-900/10"
-              optionClassName="rounded-2xl"
               options={[
                 { value: "all", label: "Все" },
                 ...ORDER_STATUSES.map((status) => ({
@@ -161,18 +155,12 @@ export default function AdminOrdersPage() {
             />
           </div>
 
-          <SearchField
-            aria-label="Поиск"
+          <CustomSearchField
             value={searchQuery}
             onChange={setSearchQuery}
+            placeholder="Поиск по ID, имени, email..."
             className="flex-1 min-w-[220px]"
-          >
-            <SearchField.Group className="w-full">
-              <SearchField.SearchIcon />
-              <SearchField.Input placeholder="Поиск по ID, имени, email..." />
-              <SearchField.ClearButton />
-            </SearchField.Group>
-          </SearchField>
+          />
         </div>
       </div>
 

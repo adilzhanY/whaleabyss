@@ -6,7 +6,6 @@ import Link from "next/link";
 import PageHeader from "../../_components/PageHeader";
 import {
   ArrowLeft,
-  Search,
   Plus,
   Minus,
   Trash2,
@@ -15,6 +14,7 @@ import {
   Tag,
 } from "lucide-react";
 import CustomInput from "@/components/CustomInput";
+import CustomSearchField from "@/components/CustomSearchField";
 
 interface UserOption {
   id: string;
@@ -135,9 +135,9 @@ export default function ManualOrderForm({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Промокод недействителен");
       setAppliedPromo({ code: data.code, discountPercent: data.discountPercent });
-    } catch (e: any) {
+    } catch (e) {
       setAppliedPromo(null);
-      setPromoError(e.message);
+      setPromoError(e instanceof Error ? e.message : "Промокод недействителен");
     } finally {
       setPromoLoading(false);
     }
@@ -168,8 +168,8 @@ export default function ManualOrderForm({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Не удалось создать заказ");
       router.push(`/admin/orders/${data.orderId}`);
-    } catch (e: any) {
-      setSubmitError(e.message);
+    } catch (e) {
+      setSubmitError(e instanceof Error ? e.message : "Не удалось создать заказ");
       setSubmitting(false);
     }
   };
@@ -207,17 +207,16 @@ export default function ManualOrderForm({
             {userMenuOpen && (
               <div className="fixed inset-0 z-10" onClick={() => setUserMenuOpen(false)} />
             )}
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 z-30 pointer-events-none" />
-            <CustomInput
-              type="text"
+            <CustomSearchField
               value={userSearch}
-              onChange={(e) => {
-                setUserSearch(e.target.value);
+              onChange={(v) => {
+                setUserSearch(v);
                 setUserMenuOpen(true);
               }}
               onFocus={() => setUserMenuOpen(true)}
               placeholder="Поиск по имени или email..."
-              className="relative z-20 pl-10 text-sm"
+              fieldSize="md"
+              className="relative z-20"
             />
             {userMenuOpen && (
               <div className="absolute z-40 mt-1 w-full max-h-64 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg">
@@ -246,13 +245,11 @@ export default function ManualOrderForm({
         <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">Услуги</h2>
 
         <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 z-10" />
-          <CustomInput
-            type="text"
+          <CustomSearchField
             value={serviceSearch}
-            onChange={(e) => setServiceSearch(e.target.value)}
+            onChange={setServiceSearch}
             placeholder="Найти услугу для добавления..."
-            className="pl-10 text-sm"
+            fieldSize="md"
           />
           {serviceSearch.trim() && (
             <div className="absolute z-20 mt-1 w-full max-h-64 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg">

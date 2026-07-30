@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, Loader2 } from "lucide-react";
-import CustomInput from "@/components/CustomInput";
+import { Loader2 } from "lucide-react";
+import CustomSearchField from "@/components/CustomSearchField";
 import CustomSelect from "@/components/CustomSelect";
 import PortalOrderCard, { type PortalOrder } from "../_components/PortalOrderCard";
 
@@ -97,7 +97,7 @@ export default function PortalPastOrdersPage() {
               value={sortBy}
               onChange={(v) => setSortBy(v as "newest" | "oldest")}
               className="w-full"
-              buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+              fieldSize="md"
               options={[
                 { value: "newest", label: "Сначала новые" },
                 { value: "oldest", label: "Сначала старые" },
@@ -113,7 +113,7 @@ export default function PortalPastOrdersPage() {
               value={statusFilter}
               onChange={setStatusFilter}
               className="w-full"
-              buttonClassName="bg-white px-3 py-2 rounded-lg border border-slate-300 text-sm"
+              fieldSize="md"
               options={[
                 { value: "all", label: "Все" },
                 { value: "completed", label: "Выполнен" },
@@ -124,16 +124,12 @@ export default function PortalPastOrdersPage() {
           </div>
         </div>
 
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <CustomInput
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Поиск по ID заказа, услуге, заметкам..."
-            className="pl-10 text-sm"
-          />
-        </div>
+        <CustomSearchField
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Поиск по ID заказа, услуге, заметкам..."
+          fieldSize="md"
+        />
       </div>
 
       {pastOrders.length === 0 ? (

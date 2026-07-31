@@ -68,6 +68,12 @@ export const services = pgTable('services', {
   description: varchar('description'),
   price: varchar('price', { length: 20 }).notNull(), // Decimal stored as string
   imageUrl: varchar('image_url', { length: 255 }),
+  // How the catalogue card should frame `imageUrl`. NULL (the default) fills the
+  // box and crops — right for a screenshot. 'contain' shows the picture whole on
+  // a blurred copy of itself, for artwork that cropping destroys: square item
+  // icons on a flat background, where the box's edges cut straight through the
+  // icon. Set by `scripts/covers/flag-icon-artwork.mjs`.
+  imageFit: varchar('image_fit', { length: 10 }),
   // Genshin region a quest belongs to, e.g. 'natlan' (see lib/questRegions.json).
   // Resolved once from `service_addons` (a quest is linked to the exploration
   // service it gates) and stored, so unlinking an addon later cannot silently

@@ -12,6 +12,7 @@ import { parseMinAdventureRank } from "@/lib/adventureRank";
 import { Info, ShoppingCart, Gauge, Loader2, AlertTriangle, MessageCircle, Star, Plus, ArrowRight } from "lucide-react";
 import CustomDateRangePicker from "@/components/CustomDateRangePicker";
 import ServiceCard from "@/components/ServiceCard";
+import ServiceArtwork from "@/components/ServiceArtwork";
 import Breadcrumb from "@/components/Breadcrumb";
 
 interface ClientServicePageProps {
@@ -481,11 +482,17 @@ export default function ClientServicePage({ service, recommended = [] }: ClientS
               </div>
               <div
                 className="w-full rounded-[14px] overflow-hidden relative shadow-sm"
-                style={{
-                  aspectRatio: "16/10",
-                  background: `url('${service.background || "/images/genshin_background.jpg"}') center/cover no-repeat`,
-                }}
+                style={{ aspectRatio: "16/10" }}
               >
+                {/* Shown whole, not cropped to fill: this box is a fixed 16:10
+                    while the artwork behind it ranges from 3840×2160 to a
+                    380×712 portrait and 128×128 item icons, so `cover` cut the
+                    tall ones in half and blew the small ones up into a smear. */}
+                <ServiceArtwork
+                  src={service.background || "/images/genshin_background.jpg"}
+                  alt={service.subtitle || service.title}
+                  lazy={false}
+                />
                 {/* No text over the art. The H1 used to sit white-on-bright-sky
                     at poor contrast and broke whenever the image changed; and
                     the subline was a slogan ("Whale Abyss Premium Service") in

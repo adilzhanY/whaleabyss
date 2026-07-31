@@ -668,6 +668,38 @@ h6 {
 }
 
 /* ---------------------------------------------------------------------------
+ * Service artwork shown whole (components/ServiceArtwork.tsx).
+ *
+ * The backdrop is a blurred, dimmed copy of the same picture, scaled past the
+ * edges so the blur never shows a hard border. The picture sits on top at its
+ * natural size, shrunk only if it does not fit — `width/height: auto` with max
+ * constraints is what keeps a 128px icon from being upscaled into mush.
+ * ------------------------------------------------------------------------- */
+.service-art {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.service-art__backdrop {
+  position: absolute;
+  inset: -8%;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  filter: blur(22px) saturate(1.15) brightness(0.78);
+}
+.service-art__img {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* ---------------------------------------------------------------------------
  * Quest cover (components/QuestCover.tsx) — artwork for services that have none.
  *
  * Everything is sized in `cqi` (1% of the picture box's width) rather than in px

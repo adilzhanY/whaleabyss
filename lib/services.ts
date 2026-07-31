@@ -13,6 +13,11 @@ export interface ServiceItem {
   gradient: string;
   background: string;
   /**
+   * `'contain'` when the artwork must be shown whole rather than cropped to fill
+   * (square item icons on flat white). Undefined for a normal screenshot.
+   */
+  imageFit?: string;
+  /**
    * Genshin region key (`lib/questRegions.json`), set for quest services only.
    * Quests have no artwork of their own: `background` holds a generated region
    * tile for every compact surface, and the catalogue card uses this key to draw
@@ -175,6 +180,7 @@ export const getServiceCategories = cache(async (): Promise<ServiceCategory[]> =
           price: parseFloat(s.price),
           description: s.description || '',
           background: s.imageUrl || '',
+          imageFit: s.imageFit || undefined,
           questRegion: s.questRegion || undefined,
           categorySlug: (s.categoryId && catSlugById.get(s.categoryId)) || cat.slug,
           categoryTitle: (s.categoryId && catTitleById.get(s.categoryId)) || cat.title,

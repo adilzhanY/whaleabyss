@@ -9,6 +9,7 @@ import { isCategoryOnDiscount, calculateDiscountedPrice, getActiveEvent } from "
 import { parseMinAdventureRank } from "@/lib/adventureRank";
 import { questRegionLabel } from "@/lib/questRegions";
 import QuestCover from "@/components/QuestCover";
+import ServiceArtwork from "@/components/ServiceArtwork";
 
 interface ServiceCardProps {
   item: ServiceItem;
@@ -44,6 +45,9 @@ export default function ServiceCard({ item, categorySlug, isBestseller }: Servic
   // bottom-left, exactly where the cover sets the quest name.
   const hasQuestCover = Boolean(item.questRegion);
   const regionLabel = questRegionLabel(item.questRegion);
+  // Square item icons on flat white («Прочее», «Задание легенд»): the picture box
+  // is nearly square on a 5-column grid and its edges cut straight through them.
+  const containArt = !hasQuestCover && item.imageFit === "contain" && Boolean(item.background);
 
   // Check if this category is on discount
   const isOnDiscount = categorySlug ? isCategoryOnDiscount(categorySlug) : false;
@@ -89,7 +93,7 @@ export default function ServiceCard({ item, categorySlug, isBestseller }: Servic
         className="relative mb-3 sm:mb-4 w-full overflow-hidden shrink-0 h-30 sm:h-45"
         style={{
           borderRadius: "0.875rem",
-          background: hasQuestCover
+          background: hasQuestCover || containArt
             ? undefined
             : item.background
               ? `url('${item.background}') ${item.background.includes('mondstadt_plot.jpg')
@@ -99,6 +103,7 @@ export default function ServiceCard({ item, categorySlug, isBestseller }: Servic
               : (item.gradient || "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"),
         }}
       >
+        {containArt && <ServiceArtwork src={item.background} alt={displayName} />}
         {hasQuestCover ? (
           <QuestCover region={item.questRegion!} name={displayName} />
         ) : (

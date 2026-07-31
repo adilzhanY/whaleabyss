@@ -160,3 +160,11 @@ ALTER TABLE services ADD COLUMN IF NOT EXISTS quest_region varchar(32);
 -- 5-column desktop grid. Replaced by live rendering, which fits any shape.
 ALTER TABLE services ADD COLUMN IF NOT EXISTS cover_url varchar(255);
 ALTER TABLE services DROP COLUMN IF EXISTS cover_url;
+
+-- 2026-07-31: image_fit. Some service artwork is a square item icon on a flat
+-- white background, not a screenshot; the card's picture box is squarish and its
+-- edges cut straight through such an icon («Прочее», «Задание легенд»,
+-- «Задание Архонтов»). 'contain' shows the picture whole on a blurred copy of
+-- itself instead. NULL keeps the old crop-to-fill behaviour.
+-- Backfilled by scripts/covers/flag-icon-artwork.mjs.
+ALTER TABLE services ADD COLUMN IF NOT EXISTS image_fit varchar(10);

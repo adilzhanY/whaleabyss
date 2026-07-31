@@ -31,10 +31,34 @@ export default function QuestAddonModal() {
   const { addToCart, addManyToCart, declareAddon, openCart } = useCart();
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  // Reset selection each time the modal opens for a new service.
+  // Enter/exit choreography — the same two-flag recipe as AuthModal: `show`
+  // keeps the modal mounted for the exit animation (the store's close() only
+  // flips isOpen, the content stays), `animate` drives the transition classes
+  // a frame after mount so the enter transition actually plays.
+  const [show, setShow] = useState(false);
+  const [animate, setAnimate] = useState(false);
+
   useEffect(() => {
-    if (isOpen) setSelected(new Set());
-  }, [isOpen, parent?.id]);
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    if (isOpen) {
+      timers.push(setTimeout(() => setShow(true), 0));
+      timers.push(setTimeout(() => setAnimate(true), 20));
+    } else {
+      timers.push(setTimeout(() => setAnimate(false), 0));
+      timers.push(setTimeout(() => setShow(false), 300));
+    }
+    return () => timers.forEach(clearTimeout);
+  }, [isOpen]);
+
+  // Reset selection each time the modal opens for a (possibly different)
+  // service. Render-time state adjustment, not an effect — the React-blessed
+  // «reset state when a prop changes» pattern, and lint-clean.
+  const promptKey = isOpen ? parent?.id ?? null : null;
+  const [lastPromptKey, setLastPromptKey] = useState<string | null>(null);
+  if (promptKey !== lastPromptKey) {
+    setLastPromptKey(promptKey);
+    if (promptKey) setSelected(new Set());
+  }
 
   useEffect(() => {
     if (isOpen) {
@@ -45,7 +69,7 @@ export default function QuestAddonModal() {
     }
   }, [isOpen]);
 
-  if (!isOpen || !parent) return null;
+  if (!show || !parent) return null;
 
   const toggle = (id: string) => {
     setSelected((prev) => {
@@ -109,12 +133,22 @@ export default function QuestAddonModal() {
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ease-in-out ${
+          animate ? "opacity-100" : "opacity-0"
+        }`}
         onClick={close}
       />
 
-      {/* Card */}
-      <div className="relative w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[90dvh] sm:max-h-[85vh]">
+      {/* Card. Mobile: a bottom sheet sliding up from below the viewport (no
+          fade — a sheet moves, it doesn't materialise); ≥sm: the AuthModal
+          enter — rise + scale + fade on the same spring-like curve. */}
+      <div
+        className={`relative w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[90dvh] sm:max-h-[85vh] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          animate
+            ? "translate-y-0 opacity-100 sm:scale-100"
+            : "translate-y-full opacity-100 sm:translate-y-8 sm:scale-95 sm:opacity-0"
+        }`}
+      >
         {/* Header */}
         <div className="px-6 pt-6 pb-4 border-b border-slate-100">
           <button

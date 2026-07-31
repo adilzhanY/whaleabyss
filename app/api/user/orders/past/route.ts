@@ -25,6 +25,7 @@ export async function GET() {
         status: orders.status,
         totalPrice: orders.totalPrice,
         createdAt: orders.createdAt,
+        updatedAt: orders.updatedAt,
       })
       .from(orders)
       .where(

@@ -29,6 +29,8 @@ export async function GET() {
         totalPrice: orders.totalPrice,
         boosterOnline: orders.boosterOnline,
         createdAt: orders.createdAt,
+        // Last status change — the card shows «в работе N дней» from it.
+        updatedAt: orders.updatedAt,
       })
       .from(orders)
       .where(

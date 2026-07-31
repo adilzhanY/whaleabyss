@@ -44,13 +44,20 @@
      round — nav, badges, both buttons, text inputs, the cart — so radius
      carried no hierarchy and the layout read soft and toy-like, wrong for a
      service handling someone's account and money.
-       --r-control   8px  inputs, chips, selects, secondary + icon buttons
+       --r-control   8px  chips, small icon targets
+       --r-field    24px  the form family — text field, search, select trigger,
+                          date range. Deliberately the SAME radius as .btn-*:
+                          a control the user operates should read as a control,
+                          and at --sm (32px) heights the browser clamps it to a
+                          pill exactly like btn-sm. Panels keep --r-card, so an
+                          open dropdown is still a panel hanging off a control.
        --r-card     14px  cards, panels, dropdowns
        --r-surface  24px  large surfaces (nav bar, modals)
        9999px             RESERVED for the primary CTA. True circles
                           (avatars, spinners, dots) are images/indicators,
                           not radius decisions, and stay round. */
   --r-control: 0.5rem;
+  --r-field: 1.5rem;
   --r-card: 0.875rem;
   --r-surface: 1.5rem;
   --card-radius: var(--r-card);
@@ -1168,7 +1175,7 @@ html:has(#admin-root) { scrollbar-gutter: stable; }
 .custom-date-range-picker .date-input-group {
   background-color: #f1f5f9; /* filled, borderless — like the select triggers */
   border: none;
-  border-radius: var(--r-card); /* matches the select triggers */
+  border-radius: var(--r-field); /* matches the select triggers */
   padding: 0 0.875rem;
   height: 2rem; /* = Tailwind h-8, tracks the root font size like the selects */
   font-size: 0.875rem;
@@ -1365,7 +1372,7 @@ body:has(#admin-root.admin-dark) .date-range-picker__popover .range-calendar__na
 .custom-search-field .search-field__group {
   background-color: #f1f5f9; /* filled, borderless — like the select triggers */
   border: none;
-  border-radius: var(--r-card); /* matches the select triggers */
+  border-radius: var(--r-field); /* matches the select triggers */
   padding: 0 0.875rem;
   height: 2rem; /* = Tailwind h-8, tracks the root font size like the selects */
   display: flex;
@@ -2018,7 +2025,7 @@ html.site-dark body:has(#site-header) .dive-node{background:#101828;color:#60a5f
   display: block;
   background-color: #f1f5f9;
   border: none;
-  border-radius: var(--r-card);
+  border-radius: var(--r-field);
   color: #334155;
   font-family: var(--font-primary), sans-serif;
   outline: none;
@@ -2058,7 +2065,7 @@ body:has(#admin-root.admin-dark) .custom-input:focus {
   width: 100%;
   background-color: #f1f5f9;
   border: none;
-  border-radius: var(--r-card);
+  border-radius: var(--r-field);
   color: #334155;
   font-family: var(--font-primary), sans-serif;
   text-align: left;

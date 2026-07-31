@@ -17,6 +17,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AuthModal from "@/components/AuthModal";
 import ServiceCard from "@/components/ServiceCard";
+import HeroShowcase from "@/components/HeroShowcase";
 import SuggestServiceModal from "@/components/SuggestServiceModal";
 import OrderCard from "@/components/OrderCard";
 import Toast from "@/components/Toast";
@@ -90,11 +91,14 @@ export default function HomeClient({
 	tiles,
 	bestsellers,
 	stats,
+	showcase = [],
 	initialSession,
 }: {
 	tiles: CategoryTile[];
 	bestsellers: ServiceItem[];
 	stats?: SiteStats;
+	/** Live service cards floating in the guest hero (see app/page.tsx). */
+	showcase?: ServiceItem[];
 	/** Resolved from the auth cookie on the server (see app/page.tsx). */
 	initialSession: Session | null;
 }) {
@@ -468,15 +472,13 @@ export default function HomeClient({
 										</ul>
 									)}
 								</div>
-								{/* Right column: Valle at full height (bg removed via isnet-anime
-								    matting from valle_full_height.png). Decorative, so aria-hidden. */}
+								{/* Right column: the product as proof — floating live service cards
+								    and an order card replaying оплачен → в работе → выполнен. Valle
+								    in full height read as an anime poster to a first-time visitor;
+								    she stays in «Как это работает», the 404 and the banner. */}
 								{/* Desktop only - on mobile/tablet the hero reads better as pure text. */}
-								<div className="hidden w-full lg:flex justify-end" aria-hidden="true">
-									<img
-										src="/images/valle_full_height_nobg.png"
-										alt=""
-										className="h-[34rem] w-auto select-none pointer-events-none drop-shadow-[0_24px_40px_rgba(11,81,145,0.25)]"
-									/>
+								<div className="hidden w-full lg:block">
+									<HeroShowcase services={showcase} />
 								</div>
 							</div>
 						</div>

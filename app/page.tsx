@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getSiteStats } from "@/lib/siteStats";
 import { getBestsellers, getCategoryTiles } from "@/lib/homeShowcase";
+import { getAllServices } from "@/lib/services";
 import HomeClient from "@/app/HomeClient";
 import { Suspense } from "react";
 import { generateMetadata as genMeta, generateLocalBusinessSchema, StructuredData } from "@/lib/seo";
@@ -22,13 +23,25 @@ export default async function Home() {
   // signed-in customer. Deciding that on the client instead is what made the
   // guest hero flash before being replaced by the dashboard.
   // This costs nothing: the page is already dynamic (`revalidate = 0` above).
-  const [session, stats, tiles, bestsellers] = await Promise.all([
+  const [session, stats, tiles, bestsellers, allServices] = await Promise.all([
     getServerSession(authOptions),
     getSiteStats(),
     getCategoryTiles(),
     getBestsellers(5),
+    // Same cached call the tiles/bestsellers already make — free here.
+    getAllServices(),
   ]);
   const businessSchema = generateLocalBusinessSchema();
+
+  // The two service cards floating in the guest hero (HeroShowcase). Live data
+  // on purpose: a hardcoded mock would silently drift from real prices and from
+  // the next ServiceCard redesign. Slugs are pinned — «Пустыня Сумеру 100%» is
+  // among the most-ordered services, «Натлан 100%» is the flagship region.
+  // A missing slug just drops that card; the hero never breaks.
+  const showcaseSlugs = ["pustynya-sumeru-100-8", "natlan-100-19"];
+  const showcase = showcaseSlugs
+    .map((slug) => allServices.find((s) => s.id === slug))
+    .filter((s): s is NonNullable<typeof s> => Boolean(s));
 
   return (
     <>
@@ -38,6 +51,7 @@ export default async function Home() {
           stats={stats}
           tiles={tiles}
           bestsellers={bestsellers}
+          showcase={showcase}
           initialSession={session}
         />
       </Suspense>

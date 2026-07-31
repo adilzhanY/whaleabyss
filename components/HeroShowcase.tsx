@@ -40,12 +40,26 @@ const TIMING_LINE: Record<Phase, string> = {
   completed: "Выполнен · аккаунт снова ваш",
 };
 
-/** Mocked order lines — real services, real prices (2 700 + 2 × 300). */
+/**
+ * Mocked order lines — real services, real prices (1 200 + 300), real artwork,
+ * rendered exactly like the pills on /orders. Sentence-case names on purpose:
+ * the DB titles are all-caps and read as shouting at hero scale. The image
+ * URLs are content-versioned (immutable); if one ever rots, the pill falls
+ * back to a letter avatar, same as OrderCard.
+ */
 const ORDER_ITEMS = [
-  { name: "ИНАДЗУМА 100%", qty: 1 },
-  { name: "В ГОРАХ", qty: 2 },
+  {
+    name: "Драконий хребет 100%",
+    qty: 1,
+    image: "https://storage.yandexcloud.net/whaleabyss-bucket/services/drakoniy-hrebet-100_bb5e0ba58fcdd999.jpg",
+  },
+  {
+    name: "В горах",
+    qty: 1,
+    image: "https://storage.yandexcloud.net/whaleabyss-bucket/services/quests/v-gorah_tile_a7b0ac862084807e.jpg",
+  },
 ];
-const ORDER_TOTAL = "3 300 ₽";
+const ORDER_TOTAL = "1 500 ₽";
 
 export default function HeroShowcase({ services }: { services: ServiceItem[] }) {
   const [phase, setPhase] = useState<Phase>("paid");
@@ -162,14 +176,13 @@ export default function HeroShowcase({ services }: { services: ServiceItem[] }) 
           </div>
 
           <div className="mt-3 flex flex-wrap gap-2">
-            {ORDER_ITEMS.map(({ name, qty }) => (
+            {ORDER_ITEMS.map(({ name, qty, image }) => (
               <span
                 key={name}
                 className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 py-1 pl-1 pr-3"
               >
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-[11px] font-bold uppercase text-slate-500">
-                  {name.charAt(0)}
-                </span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={image} alt="" className="h-6 w-6 shrink-0 rounded-full object-cover" />
                 <span className="text-[12.5px] font-medium text-slate-700">{name}</span>
                 {qty > 1 && (
                   <span className="text-[12px] font-semibold text-slate-400">×{qty}</span>

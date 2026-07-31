@@ -717,7 +717,7 @@ h6 {
   --tx: -50%;
   /* High enough that the card's top edge clears the side cards — per the
      owner's sketch the front card leads the composition from above. */
-  --ty: -90%;
+  --ty: -75%;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 1rem;

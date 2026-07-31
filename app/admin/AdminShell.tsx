@@ -85,11 +85,15 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
     setNavTarget(null);
   }, [pathname]);
 
-  const go = (href: string) => {
+  /**
+   * `at` is the DOM event's `timeStamp` — same time origin as
+   * `performance.now()`, but read from the event instead of called inside the
+   * component, which is what the react-hooks purity rule (rightly) rejects.
+   */
+  const go = (href: string, at: number) => {
     // Both mousedown and the follow-up click call go(); dedupe the pair.
-    const now = performance.now();
-    if (lastNav.current.href === href && now - lastNav.current.t < 600) return;
-    lastNav.current = { href, t: now };
+    if (lastNav.current.href === href && at - lastNav.current.t < 600) return;
+    lastNav.current = { href, t: at };
     setNavTarget(href);
     router.push(href);
   };
@@ -151,7 +155,14 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
       {/* Sidebar */}
       <aside
         className={[
-          "fixed lg:static inset-y-0 left-0 z-40",
+          "fixed inset-y-0 left-0 z-40",
+          // Desktop: sticky at viewport height instead of a plain flex column.
+          // As a `static` item it stretched to the height of the whole document,
+          // so on a long page «Свернуть» and the logout button sat far below the
+          // fold. `bottom-auto` undoes `inset-y-0` — a sticky box with both
+          // offsets set never sticks; `self-start` keeps the flex row from
+          // stretching it back to full height.
+          "lg:sticky lg:top-0 lg:bottom-auto lg:h-screen lg:self-start",
           "flex flex-col",
           "bg-white border-r border-slate-200",
           "transition-[width,transform] duration-300 ease-out",
@@ -190,7 +201,9 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
         </div>
 
         {/* Nav — pill items with one sliding active indicator */}
-        <nav ref={navRef} className="relative flex-1 p-3 space-y-1">
+        {/* `overflow-y-auto`: on a short viewport the nav scrolls on its own so
+            the collapse + logout footer below stays reachable. */}
+        <nav ref={navRef} className="relative flex-1 overflow-y-auto p-3 space-y-1">
           {NAV_ITEMS.map((item) => {
             const active = activeItem?.href === item.href;
             const Icon = item.icon;
@@ -204,14 +217,14 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
                 onTouchStart={() => router.prefetch(item.href)}
                 onMouseDown={(e) => {
                   if (e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
-                    go(item.href);
+                    go(item.href, e.timeStamp);
                   }
                 }}
                 onClick={(e) => {
                   // Let cmd/ctrl/shift-click and middle-click do their browser thing.
                   if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
                   e.preventDefault();
-                  go(item.href); // no-op if mousedown already navigated; handles keyboard Enter
+                  go(item.href, e.timeStamp); // no-op if mousedown already navigated; handles keyboard Enter
                 }}
                 className={[
                   "group relative z-10 flex items-center gap-3 rounded-full px-3.5 py-2.5 transition-colors duration-200",

@@ -60,9 +60,65 @@ const bumpRevision = () => {
  */
 let syncInFlight: Promise<void> | null = null;
 let syncQueued = false;
-/** True when the most recent sync did not reach the server (offline, 5xx). */
-let lastSyncFailed = false;
-export const cartSyncFailed = () => lastSyncFailed;
+
+/**
+ * «Удалил всё, подождал, товары вернулись» — part two.
+ *
+ * Serialising the syncs fixed the ORDER of the writes but not the case where the
+ * last write never lands at all: the tab is closed, the dev server is
+ * recompiling, the network drops, the route 500s. The local cart is then correct
+ * and the DB is stale, and nothing records that fact — the old in-memory
+ * `lastSyncFailed` flag died with the page. The next mount ran a plain
+ * `loadFromDb()`, the DB won because it is «authoritative», and the six deleted
+ * lines came straight back.
+ *
+ * So the flag has to outlive the page. It is set BEFORE the request rather than
+ * on failure, because the failure path does not always run — an aborted or
+ * abandoned request reports nothing at all. While it is set, this browser holds
+ * a change the server has not confirmed, and that change is newer than anything
+ * the server can offer: `CartSync` pushes instead of pulling. See
+ * `decideCartStartup`.
+ */
+const PENDING_KEY = 'cart-pending-sync';
+
+function setPendingSync(pending: boolean) {
+  try {
+    if (pending) localStorage.setItem(PENDING_KEY, '1');
+    else localStorage.removeItem(PENDING_KEY);
+  } catch {
+    /* private mode / storage disabled — nothing we can do, and nothing to break */
+  }
+}
+
+/** True when a local cart change has not been confirmed by the server. */
+export function cartHasPendingSync(): boolean {
+  try {
+    return localStorage.getItem(PENDING_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export type CartStartupAction =
+  /** The browser holds an unconfirmed change — upload it, do not read over it. */
+  | 'push'
+  /** First sight of this account here: union the guest cart into the DB copy. */
+  | 'merge'
+  /** Nothing local is at stake — the DB is authoritative. */
+  | 'load';
+
+/**
+ * What `CartSync` should do when a signed-in account appears. Pure, and exported
+ * on its own, because the ordering rules here are exactly the part that has been
+ * got wrong three times — they deserve a test rather than a comment.
+ */
+export function decideCartStartup(input: {
+  hasPendingSync: boolean;
+  alreadyMerged: boolean;
+}): CartStartupAction {
+  if (input.hasPendingSync) return 'push';
+  return input.alreadyMerged ? 'load' : 'merge';
+}
 
 /**
  * Union of the DB cart and the local one, used ONLY on the login transition.
@@ -279,18 +335,29 @@ export const useCart = create<CartState>()(
               // Read INSIDE the loop: whatever the user did while the previous
               // request was in flight is what gets sent next.
               const items = get().items;
+              // Marked before the request, not after a failure: a request the
+              // browser abandons (tab closed, navigation, dev-server restart)
+              // reports neither success nor failure, and that is precisely the
+              // case that used to resurrect deleted lines.
+              setPendingSync(true);
               try {
                 const res = await fetch('/api/cart/sync', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ items }),
+                  // Let the write finish even if the page is being torn down.
+                  keepalive: true,
                 });
                 // 401 just means "not logged in" — the cart lives in
-                // localStorage and there is nothing to sync.
-                lastSyncFailed = !res.ok && res.status !== 401;
-                if (lastSyncFailed) console.error('Failed to sync cart to DB');
+                // localStorage and there is nothing to sync, so nothing is
+                // pending either.
+                if (res.ok || res.status === 401) {
+                  // Another mutation is already waiting: it is still unconfirmed.
+                  if (!syncQueued) setPendingSync(false);
+                } else {
+                  console.error('Failed to sync cart to DB');
+                }
               } catch (error) {
-                lastSyncFailed = true;
                 console.debug('Cart sync skipped:', error);
               }
             }

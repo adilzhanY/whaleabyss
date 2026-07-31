@@ -89,7 +89,7 @@ export default function NewReviewPage() {
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header onAuthOpen={() => {}} />
 
-      <main className="flex-1 pt-24 pb-20">
+      <main className="flex-1 pt-28 md:pt-32 pb-20">
         <div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "48rem" }}>
           <div className="mb-12 text-center">
             <h1

@@ -235,7 +235,7 @@ export default function ServicesClient({
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
       <SuggestServiceModal isOpen={suggestOpen} onClose={() => setSuggestOpen(false)} />
 
-      <section id="services" className="pt-24 pb-20 relative" style={{ minHeight: "calc(100vh - 64px)" }}>
+      <section id="services" className="pt-28 md:pt-32 pb-20 relative" style={{ minHeight: "calc(100vh - 64px)" }}>
         <div className="site-container relative z-10">
           <Breadcrumb />
 

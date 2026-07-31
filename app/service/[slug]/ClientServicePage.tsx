@@ -422,7 +422,7 @@ export default function ClientServicePage({ service, recommended = [] }: ClientS
       <Header onAuthOpen={() => setAuthOpen(true)} />
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
-      <main className="mx-auto max-w-6xl px-4 sm:px-6 pt-24 pb-8 flex flex-col items-center w-full">
+      <main className="mx-auto max-w-6xl px-4 sm:px-6 pt-28 md:pt-32 pb-8 flex flex-col items-center w-full">
         <div className="w-full">
           <Breadcrumb
             items={[

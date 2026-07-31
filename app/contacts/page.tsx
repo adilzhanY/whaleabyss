@@ -13,7 +13,7 @@ export default function ContactsPage() {
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
 
-      <main className="flex-1 pt-24 pb-20 px-4 sm:px-6">
+      <main className="flex-1 pt-28 md:pt-32 pb-20 px-4 sm:px-6">
         <div className="mx-auto max-w-3xl">
           <div className="mb-12 text-center">
             <h1

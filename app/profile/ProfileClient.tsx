@@ -59,7 +59,7 @@ export default function ProfileClient({ overview }: { overview: ProfileOverview 
   return (
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
-      <main className="pt-24 pb-20">
+      <main className="pt-28 md:pt-32 pb-20">
         <div className="mx-auto max-w-4xl space-y-4 px-4 sm:px-6">
           <Breadcrumb />
 

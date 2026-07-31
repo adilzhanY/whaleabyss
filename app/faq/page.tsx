@@ -89,7 +89,7 @@ export default function FaqPage() {
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
 
-      <main className="flex-1 pt-24 pb-20">
+      <main className="flex-1 pt-28 md:pt-32 pb-20">
         <div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "50rem" }}>
           <Breadcrumb />
           <div className="mb-12 text-center">

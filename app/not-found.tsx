@@ -14,7 +14,7 @@ export default function NotFound() {
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
 
-      <main className="flex-1 pt-24 pb-16 px-4 sm:px-6 flex items-center justify-center">
+      <main className="flex-1 pt-28 md:pt-32 pb-16 px-4 sm:px-6 flex items-center justify-center">
         <div className="mx-auto max-w-xl text-center">
           <Image
             src="/images/valle_chibi_sad.png"

@@ -108,7 +108,7 @@ export default function InfoClient({ stats }: { stats?: SiteStats }) {
       <Header onAuthOpen={() => setAuthOpen(true)} />
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
-      <main className="flex-1 px-4 pt-24 pb-20 sm:px-6">
+      <main className="flex-1 px-4 pt-28 md:pt-32 pb-20 sm:px-6">
         <div className="mx-auto max-w-4xl">
           <Breadcrumb />
 

@@ -249,7 +249,7 @@ export default function HomeClient({
 
 			{/* HERO / DASHBOARD */}
 			{session?.user ? (
-				<section className="hero-mesh relative overflow-hidden pt-24 pb-16 sm:pb-24">
+				<section className="hero-mesh relative overflow-hidden pt-28 md:pt-32 pb-16 sm:pb-24">
 					<div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-between gap-8 px-4 sm:px-12 text-center sm:text-left">
 						<div className="w-full">
 							<h1
@@ -398,7 +398,7 @@ export default function HomeClient({
 			) : (
 				<section
 					id="hero"
-					className="hero-mesh relative overflow-hidden pt-24 pb-20"
+					className="hero-mesh relative overflow-hidden pt-28 md:pt-32 pb-20"
 				>
 						{/* .site-gutter + .site-container reproduce the header pill's geometry, so
 						    the badge, headline, paragraph and buttons land on the same vertical

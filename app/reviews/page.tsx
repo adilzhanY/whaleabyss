@@ -164,7 +164,7 @@ export default function ReviewsPage() {
       <Header onAuthOpen={() => setAuthOpen(true)} />
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
-      <main className="flex-1 pt-24 pb-20">
+      <main className="flex-1 pt-28 md:pt-32 pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <Breadcrumb />
           <div className="mb-12 text-center">

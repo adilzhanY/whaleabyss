@@ -616,24 +616,14 @@ h6 {
  * this file) can restyle them; values are identical to the old inline ones.
  * ------------------------------------------------------------------------- */
 
-/* Hero sections on the homepage: white base + pastel radial mesh. */
-/* Hero ground: ONE hue, one glow.
+/* Hero ground on the homepage: a FLAT near-white field, black in site-dark.
  *
- * Was a seven-stop mesh (periwinkle → mint → peach → pink) unrelated to the
- * navy brand colour. It pushed body text to borderline contrast that shifted
- * across the width of a paragraph, killed the blue accent by sitting it on a
- * blue-violet field, and made the ghost CTA vanish. Now: a near-white ground
- * with a single soft navy glow placed behind the headline, so emphasis comes
- * from the light rather than from a second text colour. */
+ * History: a seven-stop pastel mesh, then a single navy glow behind the
+ * headline. Both were removed — the glow still tinted the top-left corner and
+ * read as a stain rather than as lighting. The hero now gets its emphasis from
+ * typography alone. Keep it flat. */
 .hero-mesh {
   background-color: #fbfcfe;
-  background-image:
-    radial-gradient(
-      55rem 34rem at 18% 26%,
-      rgba(30, 58, 138, 0.11) 0%,
-      rgba(30, 58, 138, 0.045) 42%,
-      transparent 72%
-    );
 }
 
 /* ---------------------------------------------------------------------------
@@ -1667,16 +1657,8 @@ html.site-dark body:has(#site-header) {
   }
 
   /* ── Homepage decorative backgrounds (classes defined earlier) ─────────── */
-  /* Same single-hue glow as the light theme, dimmer — see .hero-mesh above. */
   .hero-mesh {
     background-color: #000000;
-    background-image:
-      radial-gradient(
-        55rem 34rem at 18% 26%,
-        rgba(59, 130, 246, 0.16) 0%,
-        rgba(59, 130, 246, 0.06) 42%,
-        transparent 72%
-      );
   }
   .service-card {
     background: #0a0a0a;

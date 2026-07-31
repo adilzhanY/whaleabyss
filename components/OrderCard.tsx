@@ -1,4 +1,7 @@
-import { Fragment } from "react";
+"use client";
+
+import { Fragment, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { getOrderStatusMeta, type OrderStatus } from "@/lib/orderStatus";
 import TelegramIcon from "@/components/TelegramIcon";
 
@@ -63,6 +66,15 @@ function plural(n: number) {
   if (mod10 === 1 && mod100 !== 11) return `${n} день`;
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return `${n} дня`;
   return `${n} дней`;
+}
+
+/** «1 услуга» / «3 услуги» / «10 услуг». */
+function pluralServices(n: number) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return `${n} услуга`;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return `${n} услуги`;
+  return `${n} услуг`;
 }
 
 function shortDate(value?: string) {
@@ -211,6 +223,11 @@ export default function OrderCard({ order, isGrayscale = false }: OrderCardProps
   const isActive = ACTIVE_STATUSES.has(order.status);
   const total = Number(order.totalPrice ?? order.totalAmount ?? 0);
   const items = order.items ?? [];
+  const [expanded, setExpanded] = useState(false);
+  // Three is what fits on one line on a phone, so the collapsed card is the
+  // same height whether the order has four services or forty.
+  const visibleItems = items.slice(0, 3);
+  const hiddenItems = items.slice(3);
 
   return (
     <div
@@ -255,7 +272,7 @@ export default function OrderCard({ order, isGrayscale = false }: OrderCardProps
               {total.toLocaleString("ru-RU")} ₽
             </div>
             {items.length > 1 && (
-              <div className="text-[12px] text-slate-400">{items.length} услуги</div>
+              <div className="text-[12px] text-slate-400">{pluralServices(items.length)}</div>
             )}
           </div>
         </div>
@@ -267,12 +284,51 @@ export default function OrderCard({ order, isGrayscale = false }: OrderCardProps
           </div>
         )}
 
-        {/* every position, wrapping */}
+        {/* The positions. A ten-service order used to print ten pills and push
+            the order number, the status track and the «спросить» button far
+            below the fold, so a card with one service and a card with ten no
+            longer looked like the same object. Three lead, the rest are one tap
+            away.
+
+            The reveal animates via grid-template-rows 0fr → 1fr: the row's
+            height is derived from the content, so nothing has to be measured
+            and no max-height has to be guessed (a guess too small clips the
+            last row, too large makes the easing look wrong). */}
         {items.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {items.map((item, idx) => (
-              <ItemPill key={idx} item={item} />
-            ))}
+          <div className="mt-4">
+            <div className="flex flex-wrap gap-2">
+              {visibleItems.map((item, idx) => (
+                <ItemPill key={idx} item={item} />
+              ))}
+              {hiddenItems.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setExpanded((v) => !v)}
+                  aria-expanded={expanded}
+                  className="btn-outline btn-sm !h-8 !rounded-full !px-3 text-xs"
+                >
+                  {expanded ? "Свернуть" : `Ещё ${hiddenItems.length}`}
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 transition-transform duration-300 ${expanded ? "rotate-180" : ""}`}
+                    strokeWidth={2.5}
+                  />
+                </button>
+              )}
+            </div>
+            {hiddenItems.length > 0 && (
+              <div
+                className="grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none"
+                style={{ gridTemplateRows: expanded ? "1fr" : "0fr" }}
+              >
+                <div className="overflow-hidden">
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {hiddenItems.map((item, idx) => (
+                      <ItemPill key={idx} item={item} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

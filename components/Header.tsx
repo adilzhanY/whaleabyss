@@ -465,7 +465,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
                 <ShoppingCart className="h-4 w-4 md:h-5 md:w-5 shrink-0 text-[var(--accent-primary)]" />
                 <span className="hidden md:inline text-sm font-medium">Корзина</span>
                 <span
-                  className="flex h-5 min-w-5 items-center justify-center rounded px-1 text-[11px] font-bold tabular-nums"
+                  className="flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[11px] font-bold tabular-nums"
                   style={
                     isMounted && count > 0
                       ? {
@@ -549,7 +549,7 @@ export default function Header({ onAuthOpen }: HeaderProps) {
                 Корзина
               </span>
               <span
-                className="flex h-6 min-w-6 items-center justify-center rounded-lg px-1.5 text-xs font-bold tabular-nums"
+                className="flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-xs font-bold tabular-nums"
                 style={
                   isMounted && count > 0
                     ? { backgroundColor: "var(--accent-primary)", color: "#fff" }

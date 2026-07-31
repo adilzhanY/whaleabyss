@@ -565,3 +565,58 @@ export function ProfitBreakdownChart({ data }: { data: SeriesPoint[] }) {
     </ChartContainer>
   );
 }
+
+// ── Booster earnings: six-month commission bars ──────────────────────────────
+// Used on /admin/booster/[id]. Same visual language as the dashboard's money
+// charts (brand-blue gradient, rounded caps), so the admin has one chart style.
+
+export interface MonthPoint {
+  /** "YYYY-MM" */
+  month: string;
+  earned: number;
+}
+
+const MONTHS_SHORT = [
+  "янв", "фев", "мар", "апр", "май", "июн",
+  "июл", "авг", "сен", "окт", "ноя", "дек",
+];
+
+const boosterEarningsConfig = {
+  earned: { label: "Заработок", color: "var(--chart-1)" },
+} satisfies ChartConfig;
+
+export function BoosterEarningsChart({ data }: { data: MonthPoint[] }) {
+  const points = data.map((m) => ({
+    ...m,
+    label: MONTHS_SHORT[Number(m.month.split("-")[1]) - 1] ?? m.month,
+  }));
+
+  return (
+    <ChartContainer config={boosterEarningsConfig} className="aspect-auto h-[180px] w-full">
+      <BarChart accessibilityLayer data={points}>
+        <defs>
+          <linearGradient id="fillBoosterEarnings" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--color-earned)" stopOpacity={0.95} />
+            <stop offset="100%" stopColor="var(--chart-2)" stopOpacity={0.45} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid vertical={false} />
+        <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+        <YAxis tickLine={false} axisLine={false} width={62} tickFormatter={compactRub} />
+        <ChartTooltip
+          content={
+            <ChartTooltipContent
+              formatter={(value) => (
+                <div className="flex w-full items-center justify-between gap-3">
+                  <span className="text-muted-foreground">Заработок</span>
+                  <span className="font-mono font-medium tabular-nums">{fullRub(Number(value))}</span>
+                </div>
+              )}
+            />
+          }
+        />
+        <Bar dataKey="earned" fill="url(#fillBoosterEarnings)" radius={[10, 10, 10, 10]} maxBarSize={46} />
+      </BarChart>
+    </ChartContainer>
+  );
+}

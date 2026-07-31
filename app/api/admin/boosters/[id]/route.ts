@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { boosters, boosterDocuments, orders, users } from '@/lib/schema';
-import { desc, eq } from 'drizzle-orm';
+import { boosters, boosterDocuments, orders, orderItems, services, users } from '@/lib/schema';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
@@ -11,7 +11,6 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    // @ts-ignore
     if (session?.user?.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
@@ -38,6 +37,9 @@ export async function GET(
         totalPrice: orders.totalPrice,
         boosterEarning: orders.boosterEarning,
         createdAt: orders.createdAt,
+        updatedAt: orders.updatedAt,
+        boosterOnline: orders.boosterOnline,
+        userId: orders.userId,
         username: users.username,
       })
       .from(orders)
@@ -47,6 +49,83 @@ export async function GET(
 
     const completedCount = assignedOrders.filter((o) => o.status === 'completed').length;
     const activeCount = assignedOrders.filter((o) => o.status === 'in_progress').length;
+
+    const orderIds = assignedOrders.map((o) => o.id);
+
+    // Line items for every assigned order, so the table and the «сейчас в
+    // работе» card can name the services without a second round trip.
+    const items = orderIds.length
+      ? await db
+          .select({
+            orderId: orderItems.orderId,
+            title: services.title,
+            quantity: orderItems.quantity,
+          })
+          .from(orderItems)
+          .leftJoin(services, eq(orderItems.serviceId, services.id))
+          .where(inArray(orderItems.orderId, orderIds))
+      : [];
+
+    const itemsByOrder = new Map<string, string[]>();
+    for (const item of items) {
+      if (!item.orderId || !item.title) continue;
+      const list = itemsByOrder.get(item.orderId);
+      if (list) list.push(item.title);
+      else itemsByOrder.set(item.orderId, [item.title]);
+    }
+
+    // ── Performance ────────────────────────────────────────────────────────
+    // Completion time is `updated_at - created_at` on completed orders: the
+    // status flip is what stamps updatedAt, so it doubles as «когда закрыл».
+    // The team average is the yardstick — a bare «5,7 дня» means nothing.
+    const durations = assignedOrders
+      .filter((o) => o.status === 'completed' && o.createdAt && o.updatedAt)
+      .map((o) => new Date(o.updatedAt!).getTime() - new Date(o.createdAt!).getTime())
+      .filter((ms) => ms > 0);
+    const avgHours = durations.length
+      ? Math.round((durations.reduce((a, b) => a + b, 0) / durations.length / 3_600_000) * 10) / 10
+      : null;
+
+    const [teamRow] = await db
+      .select({
+        hours: sql<string>`round(avg(extract(epoch from (${orders.updatedAt} - ${orders.createdAt})) / 3600)::numeric, 1)`,
+      })
+      .from(orders)
+      .where(and(eq(orders.status, 'completed'), sql`${orders.boosterId} is not null`));
+    const teamAvgHours = teamRow?.hours != null ? Number(teamRow.hours) : null;
+
+    // Customers: how many people, and how many came back for a second order.
+    const perCustomer = new Map<string, number>();
+    for (const o of assignedOrders) {
+      if (!o.userId) continue;
+      perCustomer.set(o.userId, (perCustomer.get(o.userId) ?? 0) + 1);
+    }
+    const repeatCustomers = [...perCustomer.values()].filter((n) => n > 1).length;
+
+    // Earnings per month, oldest first — six buckets, zero-filled.
+    const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const now = new Date();
+    const earningsByMonth: { month: string; earned: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      earningsByMonth.push({ month: monthKey(d), earned: 0 });
+    }
+    for (const o of assignedOrders) {
+      if (!o.createdAt || o.boosterEarning == null) continue;
+      const bucket = earningsByMonth.find((m) => m.month === monthKey(new Date(o.createdAt!)));
+      if (bucket) bucket.earned += Number(o.boosterEarning);
+    }
+
+    // What this booster actually works on, most frequent first.
+    const serviceCounts = new Map<string, number>();
+    for (const item of items) {
+      if (!item.title) continue;
+      serviceCounts.set(item.title, (serviceCounts.get(item.title) ?? 0) + (item.quantity || 1));
+    }
+    const topServices = [...serviceCounts.entries()]
+      .map(([title, count]) => ({ title, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
 
     // Metadata only — the files themselves are streamed via the documents route.
     const documents = await db
@@ -65,11 +144,21 @@ export async function GET(
       booster,
       linkedEmail: linkedUser?.email ?? null,
       documents,
-      orders: assignedOrders,
+      orders: assignedOrders.map((o) => ({
+        ...o,
+        items: itemsByOrder.get(o.id) ?? [],
+      })),
+      topServices,
+      earningsByMonth,
       stats: {
         totalOrders: assignedOrders.length,
         completedOrders: completedCount,
         activeOrders: activeCount,
+        totalEarned: assignedOrders.reduce((sum, o) => sum + Number(o.boosterEarning ?? 0), 0),
+        avgHours,
+        teamAvgHours,
+        customers: perCustomer.size,
+        repeatCustomers,
       },
     });
   } catch (error) {
@@ -84,7 +173,6 @@ export async function PATCH(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    // @ts-ignore
     if (session?.user?.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
@@ -168,7 +256,6 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    // @ts-ignore
     if (session?.user?.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }

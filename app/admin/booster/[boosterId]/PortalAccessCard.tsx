@@ -15,9 +15,12 @@ import { confirmDialog } from "@/store/useConfirm";
 export default function PortalAccessCard({
   boosterId,
   initialEmail,
+  bare = false,
 }: {
   boosterId: string;
   initialEmail: string | null;
+  /** Render without the card shell — the page groups it with the documents. */
+  bare?: boolean;
 }) {
   const [linkedEmail, setLinkedEmail] = useState<string | null>(initialEmail);
   const [email, setEmail] = useState("");
@@ -75,16 +78,22 @@ export default function PortalAccessCard({
     }
   };
 
-  return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-      <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center gap-2">
-        <KeyRound className="w-4 h-4 text-slate-400" />
-        Доступ в портал
-      </h2>
-      <p className="text-xs text-slate-400 mb-4">
-        Качер регистрируется на сайте как обычный пользователь и сообщает вам
-        email — привяжите его, и он получит доступ к /portal.
-      </p>
+  const body = (
+    <>
+      {!bare && (
+        <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center gap-2">
+          <KeyRound className="w-4 h-4 text-slate-400" />
+          Доступ в портал
+        </h2>
+      )}
+      {/* The explanation is onboarding copy — it only helps before the account
+          is linked, and for 5 of 7 boosters it already is. */}
+      {!linkedEmail && (
+        <p className="text-xs text-slate-400 mb-3">
+          Качер регистрируется на сайте как обычный пользователь и сообщает вам
+          email — привяжите его, и он получит доступ к /portal.
+        </p>
+      )}
 
       {error && (
         <div className="mb-3 px-4 py-2.5 rounded-xl bg-red-50 border border-red-100 text-sm text-red-700">
@@ -130,6 +139,11 @@ export default function PortalAccessCard({
           </button>
         </div>
       )}
-    </div>
+    </>
+  );
+
+  if (bare) return body;
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">{body}</div>
   );
 }

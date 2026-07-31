@@ -106,8 +106,9 @@ export default function InfoClient({ stats }: { stats?: SiteStats }) {
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
       <main className="site-gutter flex-1 pt-28 md:pt-32 pb-20">
-        <div className="site-container"><div className="mx-auto max-w-4xl">
+        <div className="site-container">
           <Breadcrumb />
+          <div className="mx-auto max-w-4xl">
 
           {/* Living header: the brand face + the mission, not a bare H1. */}
           <div

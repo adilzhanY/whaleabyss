@@ -30,11 +30,12 @@ export default function PublicOfferPage() {
       <Header onAuthOpen={() => setAuthOpen(true)} />
 
       <main className="site-gutter flex-1 pt-28 md:pt-32 pb-20">
+        <div className="site-container">
+        <Breadcrumb />
         <div
           className="mx-auto max-w-4xl bg-white p-8 sm:p-12 text-black"
           style={{ fontFamily: "var(--font-primary), sans-serif" }}
         >
-          <Breadcrumb />
           <div className="mb-12 text-center">
             <h1 className="text-4xl sm:text-5xl font-black text-blue-950 mb-4" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
               АГЕНТСКИЙ ДОГОВОР
@@ -804,6 +805,7 @@ export default function PublicOfferPage() {
               Публичной оферты — {LEGAL.OFFER_VERSION_DATE}.
             </p>
           </div>
+        </div>
         </div>
       </main>
 

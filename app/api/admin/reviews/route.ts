@@ -26,6 +26,8 @@ export async function GET() {
         // For fake reviews the author lives in columns; for real ones in `users`.
         userName: sql<string | null>`COALESCE(${reviews.authorName}, ${users.username})`,
         userAvatar: sql<string | null>`COALESCE(${reviews.authorAvatarUrl}, ${users.avatarUrl})`,
+        // Only real reviews have an account behind them; seeded ones don't.
+        userEmail: users.email,
       })
       .from(reviews)
       .leftJoin(users, sql`${reviews.userId} = ${users.id}`)

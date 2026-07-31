@@ -19,6 +19,7 @@ interface Review {
   createdAt: string;
   userName: string | null;
   userAvatar: string | null;
+  userEmail: string | null;
 }
 
 const REVIEWS_PER_PAGE = 10;
@@ -189,11 +190,31 @@ export default function AdminReviewsPage() {
       ),
     },
     {
+      // Same cell as the «Пользователь» column on /admin/users. A plain <img>
+      // rather than next/image: a seeded review carries whatever avatar URL the
+      // admin gave it, and an unexpected host would throw at render time.
       key: "userName",
       header: "Имя",
-      width: "w-28",
       render: (r) => (
-        <span className="text-xs text-slate-700">{r.userName || "Аноним"}</span>
+        <div className="flex min-w-0 items-center gap-3">
+          {r.userAvatar ? (
+            <img
+              src={r.userAvatar}
+              alt={r.userName ?? "Автор"}
+              className="h-9 w-9 flex-shrink-0 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-9 w-9 flex-shrink-0 select-none items-center justify-center rounded-full bg-slate-100 text-sm font-bold uppercase text-[#1e3a8a]">
+              {r.userName?.charAt(0) || "?"}
+            </div>
+          )}
+          <div className="min-w-0">
+            <div className="truncate font-medium text-slate-700">{r.userName || "Аноним"}</div>
+            <div className="truncate text-xs text-slate-500">
+              {r.userEmail ?? (r.userId ? "—" : "отзыв добавлен вручную")}
+            </div>
+          </div>
+        </div>
       ),
     },
     {
@@ -373,6 +394,10 @@ export default function AdminReviewsPage() {
         getRowKey={(r) => r.id}
         loading={loading}
         emptyMessage="Отзывы не найдены"
+        onRowClick={(r) => {
+          // Seeded reviews have no account behind them — nowhere to go.
+          if (r.userId) window.location.href = `/admin/users/${r.userId}`;
+        }}
         page={page}
         pageSize={REVIEWS_PER_PAGE}
         onPageChange={setPage}

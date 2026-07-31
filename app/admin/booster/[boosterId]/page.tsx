@@ -213,7 +213,6 @@ export default function BoosterDetailPage({
   ];
 
   const activeOrders = orders.filter((o) => o.status === "in_progress");
-  const balance = Number(b.balance);
 
   return (
     <div className="max-w-7xl mx-auto space-y-4">
@@ -291,7 +290,6 @@ export default function BoosterDetailPage({
 
         <div className="relative mt-5 flex flex-wrap border-t border-white/20 pt-3">
           <HeroStat value={rub(stats.totalEarned)} label="Заработал всего" />
-          <HeroStat value={rub(balance)} label="К выплате" />
           <HeroStat
             value={String(stats.totalOrders)}
             label="Заказов"

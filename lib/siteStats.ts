@@ -2,6 +2,8 @@ import { db } from '@/lib/db';
 import { orders, reviews, services } from '@/lib/schema';
 import { and, eq, isNotNull, sql } from 'drizzle-orm';
 import { cache } from 'react';
+import { notTestOrder } from '@/lib/testOrders';
+// The public «N+» counter lives in lib/completedOrders (client-safe module).
 
 /**
  * Real numbers for the homepage trust strip.
@@ -45,7 +47,9 @@ export const getSiteStats = cache(async (): Promise<SiteStats> => {
         completed: sql<number>`count(*) filter (where ${orders.status} = 'completed')::int`,
       })
       .from(orders)
-      .where(isNotNull(orders.paymentId));
+      // notTestOrder: admin rehearsals have paymentId='TEST' and were being
+      // counted as real orders here — the one place that must never inflate.
+      .where(and(isNotNull(orders.paymentId), notTestOrder));
 
     const [priceRow] = await db
       .select({ min: sql<string | null>`min(${services.price}::numeric)` })

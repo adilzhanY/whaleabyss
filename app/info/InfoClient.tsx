@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { LEGAL, getPartyLabel } from "@/lib/legal";
 import type { SiteStats } from "@/lib/siteStats";
+import { displayCompletedOrders } from "@/lib/completedOrders";
 
 /** Russian count forms: 1 заказ / 2-4 заказа / 5+ заказов. */
 function plural(n: number, one: string, few: string, many: string) {
@@ -79,13 +80,9 @@ export default function InfoClient({ stats }: { stats?: SiteStats }) {
   const tiles: { value: string; caption: string }[] = [];
   if (stats?.completedOrders) {
     tiles.push({
-      value: String(stats.completedOrders),
-      caption: plural(
-        stats.completedOrders,
-        "выполненный заказ",
-        "выполненных заказа",
-        "выполненных заказов"
-      ),
+      // Same «N+» figure as the homepage trust strip — one function, one claim.
+      value: displayCompletedOrders(stats.completedOrders),
+      caption: "выполненных заказов",
     });
   }
   if (stats?.rating != null && stats.reviewCount > 0) {

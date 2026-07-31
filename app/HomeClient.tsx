@@ -11,6 +11,7 @@ import {
 	CheckCircle2,
 } from "lucide-react";
 import type { SiteStats } from "@/lib/siteStats";
+import { displayCompletedOrders } from "@/lib/completedOrders";
 import type { CategoryTile } from "@/lib/homeShowcase";
 import type { ServiceItem } from "@/lib/services";
 import Header from "@/components/Header";
@@ -157,7 +158,7 @@ export default function HomeClient({
 	const trustSignals: { icon: React.ReactNode; label: string }[] = [];
 	if (stats?.rating != null && stats.reviewCount > 0) {
 		trustSignals.push({
-			icon: <Star className="h-4 w-4 fill-amber-400 text-amber-400" />,
+			icon: <Star className="h-5 w-5 fill-amber-400 text-amber-400" />,
 			label: `${stats.rating.toFixed(1).replace(".", ",")} · ${stats.reviewCount} ${plural(
 				stats.reviewCount,
 				"отзыв",
@@ -168,17 +169,14 @@ export default function HomeClient({
 	}
 	if (stats?.completedOrders) {
 		trustSignals.push({
-			icon: <CheckCircle2 className="h-4 w-4 text-emerald-600" />,
-			label: `${stats.completedOrders} ${plural(
-				stats.completedOrders,
-				"выполненный заказ",
-				"выполненных заказа",
-				"выполненных заказов",
-			)}`,
+			icon: <CheckCircle2 className="h-5 w-5 text-emerald-600" />,
+			// Live count + pre-site orders, floored to a round «N+» — always
+			// a round fifty, so the genitive plural is always right.
+			label: `${displayCompletedOrders(stats.completedOrders)} выполненных заказов`,
 		});
 	}
 	trustSignals.push({
-		icon: <CreditCard className="h-4 w-4 text-slate-400" />,
+		icon: <CreditCard className="h-5 w-5 text-slate-400" />,
 		label: "Оплата через СБП",
 	});
 
@@ -462,9 +460,9 @@ export default function HomeClient({
 									{/* Trust strip. Every figure comes from lib/siteStats (live DB) — a
 									    signal is omitted rather than rounded up or invented. */}
 									{trustSignals.length > 0 && (
-										<ul className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-slate-600">
+										<ul className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-3 text-[15px] font-semibold text-slate-700">
 											{trustSignals.map((s, i) => (
-												<li key={i} className="flex items-center gap-1.5">
+												<li key={i} className="flex items-center gap-2">
 													{s.icon}
 													<span>{s.label}</span>
 												</li>

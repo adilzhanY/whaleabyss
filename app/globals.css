@@ -1746,6 +1746,14 @@ html.site-dark body:has(#site-header) {
   .text-amber-700 { color: #fbbf24; }
   /* text-blue-700 is already remapped with the blue family above. */
 
+  /* Amber alert boxes (the /cart rank + quest warnings). The light theme puts
+     near-brown text on a pale fill; unremapped, amber-800/900 is all but
+     invisible on the dark fill. Go one step LIGHTER than the -600/-700 mapping
+     above so the strongest light shade stays the strongest dark one. */
+  .bg-amber-100 { background-color: rgba(245, 158, 11, 0.22); }
+  .border-amber-200 { border-color: rgba(251, 191, 36, 0.4); }
+  .text-amber-800, .text-amber-900 { color: #fcd34d; }
+
   /* ── Brand hexes used as arbitrary-value utilities ─────────────────────── */
   .text-\[\#1e3a8a\] { color: #f5f5f5; }
   .text-\[\#0B5191\], .hover\:text-\[\#0B5191\]:hover { color: #60a5fa; }

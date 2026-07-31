@@ -673,10 +673,11 @@ export default function CartPage() {
                               <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
                                 <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                                 <div className="text-xs text-amber-900 leading-relaxed">
-                                  Не указано, что делать с заданиями региона — без этого заказ не оформится.
+                                  <p>Не указано, что делать с заданиями региона — без этого заказ не оформится.</p>
                                   <button
+                                    type="button"
                                     onClick={() => repromptAddonChoice(item.id)}
-                                    className="mt-2 block rounded-lg border border-amber-500 bg-white px-3 py-1 text-[11px] font-bold text-amber-800 hover:bg-amber-100 transition-colors cursor-pointer"
+                                    className="btn-primary btn-sm mt-2.5"
                                   >
                                     Указать
                                   </button>

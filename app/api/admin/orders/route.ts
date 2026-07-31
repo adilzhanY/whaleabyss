@@ -89,6 +89,7 @@ export async function GET(req: NextRequest) {
         isTestPayment: orders.isTestPayment,
         username: users.username,
         email: users.email,
+        avatarUrl: users.avatarUrl,
         telegramUsername: users.telegramUsername,
         boosterId: orders.boosterId,
         boosterFirstName: boosters.firstName,

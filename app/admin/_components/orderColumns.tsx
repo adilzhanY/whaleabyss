@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { ExternalLink } from "lucide-react";
 import type { Column } from "./DataTable";
 import OrderStatusCell from "./OrderStatusCell";
 import OrderBoosterCell from "./OrderBoosterCell";
@@ -21,6 +20,7 @@ export interface OrderRow {
   isTestPayment: boolean | null;
   username: string | null;
   email: string | null;
+  avatarUrl: string | null;
   telegramUsername: string | null;
   boosterId: string | null;
   boosterFirstName: string | null;
@@ -106,30 +106,54 @@ export function buildOrderColumns({
       mobileLabel: "Позиции",
       width: "w-44",
       mobileFullWidth: true,
-      render: (o) => <OrderItemsCell items={o.items} />,
+      render: (o) => (
+        <div onClick={(e) => e.stopPropagation()}>
+          <OrderItemsCell items={o.items} />
+        </div>
+      ),
     },
     {
       key: "customer",
       header: "Клиент",
       mobileLabel: "Клиент",
-      width: "w-44",
+      mobileFullWidth: true,
+      width: "w-52",
+      // Same cell as the «Пользователь» column on /admin/users, and it is its
+      // own click target: this one opens the customer, the rest of the row
+      // still opens the order.
       render: (o) => (
-        <div className="md:text-left text-right">
-          <div className="font-medium flex items-center gap-1.5 md:justify-start justify-end">
-            <span className="truncate">{o.username ?? "— guest —"}</span>
-            {o.userId && (
-              <Link
-                href={`/admin/users/${o.userId}`}
-                title="Открыть профиль клиента"
-                onClick={(e) => e.stopPropagation()}
-                className="text-slate-400 hover:text-indigo-600 transition-colors shrink-0"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-              </Link>
+        <div
+          onClick={(e) => {
+            if (!o.userId) return;
+            e.stopPropagation();
+            window.location.href = `/admin/users/${o.userId}`;
+          }}
+          title={o.userId ? "Открыть профиль клиента" : undefined}
+          className={`group/customer flex min-w-0 items-center gap-3 ${o.userId ? "cursor-pointer" : ""}`}
+        >
+          {o.avatarUrl ? (
+            // Plain <img>: an avatar can also come from a Yandex ID account, and
+            // next/image would need every such host whitelisted up front.
+            <img
+              src={o.avatarUrl}
+              alt={o.username ?? "Клиент"}
+              className="h-9 w-9 flex-shrink-0 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-9 w-9 flex-shrink-0 select-none items-center justify-center rounded-full bg-slate-100 text-sm font-bold uppercase text-[#1e3a8a]">
+              {o.username?.charAt(0) || "?"}
+            </div>
+          )}
+          <div className="min-w-0">
+            <div className="truncate font-medium text-slate-700 group-hover/customer:text-blue-700">
+              {o.username ?? "— гость —"}
+            </div>
+            <div className="truncate text-xs text-slate-500">{o.email ?? "—"}</div>
+            {o.telegramUsername && (
+              <div onClick={(e) => e.stopPropagation()} className="inline-flex">
+                <CopyableTelegram username={o.telegramUsername} />
+              </div>
             )}
-          </div>
-          <div className="md:flex md:justify-start flex justify-end">
-            <CopyableTelegram username={o.telegramUsername} />
           </div>
         </div>
       ),
@@ -139,7 +163,7 @@ export function buildOrderColumns({
       header: "Бустер",
       mobileLabel: "Бустер",
       render: (o) => (
-        <div className="md:block flex justify-end">
+        <div className="md:block flex justify-end" onClick={(e) => e.stopPropagation()}>
           <OrderBoosterCell
             orderId={o.id}
             status={o.status ?? "pending"}
@@ -161,7 +185,7 @@ export function buildOrderColumns({
       header: "На акке",
       mobileLabel: "На аккаунте",
       render: (o) => (
-        <div className="md:block flex justify-end">
+        <div className="md:block flex justify-end" onClick={(e) => e.stopPropagation()}>
           <OrderOnlineToggle
             orderId={o.id}
             status={o.status ?? "pending"}
@@ -178,11 +202,13 @@ export function buildOrderColumns({
       mobileLabel: "Статус",
       width: "w-20",
       render: (o) => (
-        <OrderStatusCell
-          orderId={o.id}
-          status={o.status ?? "pending"}
-          onResult={(newStatus) => onOrderChange(o.id, { status: newStatus })}
-        />
+        <div onClick={(e) => e.stopPropagation()}>
+          <OrderStatusCell
+            orderId={o.id}
+            status={o.status ?? "pending"}
+            onResult={(newStatus) => onOrderChange(o.id, { status: newStatus })}
+          />
+        </div>
       ),
     },
     {

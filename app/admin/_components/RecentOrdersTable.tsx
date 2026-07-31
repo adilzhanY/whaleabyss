@@ -30,6 +30,9 @@ export default function RecentOrdersTable({
       columns={columns}
       data={orders}
       getRowKey={(o) => o.id}
+        onRowClick={(o) => {
+          window.location.href = `/admin/orders/${o.id}`;
+        }}
       rowClassName={(o) => (isLessonOrder(o) ? LESSON_ROW_CLASS : "")}
       emptyMessage="Пока нет заказов."
     />

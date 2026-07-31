@@ -176,6 +176,9 @@ export default function AdminOrdersPage() {
         data={orders}
         totalCount={total}
         getRowKey={(o) => o.id}
+        onRowClick={(o) => {
+          window.location.href = `/admin/orders/${o.id}`;
+        }}
         rowClassName={(o) => (isLessonOrder(o) ? LESSON_ROW_CLASS : "")}
         loading={loading && orders.length === 0}
         emptyMessage="Заказы не найдены"

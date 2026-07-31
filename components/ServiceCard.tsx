@@ -7,6 +7,8 @@ import Link from "next/link";
 import { ServiceItem } from "@/lib/services";
 import { isCategoryOnDiscount, calculateDiscountedPrice, getActiveEvent } from "@/lib/events";
 import { parseMinAdventureRank } from "@/lib/adventureRank";
+import { questRegionLabel } from "@/lib/questRegions";
+import QuestCover from "@/components/QuestCover";
 
 interface ServiceCardProps {
   item: ServiceItem;
@@ -29,6 +31,19 @@ export default function ServiceCard({ item, categorySlug, isBestseller }: Servic
   const { name: displayName, full: isHundred } = splitName(item.subtitle || item.title || "");
   const { add: addToCartWithAddons, pending } = useAddToCartWithAddons();
   const minRank = parseMinAdventureRank(item.description);
+
+  // Quest services have no artwork of their own. The card draws a typographic
+  // cover live (QuestCover) instead of showing a picture; the generated region
+  // tile in `background` stays for every compact surface — including the cart
+  // line this card creates below, deliberately.
+  //
+  // On such a card the name IS the artwork, so printing it again underneath
+  // would say the same thing twice. The line is reused for the region instead;
+  // it must keep the reserved two-line height, or the price rows stop lining up
+  // across a grid row. The category chip is dropped for the same reason: it sits
+  // bottom-left, exactly where the cover sets the quest name.
+  const hasQuestCover = Boolean(item.questRegion);
+  const regionLabel = questRegionLabel(item.questRegion);
 
   // Check if this category is on discount
   const isOnDiscount = categorySlug ? isCategoryOnDiscount(categorySlug) : false;
@@ -74,23 +89,29 @@ export default function ServiceCard({ item, categorySlug, isBestseller }: Servic
         className="relative mb-3 sm:mb-4 w-full overflow-hidden shrink-0 h-30 sm:h-45"
         style={{
           borderRadius: "0.875rem",
-          background: item.background
-            ? `url('${item.background}') ${item.background.includes('mondstadt_plot.jpg')
-              ? 'center 55% / 120% no-repeat'
-              : 'center / cover no-repeat'
-            }`
-            : (item.gradient || "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"),
+          background: hasQuestCover
+            ? undefined
+            : item.background
+              ? `url('${item.background}') ${item.background.includes('mondstadt_plot.jpg')
+                ? 'center 55% / 120% no-repeat'
+                : 'center / cover no-repeat'
+              }`
+              : (item.gradient || "linear-gradient(135deg, #60a5fa 0%, #1e40af 50%, #1e3a8a 100%)"),
         }}
       >
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{ background: "linear-gradient(to top, rgba(9, 14, 23, 0.4), transparent 45%)" }}
-        />
+        {hasQuestCover ? (
+          <QuestCover region={item.questRegion!} name={displayName} />
+        ) : (
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{ background: "linear-gradient(to top, rgba(9, 14, 23, 0.4), transparent 45%)" }}
+          />
+        )}
         {/* These three sit on the artwork, so they carry their own colours
             instead of the theme tokens: the image behind them is arbitrary and
             a soft/muted chip would be unreadable on a light screenshot. */}
-        {item.categoryTitle && (
+        {item.categoryTitle && !hasQuestCover && (
           <Chip
             size="sm"
             className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] bg-slate-950/55 text-[10px] font-bold text-white backdrop-blur-sm sm:text-[11px]"
@@ -125,9 +146,15 @@ export default function ServiceCard({ item, categorySlug, isBestseller }: Servic
       <div className="flex-1 mb-3 sm:mb-4 min-w-0"
         style={{ fontFamily: "var(--font-primary), sans-serif" }}>
         <div className="flex items-start gap-1.5">
-          <p className="min-w-0 flex-1 text-[15px] sm:text-base font-semibold leading-snug line-clamp-2 min-h-[2.75em] text-slate-900">
-            {displayName}
-          </p>
+          {hasQuestCover ? (
+            <p className="min-w-0 flex-1 text-[15px] sm:text-base font-medium leading-snug line-clamp-2 min-h-[2.75em] text-slate-500">
+              {regionLabel ? `${regionLabel} · задание` : "Задание"}
+            </p>
+          ) : (
+            <p className="min-w-0 flex-1 text-[15px] sm:text-base font-semibold leading-snug line-clamp-2 min-h-[2.75em] text-slate-900">
+              {displayName}
+            </p>
+          )}
           {/* Solid `default` rather than `soft`: the soft token is 50%
               transparent, which on the white card reads as bare text. */}
           {isHundred && (

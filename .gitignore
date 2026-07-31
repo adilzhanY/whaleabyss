@@ -52,3 +52,6 @@ LEARNING_PATH.md
 
 # lavish review artifacts
 .lavish/
+
+# generated quest covers (review output; the artwork of record lives in S3)
+scripts/covers/out/

@@ -12,6 +12,13 @@ export interface ServiceItem {
   description: string;
   gradient: string;
   background: string;
+  /**
+   * Genshin region key (`lib/questRegions.json`), set for quest services only.
+   * Quests have no artwork of their own: `background` holds a generated region
+   * tile for every compact surface, and the catalogue card uses this key to draw
+   * a typographic cover live instead (`components/QuestCover.tsx`).
+   */
+  questRegion?: string;
   categorySlug?: string;
   isWide?: boolean;
   isTall?: boolean;
@@ -67,7 +74,10 @@ const gradients = [
   'linear-gradient(135deg, #818cf8 0%, #4338ca 50%, #312e81 100%)'
 ];
 
-function enrichItemUI(item: any, index: number): Omit<ServiceItem, 'id' | 'title' | 'subtitle' | 'price' | 'description' | 'background'> {
+function enrichItemUI(
+  item: { title: string; subtitle: string | null },
+  index: number,
+): Omit<ServiceItem, 'id' | 'title' | 'subtitle' | 'price' | 'description' | 'background'> {
   const nameLower = (item.subtitle || item.title).toLowerCase();
 
   const is_wide = item.subtitle?.includes('+') ||
@@ -134,7 +144,7 @@ export const getServiceCategories = cache(async (): Promise<ServiceCategory[]> =
   return allCategories.map(cat => {
     // The «actual» category also gathers services flagged featuredInActual,
     // regardless of their native category (spotlight without re-homing them).
-    let catServices =
+    const catServices =
       cat.slug === 'actual'
         ? allServices.filter(s => s.categoryId === cat.id || s.featuredInActual)
         : allServices.filter(s => s.categoryId === cat.id);
@@ -165,6 +175,7 @@ export const getServiceCategories = cache(async (): Promise<ServiceCategory[]> =
           price: parseFloat(s.price),
           description: s.description || '',
           background: s.imageUrl || '',
+          questRegion: s.questRegion || undefined,
           categorySlug: (s.categoryId && catSlugById.get(s.categoryId)) || cat.slug,
           categoryTitle: (s.categoryId && catTitleById.get(s.categoryId)) || cat.title,
           hasQuestAddons: questGatedIds.has(s.id),

@@ -144,3 +144,19 @@ CREATE TABLE IF NOT EXISTS oauth_accounts (
   CONSTRAINT oauth_accounts_provider_account_unique UNIQUE (provider, provider_account_id)
 );
 CREATE INDEX IF NOT EXISTS oauth_accounts_user_id_idx ON oauth_accounts(user_id);
+
+-- 2026-07-31: quest artwork. Quests have no artwork of their own, so
+-- scripts/covers/build-quest-covers.mjs generates a darkened region tile into
+-- image_url, and quest_region stores the Genshin region resolved once from
+-- service_addons (so unlinking an addon later cannot silently change the art).
+-- The catalogue card draws its own typographic cover from quest_region
+-- (components/QuestCover.tsx).
+ALTER TABLE services ADD COLUMN IF NOT EXISTS quest_region varchar(32);
+
+-- Same day, undone: cover_url held a generated 1200x750 typographic cover for
+-- the catalogue card. It cannot work — that card's picture box is a fixed height
+-- at a fluid width, so its aspect ratio changes with every breakpoint and column
+-- count, and `background-size: cover` ate the sides of the quest name on a
+-- 5-column desktop grid. Replaced by live rendering, which fits any shape.
+ALTER TABLE services ADD COLUMN IF NOT EXISTS cover_url varchar(255);
+ALTER TABLE services DROP COLUMN IF EXISTS cover_url;

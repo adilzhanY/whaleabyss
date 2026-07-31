@@ -668,6 +668,63 @@ h6 {
 }
 
 /* ---------------------------------------------------------------------------
+ * Quest cover (components/QuestCover.tsx) — artwork for services that have none.
+ *
+ * Everything is sized in `cqi` (1% of the picture box's width) rather than in px
+ * or vw, because the box is a FIXED HEIGHT at a FLUID WIDTH: its aspect ratio
+ * changes with every breakpoint and column count. A generated image was tried
+ * first and lost the sides of the name on a 5-column desktop grid while looking
+ * right on a 2-column phone. Container units make the type belong to the card,
+ * so one implementation fits every shape.
+ *
+ * `container-type` sits on the plate, so only DESCENDANTS may use cqi — the
+ * plate's own padding is therefore a percentage (which resolves against its
+ * width too, so it tracks the same way).
+ * ------------------------------------------------------------------------- */
+.quest-cover {
+  position: absolute;
+  inset: 0;
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 7%;
+  overflow: hidden;
+  background:
+    radial-gradient(76% 60% at 88% 4%, color-mix(in srgb, var(--el) 34%, transparent) 0%, transparent 70%),
+    linear-gradient(155deg, var(--d1) 0%, var(--d2) 100%);
+}
+/* Oversized symbol behind the text. Fills the plate on a short name without
+   ever competing with a long one. */
+.quest-cover__watermark {
+  position: absolute;
+  top: 3%;
+  right: -7%;
+  width: 54cqi;
+  height: auto;
+  color: var(--el);
+  opacity: 0.1;
+  pointer-events: none;
+}
+.quest-cover__name {
+  margin: 0;
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+/* CSS cannot measure text, so the step comes from the name's length — the same
+   job the generator did by rendering and measuring, minus the render. */
+.quest-cover[data-size="lg"] .quest-cover__name { font-size: clamp(1rem, 10.5cqi, 2.125rem); }
+.quest-cover[data-size="md"] .quest-cover__name { font-size: clamp(0.9375rem, 9cqi, 1.875rem); }
+.quest-cover[data-size="sm"] .quest-cover__name { font-size: clamp(0.8125rem, 7.5cqi, 1.5rem); }
+.quest-cover[data-size="xs"] .quest-cover__name { font-size: clamp(0.75rem, 6.5cqi, 1.25rem); }
+
+/* ---------------------------------------------------------------------------
  * Liquid Glass — наша интерпретация Apple Liquid Glass.
  *
  * Слои (важен порядок):

@@ -110,7 +110,7 @@ export async function PATCH(
     update.updatedAt = new Date();
     [updated] = await db
       .update(services)
-      .set(update as any)
+      .set(update as Partial<typeof services.$inferInsert>)
       .where(eq(services.id, id))
       .returning();
   } else {

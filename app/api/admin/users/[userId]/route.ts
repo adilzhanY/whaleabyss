@@ -14,7 +14,8 @@ import {
   promocodes,
   boosters,
 } from '@/lib/schema';
-import { eq, inArray, desc } from 'drizzle-orm';
+import { and, eq, inArray, desc } from 'drizzle-orm';
+import { notTestOrder } from '@/lib/testOrders';
 
 /** Orders that represent real money: everything except abandoned/cancelled ones. */
 const REVENUE_STATUSES = new Set(['paid', 'in_progress', 'completed', 'refunded']);
@@ -56,7 +57,9 @@ export async function GET(
           })
           .from(orders)
           .leftJoin(boosters, eq(orders.boosterId, boosters.id))
-          .where(eq(orders.userId, userId))
+          // Test orders are visible to the customer, but they are not this
+          // person's purchase history as far as the business is concerned.
+          .where(and(eq(orders.userId, userId), notTestOrder))
           .orderBy(desc(orders.createdAt)),
 
         db

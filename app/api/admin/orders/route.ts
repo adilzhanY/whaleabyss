@@ -9,6 +9,7 @@ import {
   promocodeUsage,
 } from '@/lib/schema';
 import { and, asc, desc, eq, gte, ilike, inArray, lte, or, sql, type SQL } from 'drizzle-orm';
+import { notTestOrder } from '@/lib/testOrders';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { validatePromocodeForUser } from '@/lib/promocodeValidation';
@@ -66,7 +67,10 @@ export async function GET(req: NextRequest) {
         )!,
       );
     }
-    const whereExpr = conditions.length ? and(...conditions) : undefined;
+    // Test orders live on /admin/testing only — never in the real list.
+    conditions.push(notTestOrder as SQL);
+
+    const whereExpr = and(...conditions);
 
     // Total matching rows (same filters, joined to users for name/email search),
     // for the pagination control.

@@ -17,6 +17,7 @@ import type { OrderRow } from "./_components/orderColumns";
 import PeriodSelect from "./_components/PeriodSelect";
 import PageHeader from "./_components/PageHeader";
 import { LESSON_CUTOFF, OWNER_BOOSTER_ID } from "./_components/lessonOrders";
+import { notTestOrder } from "@/lib/testOrders";
 import {
   buildWindow,
   daysInMonth,
@@ -56,8 +57,10 @@ const realCommission = sql<string>`coalesce(sum(case when ${orders.status} = 're
 // contains written-off ones.
 const revenueOrderCount = sql<number>`count(*) filter (where ${orders.status} <> 'refunded' and ${orders.createdAt} >= ${LESSON_CUTOFF})::int`;
 
+// Every dashboard figure is scoped by this, so `notTestOrder` here is what
+// keeps admin test orders out of revenue, profit, counts and charts at once.
 function inWindow(win: PeriodWindow) {
-  return and(gte(orders.createdAt, win.start), lt(orders.createdAt, win.end));
+  return and(gte(orders.createdAt, win.start), lt(orders.createdAt, win.end), notTestOrder);
 }
 
 /**
@@ -96,7 +99,7 @@ async function getStats(win: PeriodWindow) {
   const [pending] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(orders)
-    .where(inArray(orders.status, ["paid", "in_progress"]));
+    .where(and(inArray(orders.status, ["paid", "in_progress"]), notTestOrder));
 
   const [userCount] = await db
     .select({ count: sql<number>`count(*)::int` })
@@ -311,6 +314,7 @@ async function getRecentOrders(): Promise<OrderRow[]> {
     .from(orders)
     .leftJoin(users, eq(orders.userId, users.id))
     .leftJoin(boosters, eq(orders.boosterId, boosters.id))
+    .where(notTestOrder)
     .orderBy(desc(orders.createdAt))
     .limit(8);
 

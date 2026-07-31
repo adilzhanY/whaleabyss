@@ -30,6 +30,7 @@ export async function creditBoosterForCompletedOrder(orderId: string): Promise<v
       )`,
       status: orders.status,
       boosterEarning: orders.boosterEarning,
+      isTestPayment: orders.isTestPayment,
       commissionPercent: boosters.commissionPercent,
     })
     .from(orders)
@@ -40,7 +41,9 @@ export async function creditBoosterForCompletedOrder(orderId: string): Promise<v
     !row ||
     row.status !== 'completed' ||
     !row.boosterId ||
-    row.boosterEarning != null // already credited
+    row.boosterEarning != null || // already credited
+    // A test order is not money: completing one must never move a real balance.
+    row.isTestPayment === true
   ) {
     return;
   }

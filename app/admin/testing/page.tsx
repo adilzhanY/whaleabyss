@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import Link from "next/link";
 import { CreditCard, ArrowRight } from "lucide-react";
 import TestingClient from "./TestingClient";
+import TestOrdersTable from "./TestOrdersTable";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +55,8 @@ export default async function AdminTestingPage() {
       )}
 
       <TestingClient services={testServices} />
+
+      <TestOrdersTable />
     </div>
   );
 }

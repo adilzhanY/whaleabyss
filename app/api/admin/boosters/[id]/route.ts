@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { boosters, boosterDocuments, orders, orderItems, services, users } from '@/lib/schema';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
+import { notTestOrder } from '@/lib/testOrders';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
@@ -44,7 +45,7 @@ export async function GET(
       })
       .from(orders)
       .leftJoin(users, eq(orders.userId, users.id))
-      .where(eq(orders.boosterId, id))
+      .where(and(eq(orders.boosterId, id), notTestOrder))
       .orderBy(desc(orders.createdAt));
 
     const completedCount = assignedOrders.filter((o) => o.status === 'completed').length;
@@ -91,7 +92,7 @@ export async function GET(
         hours: sql<string>`round(avg(extract(epoch from (${orders.updatedAt} - ${orders.createdAt})) / 3600)::numeric, 1)`,
       })
       .from(orders)
-      .where(and(eq(orders.status, 'completed'), sql`${orders.boosterId} is not null`));
+      .where(and(eq(orders.status, 'completed'), sql`${orders.boosterId} is not null`, notTestOrder));
     const teamAvgHours = teamRow?.hours != null ? Number(teamRow.hours) : null;
 
     // Customers: how many people, and how many came back for a second order.

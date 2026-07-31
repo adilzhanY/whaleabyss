@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { notTestOrder } from '@/lib/testOrders';
 import { boosters, orders } from '@/lib/schema';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { getServerSession } from 'next-auth/next';
@@ -21,7 +22,7 @@ export async function GET() {
         const [{ count }] = await db
           .select({ count: sql<number>`count(*)` })
           .from(orders)
-          .where(and(eq(orders.boosterId, b.id), eq(orders.status, 'completed')));
+          .where(and(eq(orders.boosterId, b.id), eq(orders.status, 'completed'), notTestOrder));
         return { ...b, completedOrders: Number(count || 0) };
       })
     );

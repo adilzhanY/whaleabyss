@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { orders, users } from '@/lib/schema';
+import { notTestOrder } from '@/lib/testOrders';
 import { and, desc, eq, isNull, ne, or } from 'drizzle-orm';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
@@ -31,7 +32,9 @@ export async function GET() {
       .where(
         and(
           eq(orders.status, 'paid'),
-          or(isNull(orders.paymentId), ne(orders.paymentId, 'MANUAL'))
+          or(isNull(orders.paymentId), ne(orders.paymentId, 'MANUAL')),
+          // A test order must never ring the bell or raise a toast.
+          notTestOrder
         )
       )
       .orderBy(desc(orders.updatedAt))

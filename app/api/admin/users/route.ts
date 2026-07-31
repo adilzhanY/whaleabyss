@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users, orders } from '@/lib/schema';
 import { and, asc, desc, eq, gte, ilike, inArray, lte, or, sql, type SQL } from 'drizzle-orm';
+import { notTestOrder } from '@/lib/testOrders';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
@@ -31,7 +32,7 @@ function spentAggregate(value: SQL) {
   return db
     .select({ value })
     .from(orders)
-    .where(and(eq(orders.userId, users.id), inArray(orders.status, SPENT_STATUSES)));
+    .where(and(eq(orders.userId, users.id), inArray(orders.status, SPENT_STATUSES), notTestOrder));
 }
 
 export async function GET(req: NextRequest) {

@@ -551,6 +551,27 @@ const result = await db.select().from(services).where(eq(services.id, id));
   bot relays to the booster's portal page, template replies) — keep portal APIs
   extensible for that.
 
+**Test Orders (`orders.isTestPayment = true`):**
+- Created by the admin-only «Оформить как тестовый» button on `/cart`
+  (`POST /api/admin/testing/order`): the current cart becomes a **paid order with no
+  payment**, so an admin can see what an active order looks like to the CUSTOMER — the
+  active-boost card, «Мои заказы», the status flow — without spending money.
+  `paymentId = 'TEST'` (not NULL, so the cleanup job never touches it; not `'MANUAL'`,
+  which marks a real off-site sale that DOES count as revenue).
+- **The flag used to be decorative** — it only painted a «ТЕСТ» badge in the admin orders
+  table while every money query counted such an order as real. `lib/testOrders.ts` now owns
+  the rule (`notTestOrder` / `isTestOrder`), and it is applied to: the admin orders list,
+  `/api/admin/orders/recent-paid` (the toast + «kaching»), every dashboard query, the users
+  list and user card, the booster page and roster counts, the booster **portal**, and
+  `creditBoosterForCompletedOrder` — completing a test order must never move a real balance.
+  **Any new report, notification or payout has to filter with `notTestOrder`.**
+- Deliberately NOT filtered: `/api/user/orders` and the customer-facing pages. Seeing the
+  order there is the entire point.
+- No Telegram message and no customer e-mail are sent — the route simply doesn't call them.
+- The only place test orders are listed is `/admin/testing` (`TestOrdersTable`), built from
+  the same `buildOrderColumns` as `/admin/orders`, so status changes, booster assignment and
+  the «на акке» toggle work identically (they all go through `PATCH /api/admin/orders/[id]`).
+
 **Manual Orders (off-site payments):**
 - `/admin/orders/new` ("Добавить вручную" button) lets an admin create a **paid** order for a
   customer who paid directly. `POST /api/admin/orders` computes the total **server-side** from

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { useCart, type CartItem } from "@/store/useCart";
 import Header from "@/components/Header";
 import {
@@ -14,6 +15,7 @@ import {
   MessageCircle,
   CheckCircle2,
   CreditCard,
+  FlaskConical,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -126,12 +128,16 @@ const coverStyle = (image?: string) =>
 
 export default function CartPage() {
   const { data: session } = useSession();
-  const { items, removeFromCart, updateQuantity, cartTotal } = useCart();
+  const { items, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
+  const router = useRouter();
+  const isAdmin = session?.user?.role === "admin";
   const openAddonPrompt = useAddonPrompt((s) => s.open);
   const { add: addRecommended, pending: addPending } = useAddToCartWithAddons();
   const total = cartTotal();
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  // Admin-only test purchase (see the button near the checkout CTA).
+  const [testOrderPending, setTestOrderPending] = useState(false);
   const [isDataSecurityModalOpen, setIsDataSecurityModalOpen] = useState(false);
   const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
 
@@ -353,6 +359,44 @@ export default function CartPage() {
       return true;
     } catch {
       return false;
+    }
+  };
+
+  /**
+   * ADMIN ONLY: turn this cart into a paid order without paying, so the admin
+   * can see what an active order looks like from the customer's side. The order
+   * is marked `isTestPayment` and is filtered out of every report, the orders
+   * list, Telegram and the admin toast — it only shows up on /admin/testing.
+   */
+  const handleTestOrder = async () => {
+    const ok = await confirmDialog({
+      title: "Оформить как тестовый заказ?",
+      description:
+        "Заказ будет создан без оплаты и появится только в /admin/testing. Ни в «Заказы», ни в дашборд, ни в Telegram он не попадёт. Корзина очистится.",
+      confirmLabel: "Оформить тестовый",
+    });
+    if (!ok) return;
+
+    setTestOrderPending(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/testing/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || "Не удалось создать тестовый заказ");
+        return;
+      }
+      // The server already emptied cart_items; clear the browser copy too.
+      clearCart();
+      router.push("/orders");
+    } catch {
+      setError("Ошибка соединения с сервером");
+    } finally {
+      setTestOrderPending(false);
     }
   };
 
@@ -986,6 +1030,17 @@ export default function CartPage() {
                   >
                     {isLoading ? "Обработка..." : "Перейти к оплате"}
                   </button>
+
+                  {isAdmin && (
+                    <button
+                      disabled={testOrderPending}
+                      onClick={handleTestOrder}
+                      className="btn-outline w-full mt-2 text-sm"
+                    >
+                      <FlaskConical className="h-4 w-4" />
+                      {testOrderPending ? "Создаём…" : "Оформить как тестовый"}
+                    </button>
+                  )}
 
                   <button
                     onClick={() => setIsDataSecurityModalOpen(true)}

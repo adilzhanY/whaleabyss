@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { orders, orderItems, services } from '@/lib/schema';
-import { desc, eq, inArray } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
+import { notTestOrder } from '@/lib/testOrders';
 import { getBoosterContext, expectedCut } from '@/lib/portalAuth';
 
 /**
@@ -31,7 +32,8 @@ export async function GET() {
         updatedAt: orders.updatedAt,
       })
       .from(orders)
-      .where(eq(orders.boosterId, booster.id))
+            // A test order is an admin rehearsal — never show it to a real booster.
+      .where(and(eq(orders.boosterId, booster.id), notTestOrder))
       .orderBy(desc(orders.createdAt));
 
     const orderIds = rows.map((o) => o.id);

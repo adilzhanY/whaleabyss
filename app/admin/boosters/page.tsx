@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Plus, Trash2, Power } from "lucide-react";
+import { Chip } from "@heroui/react";
+import { Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import CustomSearchField from "@/components/CustomSearchField";
-import TelegramIcon from "@/components/TelegramIcon";
 import CustomSelect from "@/components/CustomSelect";
 import DataTable, { type Column } from "../_components/DataTable";
 import PageHeader from "../_components/PageHeader";
+import CopyableText from "../_components/CopyableText";
+import CopyableTelegram from "../_components/CopyableTelegram";
 import { confirmDialog } from "@/store/useConfirm";
 
 const BOOSTERS_PER_PAGE = 10;
@@ -64,26 +66,6 @@ export default function BoostersPage() {
     }
   };
 
-  const toggleStatus = async (b: Booster) => {
-    const next = b.status === "active" ? "inactive" : "active";
-    try {
-      const res = await fetch(`/api/admin/boosters/${b.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: next }),
-      });
-      if (res.ok) {
-        setBoosters((prev) =>
-          prev.map((x) => (x.id === b.id ? { ...x, status: next } : x))
-        );
-      } else {
-        alert("Не удалось изменить статус");
-      }
-    } catch {
-      alert("Не удалось изменить статус");
-    }
-  };
-
   const handleDelete = async (id: string) => {
     const ok = await confirmDialog({
       title: "Удалить этого качера?",
@@ -136,32 +118,36 @@ export default function BoostersPage() {
 
   const columns: Column<Booster>[] = [
     {
+      key: "index",
+      header: "№",
+      width: "w-12",
+      hideOnMobile: true,
+      render: (_b, index) => <span className="text-slate-600">{index + 1}</span>,
+    },
+    {
+      // Same treatment as /admin/users: copyable, not a link — the whole row
+      // navigates, so a second click target inside it is just noise.
       key: "id",
       header: "ID",
+      width: "w-32",
       render: (b) => (
-        <Link
-          href={`/admin/booster/${b.id}`}
-          className="font-mono text-xs text-indigo-600 hover:underline"
-        >
-          {b.id.slice(0, 8)}...
-        </Link>
+        <div onClick={(e) => e.stopPropagation()} className="inline-flex">
+          <CopyableText value={b.id} className="text-xs text-slate-500">
+            <span className="font-mono">{b.id.slice(0, 8)}...</span>
+          </CopyableText>
+        </div>
       ),
     },
     {
       key: "name",
       header: "Имя",
       render: (b) => (
-        <div>
-          <Link
-            href={`/admin/booster/${b.id}`}
-            className="font-semibold text-blue-950 hover:text-indigo-600"
-          >
+        <div className="min-w-0">
+          <div className="font-medium text-slate-700 truncate">
             {b.firstName} {b.lastName}
-          </Link>
+          </div>
           {b.note && (
-            <div className="text-xs text-slate-400 mt-0.5 max-w-[220px] truncate">
-              {b.note}
-            </div>
+            <div className="mt-0.5 max-w-[220px] truncate text-xs text-slate-500">{b.note}</div>
           )}
         </div>
       ),
@@ -169,20 +155,11 @@ export default function BoostersPage() {
     {
       key: "telegram",
       header: "Telegram",
-      render: (b) =>
-        b.telegramUsername ? (
-          <a
-            href={`https://t.me/${b.telegramUsername.replace(/^@/, "")}`}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1 text-sm text-sky-600 hover:underline"
-          >
-            <TelegramIcon className="w-3.5 h-3.5" />
-            {b.telegramUsername}
-          </a>
-        ) : (
-          <span className="text-slate-300">—</span>
-        ),
+      render: (b) => (
+        <div onClick={(e) => e.stopPropagation()} className="inline-flex">
+          <CopyableTelegram username={b.telegramUsername} />
+        </div>
+      ),
     },
     {
       key: "commission",
@@ -210,18 +187,27 @@ export default function BoostersPage() {
       ),
     },
     {
+      key: "startDate",
+      header: "Работает с",
+      width: "w-32",
+      render: (b) => (
+        <span className="whitespace-nowrap text-xs text-slate-500">
+          {b.startDate ? new Date(b.startDate).toLocaleDateString("en-GB") : "—"}
+        </span>
+      ),
+    },
+    {
       key: "status",
       header: "Статус",
       render: (b) => (
-        <span
-          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
-            b.status === "active"
-              ? "bg-emerald-50 text-emerald-700"
-              : "bg-slate-100 text-slate-500"
-          }`}
+        <Chip
+          size="sm"
+          color={b.status === "active" ? "success" : "default"}
+          variant={b.status === "active" ? "soft" : "secondary"}
+          className="text-[11px] font-bold"
         >
-          {b.status === "active" ? "Активен" : "Неактивен"}
-        </span>
+          <Chip.Label>{b.status === "active" ? "Активен" : "Неактивен"}</Chip.Label>
+        </Chip>
       ),
     },
     {
@@ -230,14 +216,7 @@ export default function BoostersPage() {
       align: "right",
       mobileLabel: "Действия",
       render: (b) => (
-        <div className="flex items-center justify-end gap-2">
-          <button
-            onClick={() => toggleStatus(b)}
-            title={b.status === "active" ? "Деактивировать" : "Активировать"}
-            className="p-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors"
-          >
-            <Power className="w-4 h-4" />
-          </button>
+        <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={() => handleDelete(b.id)}
             title="Удалить"
@@ -334,6 +313,9 @@ export default function BoostersPage() {
             data={filteredBoosters}
             getRowKey={(b) => b.id}
             emptyMessage="Качеры не найдены"
+            onRowClick={(b) => {
+              window.location.href = `/admin/booster/${b.id}`;
+            }}
             page={page}
             pageSize={BOOSTERS_PER_PAGE}
             onPageChange={setPage}

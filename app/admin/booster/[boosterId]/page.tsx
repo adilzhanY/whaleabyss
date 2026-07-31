@@ -15,6 +15,7 @@ import {
 import OrderStatusBadge from "../../_components/OrderStatusBadge";
 import DataTable, { type Column } from "../../_components/DataTable";
 import PageHeader from "../../_components/PageHeader";
+import OrderOnlineToggle from "../../_components/OrderOnlineToggle";
 import { BoosterEarningsChart, type MonthPoint } from "../../_components/DashboardCharts";
 import CopyableText, { CopyButton } from "../../_components/CopyableText";
 import EditBoosterModal from "./EditBoosterModal";
@@ -339,31 +340,69 @@ export default function BoosterDetailPage({
 
         {/* ── right: state, speed, specialisation, paperwork ───────────── */}
         <div className="space-y-4">
-          <Section title="Сейчас в работе" right={activeOrders.length ? `${activeOrders.length}` : undefined}>
+          <Section
+            title="Сейчас в работе"
+            right={
+              activeOrders.length ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700">
+                  <LiveDot />
+                  {activeOrders.length} в работе
+                </span>
+              ) : undefined
+            }
+          >
             {activeOrders.length === 0 ? (
               <EmptyRow>Активных заказов нет</EmptyRow>
             ) : (
               <div className="space-y-2.5">
                 {activeOrders.map((o) => (
-                  <button
+                  // A div, not a button: the «на акке» pill inside is itself a
+                  // button, and nesting buttons is invalid HTML. The title is a
+                  // real link so the row stays keyboard-reachable.
+                  <div
                     key={o.id}
-                    type="button"
                     onClick={() => router.push(`/admin/orders/${o.id}`)}
-                    className="w-full rounded-xl border border-slate-200 p-3 text-left transition-colors hover:bg-slate-50"
+                    className="cursor-pointer rounded-xl border border-emerald-200 bg-emerald-50 p-3 transition-colors hover:bg-emerald-100"
                   >
-                    <div className="text-[13px] font-semibold text-slate-900">
-                      {o.items.length ? o.items.join(", ") : "Без позиций"}
+                    <div className="flex items-start gap-2">
+                      <span className="mt-1.5 shrink-0">
+                        <LiveDot />
+                      </span>
+                      <Link
+                        href={`/admin/orders/${o.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-[13px] font-semibold text-slate-900 hover:underline"
+                      >
+                        {o.items.length ? o.items.join(", ") : "Без позиций"}
+                      </Link>
                     </div>
-                    <div className="mt-0.5 text-xs text-slate-500">
+                    <div className="mt-0.5 pl-4 text-xs text-slate-500">
                       {o.username ?? "— гость —"} · {rub(Number(o.totalPrice))} ·{" "}
                       {daysSince(o.createdAt)}
                     </div>
-                    {o.boosterOnline && (
-                      <span className="mt-2 inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700">
-                        Качер на аккаунте
-                      </span>
-                    )}
-                  </button>
+                    {/* Same pill as the orders table — and it flips there too,
+                        so an admin can fix a toggle the booster forgot. */}
+                    <div className="mt-2 pl-4" onClick={(e) => e.stopPropagation()}>
+                      <OrderOnlineToggle
+                        orderId={o.id}
+                        status={o.status}
+                        boosterId={b.id}
+                        online={o.boosterOnline}
+                        onResult={(online) =>
+                          setData((prev) =>
+                            prev
+                              ? {
+                                  ...prev,
+                                  orders: prev.orders.map((x) =>
+                                    x.id === o.id ? { ...x, boosterOnline: online } : x
+                                  ),
+                                }
+                              : prev
+                          )
+                        }
+                      />
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
@@ -566,5 +605,15 @@ function SpeedBar({
         />
       </div>
     </div>
+  );
+}
+
+/** Pulsing green dot — «это происходит прямо сейчас». */
+function LiveDot() {
+  return (
+    <span className="relative flex h-2 w-2">
+      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
+      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+    </span>
   );
 }

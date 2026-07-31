@@ -45,8 +45,8 @@ export default function EventBanner({ eventType, endsAt }: EventBannerProps) {
   };
 
   return (
-    <div className="relative w-full px-4 sm:px-6 py-8">
-      <div className="mx-auto" style={{ maxWidth: "75rem" }}>
+    <div className="site-gutter relative w-full py-8">
+      <div className="site-container">
         <div
           onClick={handleClick}
           className="relative overflow-hidden rounded-3xl cursor-pointer group transition-transform hover:scale-[1.02] duration-300"

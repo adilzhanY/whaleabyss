@@ -21,6 +21,7 @@ import ServiceCard from "@/components/ServiceCard";
 import HeroShowcase from "@/components/HeroShowcase";
 import SuggestServiceModal from "@/components/SuggestServiceModal";
 import OrderCard from "@/components/OrderCard";
+import ReviewsMasonry from "@/components/ReviewsMasonry";
 import Toast from "@/components/Toast";
 import EventBanner from "@/components/EventBanner";
 import DivePath from "@/components/DivePath";
@@ -36,32 +37,12 @@ interface HomeReview {
 	id: string;
 	rating: string;
 	description: string;
+	createdAt: string;
 	userName: string | null;
 	userAvatar: string | null;
 }
 
 const REVIEWS_PAGE = 5;
-
-/** Mirrors the half-star rendering on /reviews so both pages agree. */
-function renderStars(rating: number) {
-	const stars = [];
-	for (let i = 0; i < Math.floor(rating); i++) {
-		stars.push(
-			<Star key={i} className="h-3.5 w-3.5 fill-current shrink-0" style={{ color: "#f59e0b" }} />
-		);
-	}
-	if (rating % 1 !== 0) {
-		stars.push(
-			<div key="half" className="relative h-3.5 w-3.5 shrink-0">
-				<Star className="h-3.5 w-3.5 absolute" style={{ color: "#f59e0b", opacity: 0.3 }} />
-				<div className="overflow-hidden absolute" style={{ width: "50%" }}>
-					<Star className="h-3.5 w-3.5 fill-current" style={{ color: "#f59e0b" }} />
-				</div>
-			</div>
-		);
-	}
-	return stars;
-}
 
 interface OrderItem {
 	serviceId?: string;
@@ -251,8 +232,8 @@ export default function HomeClient({
 
 			{/* HERO / DASHBOARD */}
 			{session?.user ? (
-				<section className="hero-mesh relative overflow-hidden pt-28 md:pt-32 pb-16 sm:pb-24">
-					<div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center justify-between gap-8 px-4 sm:px-12 text-center sm:text-left">
+				<section className="hero-mesh site-gutter relative overflow-hidden pt-28 md:pt-32 pb-16 sm:pb-24">
+					<div className="site-container relative z-10 flex flex-col items-center justify-between gap-8 text-center sm:text-left">
 						<div className="w-full">
 							<h1
 								className="mb-4 text-3xl font-black leading-tight sm:text-5xl tracking-tight text-slate-800"
@@ -481,8 +462,8 @@ export default function HomeClient({
 							</div>
 						</div>
 					{/* HOW IT WORKS - same mesh surface as the hero, one continuous block */}
-					<div id="how" className="relative z-10 mt-14 sm:mt-16">
-						<div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "75rem" }}>
+					<div id="how" className="site-gutter relative z-10 mt-14 sm:mt-16">
+						<div className="site-container">
 							<div className="dive-panel">
 								{/* rising bubbles - decoration only */}
 								<span className="dive-bubble" style={{ left: "12%", width: 14, height: 14, animationDuration: "9s" }} aria-hidden />
@@ -538,8 +519,8 @@ export default function HomeClient({
 			{/* SERVICES SHOWCASE - category tiles + one bestseller rail, flat on the
 			    page ground. The graph-paper grid and the giant rounded "sheet" are gone
 			    on purpose; /services remains the single full catalogue. */}
-			<section id="services" className="py-20">
-				<div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "75rem" }}>
+			<section id="services" className="site-gutter py-20">
+				<div className="site-container">
 					<div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
 						<h2
 							className="text-3xl font-black"
@@ -637,8 +618,8 @@ export default function HomeClient({
 
 			{/* TESTIMONIALS */}
 			{!session?.user && !reviewsLoading && reviews.length > 0 && (
-				<section id="testimonials" className="py-20">
-					<div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "75rem" }}>
+				<section id="testimonials" className="site-gutter py-20">
+					<div className="site-container">
 						<div className="mb-12 text-center">
 							<h2
 								className="text-3xl font-black"
@@ -660,49 +641,7 @@ export default function HomeClient({
 									: "Что говорят наши клиенты"}
 							</p>
 						</div>
-						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-							{reviews.map((review) => {
-								const rating = parseFloat(review.rating);
-								const name = review.userName || "Клиент";
-								return (
-									<div
-										key={review.id}
-										className="flex flex-col p-5 sm:p-6 transition-shadow duration-300 hover:shadow-xl"
-										style={{
-											backgroundColor: "var(--bg-card)",
-											border: "1px solid var(--accent-border)",
-											boxShadow: "var(--card-shadow)",
-											borderRadius: "1.5rem",
-										}}
-									>
-									<div className="mb-4 flex items-center gap-3">
-										<div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-slate-200">
-											{review.userAvatar ? (
-												<img src={review.userAvatar} alt={name} className="h-full w-full object-cover" />
-											) : (
-												<div
-													className="flex h-full w-full items-center justify-center text-sm font-bold"
-													style={{ color: "var(--accent-primary)" }}
-												>
-													{name.charAt(0).toUpperCase()}
-												</div>
-											)}
-										</div>
-										<p className="min-w-0 flex-1 truncate text-base font-bold" style={{ color: "var(--text-primary)" }}>
-											{name}
-										</p>
-										<div className="flex shrink-0 gap-0.5">{renderStars(rating)}</div>
-									</div>
-									<p
-										className="flex-1 leading-relaxed italic text-[0.9375rem]"
-										style={{ color: "var(--text-primary)", overflowWrap: "break-word" }}
-									>
-										&ldquo;{review.description}&rdquo;
-									</p>
-									</div>
-								);
-							})}
-						</div>
+						<ReviewsMasonry reviews={reviews} />
 
 						{reviewsHasMore && (
 							<div className="mt-10 flex justify-center">

@@ -29,7 +29,7 @@ export default function PublicOfferPage() {
     >
       <Header onAuthOpen={() => setAuthOpen(true)} />
 
-      <main className="flex-1 pt-28 md:pt-32 pb-20 px-4 sm:px-6">
+      <main className="site-gutter flex-1 pt-28 md:pt-32 pb-20">
         <div
           className="mx-auto max-w-4xl bg-white p-8 sm:p-12 text-black"
           style={{ fontFamily: "var(--font-primary), sans-serif" }}

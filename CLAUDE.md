@@ -829,6 +829,14 @@ shared ones.
 | Telegram glyph | `components/TelegramIcon.tsx` (not the lucide `Send` icon) |
 | Table with paging | `app/admin/_components/DataTable.tsx` |
 
+**Page width is NOT a per-page decision.** Every public page's outer wrapper is the pair
+`.site-gutter` (on the `<main>`/section) + `.site-container` (75rem, mirrors the header
+pill's geometry — see globals.css). Never hand-roll `mx-auto max-w-* px-*` for a page
+container: that is exactly how `/` and `/events` ended up with different margins. A
+narrower READING column (FAQ, legal docs, profile) is fine, but it nests *inside* a
+`.site-container`, so the page's outer gutters still match every other page. Footer,
+EventBanner and the in-page sections of `/` are already on this pair.
+
 Rules that apply to all of them: call sites pass **layout only** (`className` for width,
 `fieldSize` for height) — the look belongs to the component; every new component needs the
 **admin-dark and site-dark** palettes, because HeroUI's own tokens only flip on its `.dark`

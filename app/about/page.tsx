@@ -12,8 +12,8 @@ export default function AboutPage() {
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
 
-      <main className="flex-1 pt-28 md:pt-32 pb-20">
-        <div className="mx-auto px-4 sm:px-6" style={{ maxWidth: "50rem" }}>
+      <main className="site-gutter flex-1 pt-28 md:pt-32 pb-20">
+        <div className="site-container"><div className="mx-auto" style={{ maxWidth: "50rem" }}>
           <Breadcrumb />
           <div className="mb-12 text-center">
             <h1
@@ -42,6 +42,7 @@ export default function AboutPage() {
               Доверьте рутину нам и наслаждайтесь тем, что в игре вам действительно интересно — историей, эстетикой и геймплеем.
             </p>
           </div>
+        </div>
         </div>
       </main>
 

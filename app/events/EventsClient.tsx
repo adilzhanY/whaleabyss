@@ -101,7 +101,8 @@ export default function EventsClient() {
       <Header onAuthOpen={() => setAuthOpen(true)} />
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-28 md:pt-32 pb-20">
+      <main className="site-gutter pt-28 md:pt-32 pb-20">
+        <div className="site-container">
         <Breadcrumb />
         <div className="mb-12 text-center">
           <h1
@@ -299,6 +300,7 @@ export default function EventsClient() {
             ))}
           </div>
         )}
+        </div>
       </main>
 
       <Footer />

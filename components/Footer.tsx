@@ -6,14 +6,14 @@ import SocialIcon from "./SocialIcon";
 export default function Footer() {
   return (
     <footer
-      className="w-full text-slate-800 py-6 px-4 sm:px-6"
+      className="site-gutter w-full text-slate-800 py-6"
       style={{
         backgroundColor: "var(--bg-card)",
         borderTop: "1px solid var(--accent-border)",
         fontFamily: "var(--font-primary), sans-serif",
       }}
     >
-      <div className="mx-auto flex flex-col md:flex-row justify-between items-start md:items-center max-w-300 mb-6 gap-6">
+      <div className="site-container flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-6">
         {/* Top Side: Links */}
         <div className="flex gap-8 sm:gap-16 text-sm font-semibold w-full">
           <Link
@@ -37,7 +37,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center max-w-300 border-t border-slate-200 pt-4 text-sm text-slate-600 gap-4">
+      <div className="site-container flex flex-col sm:flex-row justify-between items-start sm:items-center border-t border-slate-200 pt-4 text-sm text-slate-600 gap-4">
         {/* Social Media */}
         <div className="flex items-center gap-4 text-sm font-semibold text-slate-800">
           <span>Мы в социальных сетях:</span>
@@ -123,7 +123,7 @@ export default function Footer() {
       </div>
 
       {/* Legal Entity Info & Contacts */}
-      <div className="mx-auto flex flex-col md:flex-row justify-between items-start md:items-start max-w-300 mt-6 text-xs text-slate-500 gap-4">
+      <div className="site-container flex flex-col md:flex-row justify-between items-start md:items-start mt-6 text-xs text-slate-500 gap-4">
         <div className="space-y-0.5">
           <div>{getPartyShortLabel()}</div>
           <div>ИНН: {LEGAL.INN}</div>
@@ -150,7 +150,7 @@ export default function Footer() {
       </div>
 
       {/* Bug report */}
-      <div className="mx-auto flex max-w-300 mt-4 text-xs text-slate-500">
+      <div className="site-container flex mt-4 text-xs text-slate-500">
         <span>
           Нашли ошибку? Сообщите нам:{" "}
           <a
@@ -165,7 +165,7 @@ export default function Footer() {
       </div>
 
       {/* Payment methods (neutral, no aggregator branding) */}
-      <div className="mx-auto flex justify-center sm:justify-start max-w-300 mt-6">
+      <div className="site-container flex justify-center sm:justify-start mt-6">
         <div className="flex items-center gap-2 text-xs text-slate-500">
           <Lock className="w-3.5 h-3.5" />
           <span>Безопасная оплата · СБП</span>

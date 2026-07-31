@@ -140,7 +140,8 @@ export default function OrdersPage() {
       <Header onAuthOpen={() => setAuthOpen(true)} />
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
-      <main className="mx-auto max-w-6xl px-4 sm:px-6 pt-28 md:pt-32 pb-20">
+      <main className="site-gutter pt-28 md:pt-32 pb-20">
+        <div className="site-container">
         <Breadcrumb />
 
         <div className="mb-12 text-center">
@@ -221,6 +222,7 @@ export default function OrdersPage() {
             ))}
           </div>
         )}
+        </div>
       </main>
 
       <Footer />

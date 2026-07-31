@@ -511,7 +511,8 @@ export default function CartPage() {
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       <DataSecurityModal isOpen={isDataSecurityModalOpen} onClose={() => setIsDataSecurityModalOpen(false)} />
 
-      <main className="mx-auto max-w-6xl px-4 sm:px-6 pt-28 md:pt-32 pb-32 lg:pb-20">
+      <main className="site-gutter pt-28 md:pt-32 pb-32 lg:pb-20">
+        <div className="site-container">
         <Breadcrumb />
 
         <div className="mb-6 mt-2 flex items-baseline gap-3">
@@ -1055,6 +1056,7 @@ export default function CartPage() {
             </div>
           </div>
         )}
+        </div>
       </main>
 
       {/* ── Мобильная панель оплаты ──────────────────────────────────────

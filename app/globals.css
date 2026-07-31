@@ -1401,10 +1401,13 @@ body:has(#admin-root.admin-dark) {
  * Unlayered on purpose so these rules beat the layer(components) imports.
  * Light theme first; admin-dark overrides at the bottom mirror the dark block.
  * ------------------------------------------------------------------------- */
-/* Reserve the scrollbar gutter in admin: long pages (orders/users) scroll,
-   short ones (boosters) may not — without this the centered layout shifts
-   horizontally when switching between them. */
-html:has(#admin-root) { scrollbar-gutter: stable; }
+/* Reserve the scrollbar gutter SITE-WIDE (was admin-only). Two layout shifts
+   die with this one rule: switching between scrolling and non-scrolling pages,
+   and every modal that locks body scroll (`overflow: hidden` used to drop the
+   scrollbar, nudging the whole page sideways on open and back on close —
+   QuestAddonModal, RankGateModal, DocumentViewer, the mobile menu…). With the
+   gutter reserved, hiding the scrollbar frees no width, so nothing moves. */
+html { scrollbar-gutter: stable; }
 
 .custom-date-range-picker .date-range-picker {
   /* Block-level flex: the default inline-level box leaves a ~6px line-box

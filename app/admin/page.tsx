@@ -2,17 +2,9 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { orders, orderItems, services, users, boosters } from "@/lib/schema";
 import { desc, eq, sql, and, or, gte, lt, ne, inArray, isNotNull } from "drizzle-orm";
-import {
-  ShoppingBag,
-  TrendingUp,
-  TrendingDown,
-  Clock,
-  Users as UsersIcon,
-  ArrowRight,
-} from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -22,80 +14,32 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import RecentOrdersTable from "./_components/RecentOrdersTable";
 import type { OrderRow } from "./_components/orderColumns";
-import MonthSelect from "./_components/MonthSelect";
+import PeriodSelect from "./_components/PeriodSelect";
 import PageHeader from "./_components/PageHeader";
 import { LESSON_CUTOFF, OWNER_BOOSTER_ID } from "./_components/lessonOrders";
 import {
-  NetRevenueAreaChart,
-  BoosterRevenueChart,
+  buildWindow,
+  daysInMonth,
+  isCurrentWindow,
+  MONTH_BUCKETS,
+  parseAnchor,
+  parsePeriod,
+  previousWindow,
+  type PeriodWindow,
+} from "./_components/period";
+import {
+  ProfitBreakdownChart,
   OrdersBarChart,
   ClientsLineChart,
   TopServicesChart,
   BoostersChart,
   OrderStatusDonut,
   type SeriesPoint,
-  type BoosterSeriesPoint,
 } from "./_components/DashboardCharts";
 
 export const dynamic = "force-dynamic";
 
 const SUCCESSFUL_STATUSES = ["paid", "in_progress", "completed", "refunded"] as const;
-
-// ── Month window ─────────────────────────────────────────────────────────────
-// The dashboard shows exactly one calendar month (picked with ‹ Май 2026 ›),
-// bucketed into quarters of the month: days 1–7, 8–14, 15–21, 22–end.
-
-interface MonthWindow {
-  /** "YYYY-MM" */
-  key: string;
-  start: Date;
-  end: Date;
-}
-
-function currentMonthKey(): string {
-  const now = new Date();
-  return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
-}
-
-function parseMonth(raw: string | string[] | undefined): string {
-  const value = Array.isArray(raw) ? raw[0] : raw;
-  const cur = currentMonthKey();
-  if (!value || !/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) return cur;
-  // "YYYY-MM" compares correctly as a string — never show a future month.
-  return value <= cur ? value : cur;
-}
-
-function monthWindow(key: string): MonthWindow {
-  const [y, m] = key.split("-").map(Number);
-  return { key, start: new Date(Date.UTC(y, m - 1, 1)), end: new Date(Date.UTC(y, m, 1)) };
-}
-
-function prevMonthKey(key: string): string {
-  const [y, m] = key.split("-").map(Number);
-  return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, "0")}`;
-}
-
-const MONTHS_ACC = [
-  "январь", "февраль", "март", "апрель", "май", "июнь",
-  "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь",
-];
-
-/** «за май 2026» — plugged into card descriptions. */
-function monthSuffix(key: string): string {
-  const [y, m] = key.split("-").map(Number);
-  return `за ${MONTHS_ACC[m - 1]} ${y}`;
-}
-
-/** X-axis labels for the four quarters of the month ("22–31" adapts to length). */
-function quarterLabels(key: string): string[] {
-  const [y, m] = key.split("-").map(Number);
-  const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
-  return ["1–7", "8–14", "15–21", `22–${daysInMonth}`];
-}
-
-/** Quarter-of-month index 0..3 — must mirror quarterLabels (UTC session). */
-const orderQuarter = sql<number>`least((extract(day from ${orders.createdAt})::int - 1) / 7, 3)`;
-const userQuarter = sql<number>`least((extract(day from ${users.createdAt})::int - 1) / 7, 3)`;
 
 // ── Money that actually reached us ───────────────────────────────────────────
 // Orders created before LESSON_CUTOFF are «учебные»: fulfilled, but the
@@ -104,25 +48,51 @@ const userQuarter = sql<number>`least((extract(day from ${users.createdAt})::int
 // revenue figure zeroes them out. This also covers the owner-booster's
 // pre-cutoff orders. Refunds are zeroed as before.
 const realRevenue = sql<string>`coalesce(sum(case when ${orders.status} = 'refunded' or ${orders.createdAt} < ${LESSON_CUTOFF} then 0 else ${orders.totalPrice} end), 0)::text`;
-// Commission subtracted from the net-revenue figure: only on orders whose
-// revenue is counted (post-cutoff, not refunded) and never the owner's cut.
+// Commission subtracted from the profit figure: only on orders whose revenue
+// is counted (post-cutoff, not refunded) and never the owner's cut.
 const realCommission = sql<string>`coalesce(sum(case when ${orders.status} = 'refunded' or ${orders.createdAt} < ${LESSON_CUTOFF} or ${orders.boosterId} = ${OWNER_BOOSTER_ID} then 0 else coalesce(${orders.boosterEarning}, 0) end), 0)::text`;
+// Orders whose money we actually counted — the denominator for средний чек.
+// Dividing revenue by ALL orders would understate it in any window that still
+// contains written-off ones.
+const revenueOrderCount = sql<number>`count(*) filter (where ${orders.status} <> 'refunded' and ${orders.createdAt} >= ${LESSON_CUTOFF})::int`;
 
-function inWindow(win: MonthWindow) {
+function inWindow(win: PeriodWindow) {
   return and(gte(orders.createdAt, win.start), lt(orders.createdAt, win.end));
 }
 
-async function getStats(win: MonthWindow) {
+/**
+ * Bucket index inside the window, mirroring `win.bucketLabels`:
+ * month → one of MONTH_BUCKETS equal slices of the month, quarter → month of
+ * quarter (0–2), year → month of year (0–11).
+ */
+function bucketExpr(win: PeriodWindow, column: typeof orders.createdAt | typeof users.createdAt) {
+  if (win.period === "month") {
+    // Integer division mirrors `dayBucket()` exactly — same formula, so a row
+    // always lands under the label that names its days. Both operands are
+    // inlined (see the note below) and derived from our own window.
+    const days = daysInMonth(win.start.getUTCFullYear(), win.start.getUTCMonth() + 1);
+    return sql<number>`least(((extract(day from ${column})::int - 1) * ${sql.raw(String(MONTH_BUCKETS))}) / ${sql.raw(String(days))}, ${sql.raw(String(MONTH_BUCKETS - 1))})`;
+  }
+  // Inlined as a literal, not bound: Postgres can't infer the type of a bare
+  // parameter inside `extract(...)::int - $1`, and the query fails outright.
+  // The value is our own month index (1–12), so there is nothing to escape.
+  const firstMonth = win.start.getUTCMonth() + 1;
+  return sql<number>`extract(month from ${column})::int - ${sql.raw(String(firstMonth))}`;
+}
+
+async function getStats(win: PeriodWindow) {
   const [orderStats] = await db
     .select({
       count: sql<number>`count(*)::int`,
       revenue: realRevenue,
       commission: realCommission,
+      countedOrders: revenueOrderCount,
+      buyers: sql<number>`count(distinct ${orders.userId})::int`,
     })
     .from(orders)
     .where(and(inWindow(win), inArray(orders.status, SUCCESSFUL_STATUSES)));
 
-  // Awaiting-fulfilment is a current-state count; not affected by the month.
+  // Awaiting-fulfilment is a current-state count; not affected by the window.
   const [pending] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(orders)
@@ -133,28 +103,43 @@ async function getStats(win: MonthWindow) {
     .from(users)
     .where(and(gte(users.createdAt, win.start), lt(users.createdAt, win.end)));
 
+  // Buyers with more than one order in the window — the loyalty signal.
+  const [repeat] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(
+      db
+        .select({ userId: orders.userId })
+        .from(orders)
+        .where(and(inWindow(win), inArray(orders.status, SUCCESSFUL_STATUSES), isNotNull(orders.userId)))
+        .groupBy(orders.userId)
+        .having(sql`count(*) > 1`)
+        .as("repeat_buyers")
+    );
+
   const revenue = Number(orderStats?.revenue ?? 0);
   const commissionPaid = Number(orderStats?.commission ?? 0);
+  const counted = orderStats?.countedOrders ?? 0;
 
   return {
     orderCount: orderStats?.count ?? 0,
     revenue,
     commissionPaid,
     net: revenue - commissionPaid,
+    avgOrder: counted > 0 ? Math.round(revenue / counted) : 0,
+    buyers: orderStats?.buyers ?? 0,
+    repeatBuyers: repeat?.count ?? 0,
     awaitingFulfilment: pending?.count ?? 0,
     userCount: userCount?.count ?? 0,
   };
 }
 
-/**
- * Same headline stats for the previous calendar month — powers the
- * «+12% к пред. месяцу» delta badges.
- */
-async function getPrevStats(win: MonthWindow) {
+/** Headline figures for the previous window — powers the delta badges. */
+async function getPrevStats(win: PeriodWindow) {
   const [orderStats] = await db
     .select({
       count: sql<number>`count(*)::int`,
       revenue: realRevenue,
+      commission: realCommission,
     })
     .from(orders)
     .where(and(inWindow(win), inArray(orders.status, SUCCESSFUL_STATUSES)));
@@ -164,45 +149,52 @@ async function getPrevStats(win: MonthWindow) {
     .from(users)
     .where(and(gte(users.createdAt, win.start), lt(users.createdAt, win.end)));
 
+  const revenue = Number(orderStats?.revenue ?? 0);
+  const commission = Number(orderStats?.commission ?? 0);
+
   return {
     orderCount: orderStats?.count ?? 0,
-    revenue: Number(orderStats?.revenue ?? 0),
+    revenue,
+    net: revenue - commission,
     userCount: userCount?.count ?? 0,
   };
 }
 
-/** Percent change vs the previous month; null when there's no baseline. */
+/** Percent change vs the previous window; null when there's no baseline. */
 function pctChange(current: number, previous: number | null | undefined): number | null {
   if (previous == null || previous === 0) return null;
   return ((current - previous) / previous) * 100;
 }
 
-// ── Time series for the charts ───────────────────────────────────────────────
+// ── Time series ──────────────────────────────────────────────────────────────
 
 /**
- * Revenue + orders + new clients bucketed by quarter of the selected month.
- * All four quarters are always present (zero-filled) so the axis is stable.
+ * Revenue / commission / orders / clients per bucket of the window. Every
+ * bucket is always present (zero-filled) so the axis is stable.
  */
-async function getTimeSeries(win: MonthWindow): Promise<SeriesPoint[]> {
+async function getTimeSeries(win: PeriodWindow): Promise<SeriesPoint[]> {
+  const orderBucket = bucketExpr(win, orders.createdAt);
+  const userBucket = bucketExpr(win, users.createdAt);
+
   const [orderRows, userRows] = await Promise.all([
     db
       .select({
-        bucket: orderQuarter,
+        bucket: orderBucket,
         orders: sql<number>`count(*)::int`,
         revenue: realRevenue,
         commission: realCommission,
       })
       .from(orders)
       .where(and(inWindow(win), inArray(orders.status, SUCCESSFUL_STATUSES)))
-      .groupBy(orderQuarter),
+      .groupBy(orderBucket),
     db
       .select({
-        bucket: userQuarter,
+        bucket: userBucket,
         clients: sql<number>`count(*)::int`,
       })
       .from(users)
       .where(and(gte(users.createdAt, win.start), lt(users.createdAt, win.end)))
-      .groupBy(userQuarter),
+      .groupBy(userBucket),
   ]);
 
   if (orderRows.length === 0 && userRows.length === 0) return [];
@@ -210,7 +202,7 @@ async function getTimeSeries(win: MonthWindow): Promise<SeriesPoint[]> {
   const orderBy = new Map(orderRows.map((r) => [Number(r.bucket), r]));
   const userBy = new Map(userRows.map((r) => [Number(r.bucket), r]));
 
-  return quarterLabels(win.key).map((label, i) => {
+  return win.bucketLabels.map((label, i) => {
     const o = orderBy.get(i);
     const revenue = Number(o?.revenue ?? 0);
     const commission = Number(o?.commission ?? 0);
@@ -226,57 +218,10 @@ async function getTimeSeries(win: MonthWindow): Promise<SeriesPoint[]> {
 }
 
 /**
- * Booster commission earned per quarter of the month, with the top-5 earners
- * for the tooltip. Lesson (pre-cutoff) orders DO count here — the boosters'
- * money is real even though ours is gone. The owner-booster never counts.
- */
-async function getBoosterTimeSeries(win: MonthWindow): Promise<BoosterSeriesPoint[]> {
-  const rows = await db
-    .select({
-      bucket: orderQuarter,
-      name: sql<string>`${boosters.firstName} || ' ' || ${boosters.lastName}`,
-      earned: sql<string>`coalesce(sum(${orders.boosterEarning}), 0)::text`,
-    })
-    .from(orders)
-    .innerJoin(boosters, eq(orders.boosterId, boosters.id))
-    .where(
-      and(
-        inWindow(win),
-        isNotNull(orders.boosterEarning),
-        ne(orders.status, "refunded"),
-        ne(orders.boosterId, OWNER_BOOSTER_ID)
-      )
-    )
-    .groupBy(orderQuarter, boosters.id, boosters.firstName, boosters.lastName);
-
-  const byBucket = new Map<number, { total: number; entries: { name: string; earned: number }[] }>();
-  for (const r of rows) {
-    const earned = Number(r.earned);
-    if (earned <= 0) continue;
-    const idx = Number(r.bucket);
-    let b = byBucket.get(idx);
-    if (!b) {
-      b = { total: 0, entries: [] };
-      byBucket.set(idx, b);
-    }
-    b.total += earned;
-    b.entries.push({ name: r.name, earned });
-  }
-
-  if (byBucket.size === 0) return [];
-
-  return quarterLabels(win.key).map((label, i) => {
-    const b = byBucket.get(i);
-    const top = b ? [...b.entries].sort((a, z) => z.earned - a.earned).slice(0, 5) : [];
-    return { label, total: b?.total ?? 0, top };
-  });
-}
-
-/**
- * Order status composition within the month. Abandoned checkouts (cancelled
+ * Order status composition within the window. Abandoned checkouts (cancelled
  * with no paymentId) are excluded — they're noise, not business outcomes.
  */
-async function getStatusBreakdown(win: MonthWindow) {
+async function getStatusBreakdown(win: PeriodWindow) {
   const meaningful = or(
     inArray(orders.status, SUCCESSFUL_STATUSES),
     and(eq(orders.status, "cancelled"), isNotNull(orders.paymentId))
@@ -295,7 +240,7 @@ async function getStatusBreakdown(win: MonthWindow) {
   return rows.map((r) => ({ status: r.status ?? "paid", count: r.count }));
 }
 
-async function getTopServices(win: MonthWindow) {
+async function getTopServices(win: PeriodWindow) {
   const rows = await db
     .select({
       id: services.id,
@@ -316,12 +261,12 @@ async function getTopServices(win: MonthWindow) {
 }
 
 /**
- * Workload per booster within the month: orders they handled (in_progress +
+ * Workload per booster within the window: orders they handled (in_progress +
  * completed) and the commission credited (boosterEarning, set on completion).
  * Left join keeps zero-order boosters eligible; only the top 3 are shown.
  * Lesson orders count — the boosters' cut is real money either way.
  */
-async function getBoosterStats(win: MonthWindow) {
+async function getBoosterStats(win: PeriodWindow) {
   const joinBase = and(
     eq(orders.boosterId, boosters.id),
     inArray(orders.status, ["in_progress", "completed"]),
@@ -405,81 +350,140 @@ async function getRecentOrders(): Promise<OrderRow[]> {
   }));
 }
 
+const rub = (n: number) => `${n.toLocaleString("ru-RU")} ₽`;
+
+/**
+ * Dashboard, «отчёт о прибыли» layout: profit is the headline and the card
+ * shows how it was reached — выручка − комиссии качеров = прибыль — over the
+ * chosen window. Everything else is a compact list beside it.
+ *
+ * Deliberately NOT four equal tiles: the money story is one story, and the
+ * separate «Заработок бустеров» card that used to sit below duplicated the
+ * commission series that now forms the amber half of the profit chart.
+ */
 export default async function AdminDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string | string[] }>;
+  searchParams: Promise<{ period?: string | string[]; anchor?: string | string[]; month?: string | string[] }>;
 }) {
-  const { month: monthParam } = await searchParams;
-  const monthKey = parseMonth(monthParam);
-  const win = monthWindow(monthKey);
-  const prevWin = monthWindow(prevMonthKey(monthKey));
-  const suffix = monthSuffix(monthKey);
+  const { period: periodParam, anchor: anchorParam, month: legacyMonth } = await searchParams;
+  const period = parsePeriod(periodParam);
+  // `?month=` is the old param name — keep honouring bookmarked links.
+  const win = buildWindow(period, parseAnchor(anchorParam ?? legacyMonth));
+  const prevWin = previousWindow(win);
 
-  const [stats, prevStats, series, boosterSeries, statuses, top, boosterStats, recent] =
-    await Promise.all([
-      getStats(win),
-      getPrevStats(prevWin),
-      getTimeSeries(win),
-      getBoosterTimeSeries(win),
-      getStatusBreakdown(win),
-      getTopServices(win),
-      getBoosterStats(win),
-      getRecentOrders(),
-    ]);
+  const [stats, prevStats, series, statuses, top, boosterStats, recent] = await Promise.all([
+    getStats(win),
+    getPrevStats(prevWin),
+    getTimeSeries(win),
+    getStatusBreakdown(win),
+    getTopServices(win),
+    getBoosterStats(win),
+    getRecentOrders(),
+  ]);
 
   const deltas = {
+    profit: pctChange(stats.net, prevStats?.net),
     revenue: pctChange(stats.revenue, prevStats?.revenue),
     orders: pctChange(stats.orderCount, prevStats?.orderCount),
     clients: pctChange(stats.userCount, prevStats?.userCount),
   };
+  const margin = stats.revenue > 0 ? Math.round((stats.net / stats.revenue) * 100) : null;
+  const commissionShare =
+    stats.revenue > 0 ? Math.round((stats.commissionPaid / stats.revenue) * 100) : null;
 
   return (
     <div className="max-w-7xl mx-auto flex flex-col gap-4">
-      <PageHeader subtitle={`Быстрая сводка по магазину ${suffix}`} />
-      <div className="flex items-start justify-start gap-4 flex-wrap">
-        <MonthSelect month={monthKey} isCurrent={monthKey === currentMonthKey()} />
-      </div>
+      <PageHeader subtitle={`Быстрая сводка по магазину ${win.suffix}`} />
+      <PeriodSelect
+        period={win.period}
+        anchor={win.anchor}
+        label={win.label}
+        isCurrent={isCurrentWindow(win)}
+      />
 
-      {/* Row 1: revenue hero (gross vs net overlay) + pending/statuses column */}
+      {/* Row 1: profit hero + the rest of the numbers as a list */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardDescription>Выручка {suffix}</CardDescription>
-            <div className="flex flex-wrap items-end gap-x-10 gap-y-3">
-              <RevenueStat
-                label="Получено"
-                value={stats.revenue}
-                color="var(--chart-2)"
-                delta={deltas.revenue}
-              />
-              <RevenueStat
-                label="Чистыми (после комиссий)"
-                value={stats.net}
-                color="var(--chart-3)"
-                delta={null}
-              />
+            <CardDescription>Прибыль {win.suffix}</CardDescription>
+            <CardTitle className="text-4xl font-bold tracking-tight tabular-nums">
+              {rub(stats.net)}
+            </CardTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              {deltas.profit !== null && <DeltaBadge pct={deltas.profit} />}
+              <span className="text-xs text-muted-foreground">
+                {deltas.profit !== null ? win.prevLabel : "не с чем сравнить"}
+                {margin !== null && ` · маржа ${margin}%`}
+              </span>
             </div>
           </CardHeader>
-          <CardContent className="flex-1 flex items-end">
-            {series.length === 0 ? <EmptyChart /> : <NetRevenueAreaChart data={series} />}
+
+          <CardContent className="flex flex-1 flex-col gap-4">
+            {/* Выручка − комиссии = прибыль, spelled out. */}
+            <div className="flex flex-wrap items-stretch gap-x-2 gap-y-3 border-y border-border py-3">
+              <Figure
+                label="Выручка"
+                value={rub(stats.revenue)}
+                hint={`${stats.orderCount.toLocaleString("ru-RU")} ${plural(stats.orderCount, ["заказ", "заказа", "заказов"])}`}
+              />
+              <Operator>−</Operator>
+              <Figure
+                label="Комиссии качеров"
+                value={rub(stats.commissionPaid)}
+                hint={commissionShare !== null ? `${commissionShare}% от выручки` : undefined}
+                className="text-amber-600"
+              />
+              <Operator>=</Operator>
+              <Figure
+                label="Прибыль"
+                value={rub(stats.net)}
+                hint={margin !== null ? `маржа ${margin}%` : undefined}
+                className="text-[var(--chart-1)]"
+              />
+            </div>
+
+            <div className="flex flex-1 items-stretch">
+              {series.length === 0 ? <EmptyChart /> : <ProfitBreakdownChart data={series} />}
+            </div>
           </CardContent>
         </Card>
 
         <div className="flex flex-col gap-4">
           <Card>
-            <MetricHeader
-              label="Ожидают выполнения"
-              value={stats.awaitingFulfilment.toString()}
-              delta={null}
-              icon={Clock}
-              iconClass="bg-amber-100 text-amber-600"
-            />
+            <CardHeader>
+              <CardTitle>Ещё {win.suffix}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col divide-y divide-border">
+              <StatRow
+                label="Продажи"
+                value={stats.orderCount.toLocaleString("ru-RU")}
+                delta={deltas.orders}
+              />
+              <StatRow
+                label="Новые клиенты"
+                value={stats.userCount.toLocaleString("ru-RU")}
+                delta={deltas.clients}
+              />
+              <StatRow label="Средний чек" value={rub(stats.avgOrder)} delta={null} />
+              <StatRow
+                label="Повторные покупатели"
+                value={`${stats.repeatBuyers} / ${stats.buyers}`}
+                delta={null}
+              />
+              <StatRow
+                label="Ожидают выполнения"
+                value={stats.awaitingFulfilment.toLocaleString("ru-RU")}
+                delta={null}
+                accent={stats.awaitingFulfilment > 0}
+              />
+            </CardContent>
           </Card>
+
           <Card className="flex-1">
             <CardHeader>
               <CardTitle>Статусы заказов</CardTitle>
-              <CardDescription>Распределение {suffix}</CardDescription>
+              <CardDescription>Распределение {win.suffix}</CardDescription>
             </CardHeader>
             <CardContent>
               {statuses.length === 0 ? <EmptyChart /> : <OrderStatusDonut data={statuses} />}
@@ -488,43 +492,38 @@ export default async function AdminDashboardPage({
         </div>
       </div>
 
-      {/* Row 1.6: booster earnings over time (top-5 earners in the tooltip) */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Заработок бустеров</CardTitle>
-          <CardDescription>Сумма комиссий {suffix} · топ-5 в подсказке</CardDescription>
-        </CardHeader>
-        <CardContent className="flex-1 flex items-end">
-          {boosterSeries.length === 0 ? (
-            <EmptyChart />
-          ) : (
-            <BoosterRevenueChart data={boosterSeries} />
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Row 2: all four comparison charts side by side on wide screens */}
+      {/* Row 2: the supporting charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <Card>
-          <MetricHeader
-            label={`Заказы ${suffix}`}
-            value={stats.orderCount.toLocaleString("ru-RU")}
-            delta={deltas.orders}
-            icon={ShoppingBag}
-            iconClass="bg-sky-100 text-sky-600"
-          />
+          <CardHeader>
+            <CardDescription>Заказы {win.suffix}</CardDescription>
+            <CardTitle className="text-3xl font-bold tracking-tight tabular-nums">
+              {stats.orderCount.toLocaleString("ru-RU")}
+            </CardTitle>
+            {deltas.orders !== null && (
+              <div className="flex items-center gap-2">
+                <DeltaBadge pct={deltas.orders} />
+                <span className="text-xs text-muted-foreground">{win.prevLabel}</span>
+              </div>
+            )}
+          </CardHeader>
           <CardContent className="flex-1 flex items-end">
             {series.length === 0 ? <EmptyChart /> : <OrdersBarChart data={series} />}
           </CardContent>
         </Card>
         <Card>
-          <MetricHeader
-            label={`Новые клиенты ${suffix}`}
-            value={stats.userCount.toLocaleString("ru-RU")}
-            delta={deltas.clients}
-            icon={UsersIcon}
-            iconClass="bg-emerald-100 text-emerald-600"
-          />
+          <CardHeader>
+            <CardDescription>Новые клиенты {win.suffix}</CardDescription>
+            <CardTitle className="text-3xl font-bold tracking-tight tabular-nums">
+              {stats.userCount.toLocaleString("ru-RU")}
+            </CardTitle>
+            {deltas.clients !== null && (
+              <div className="flex items-center gap-2">
+                <DeltaBadge pct={deltas.clients} />
+                <span className="text-xs text-muted-foreground">{win.prevLabel}</span>
+              </div>
+            )}
+          </CardHeader>
           <CardContent className="flex-1 flex items-end">
             {series.length === 0 ? <EmptyChart /> : <ClientsLineChart data={series} />}
           </CardContent>
@@ -532,7 +531,7 @@ export default async function AdminDashboardPage({
         <Card>
           <CardHeader>
             <CardTitle>Топ услуги</CardTitle>
-            <CardDescription>Продажи {suffix}</CardDescription>
+            <CardDescription>Продажи {win.suffix}</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 flex items-center">
             {top.length === 0 ? <EmptyChart /> : <TopServicesChart data={top} />}
@@ -540,8 +539,8 @@ export default async function AdminDashboardPage({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Бустеры</CardTitle>
-            <CardDescription>Заказы и заработок {suffix}</CardDescription>
+            <CardTitle>Качеры</CardTitle>
+            <CardDescription>Заказы и заработок {win.suffix}</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 flex items-center">
             {boosterStats.length === 0 ? <EmptyChart /> : <BoostersChart data={boosterStats} />}
@@ -568,69 +567,72 @@ export default async function AdminDashboardPage({
   );
 }
 
-/** Big bold number + colored icon chip + delta badge — the headline of each card. */
-function MetricHeader({
+/** «30 заказов» — Russian plural for the hint under выручка. */
+function plural(n: number, forms: [string, string, string]) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return forms[0];
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return forms[1];
+  return forms[2];
+}
+
+/** One term of the выручка − комиссии = прибыль equation. */
+function Figure({
+  label,
+  value,
+  hint,
+  className,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  className?: string;
+}) {
+  return (
+    <div className="flex min-w-[8.5rem] flex-1 flex-col gap-0.5">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className={cn("text-xl font-bold tracking-tight tabular-nums", className)}>
+        {value}
+      </span>
+      {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
+    </div>
+  );
+}
+
+function Operator({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="flex shrink-0 items-center px-1 text-lg text-muted-foreground">
+      {children}
+    </span>
+  );
+}
+
+/** Label → value row of the «Ещё за период» list. */
+function StatRow({
   label,
   value,
   delta,
-  icon: Icon,
-  iconClass,
+  accent = false,
 }: {
   label: string;
   value: string;
   delta: number | null;
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
-  iconClass: string;
+  accent?: boolean;
 }) {
   return (
-    <CardHeader>
-      <CardDescription>{label}</CardDescription>
-      <CardTitle className="text-3xl font-bold tracking-tight tabular-nums">
-        {value}
-      </CardTitle>
-      <CardAction>
-        <div className={cn("flex size-10 items-center justify-center rounded-xl", iconClass)}>
-          <Icon className="size-5" strokeWidth={2.25} />
-        </div>
-      </CardAction>
-      {delta !== null && (
-        <div className="flex items-center gap-2">
-          <DeltaBadge pct={delta} />
-          <span className="text-xs text-muted-foreground">к пред. месяцу</span>
-        </div>
-      )}
-    </CardHeader>
-  );
-}
-
-/** One labelled money figure with a color swatch — used for the gross/net pair
- *  on top of the revenue hero. The swatch matches the chart's area color. */
-function RevenueStat({
-  label,
-  value,
-  color,
-  delta,
-}: {
-  label: string;
-  value: number;
-  color: string;
-  delta: number | null;
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-        <span className="size-2.5 shrink-0 rounded-[2px]" style={{ backgroundColor: color }} />
-        {label}
+    <div className="flex items-center justify-between gap-3 py-2 first:pt-0 last:pb-0">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="flex items-center gap-2">
+        {delta !== null && <DeltaBadge pct={delta} />}
+        <span
+          className={cn(
+            "text-sm font-semibold tabular-nums",
+            accent && "text-amber-600"
+          )}
+        >
+          {value}
+        </span>
       </span>
-      <span className="text-3xl font-bold tracking-tight tabular-nums">
-        {value.toLocaleString("ru-RU")} ₽
-      </span>
-      {delta !== null && (
-        <div className="flex items-center gap-2">
-          <DeltaBadge pct={delta} />
-          <span className="text-xs text-muted-foreground">к пред. месяцу</span>
-        </div>
-      )}
     </div>
   );
 }
@@ -654,7 +656,7 @@ function DeltaBadge({ pct }: { pct: number }) {
 
 function EmptyChart() {
   return (
-    <div className="flex h-[220px] items-center justify-center text-sm text-muted-foreground">
+    <div className="flex h-[220px] w-full items-center justify-center text-sm text-muted-foreground">
       Нет данных за выбранный период
     </div>
   );

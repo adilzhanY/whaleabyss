@@ -12,6 +12,8 @@ import {
   LineChart,
   Pie,
   PieChart,
+  Rectangle,
+  type RectangleProps,
   XAxis,
   YAxis,
 } from "recharts";
@@ -492,4 +494,74 @@ function pluralizeOrders(n: number): string {
   if (mod10 === 1 && mod100 !== 11) return "заказ";
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return "заказа";
   return "заказов";
+}
+
+// ── Profit breakdown: what we kept vs what we paid out ───────────────────────
+// One stacked bar per bucket: the brand-blue base is the profit that stayed
+// with us, the amber cap is the booster commission. Height = gross revenue, so
+// the split is readable without a second axis.
+
+const profitBreakdownConfig = {
+  net: { label: "Прибыль", color: "var(--chart-1)" },
+  commission: { label: "Комиссии качеров", color: "var(--chart-4)" },
+} satisfies ChartConfig;
+
+export function ProfitBreakdownChart({ data }: { data: SeriesPoint[] }) {
+  return (
+    // h-full so the chart fills the hero card instead of leaving a white gap
+    // under it when the neighbouring column is taller.
+    <ChartContainer config={profitBreakdownConfig} className="aspect-auto h-full min-h-[240px] w-full">
+      <BarChart accessibilityLayer data={data}>
+        {/* Same vertical fade as the orders chart: full-strength brand colour at
+            the top of the segment, lighter and more transparent at its base.
+            Each stacked segment gets its own gradient (objectBoundingBox), so
+            the amber cap fades independently of the blue base. */}
+        <defs>
+          <linearGradient id="fillProfitNet" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--color-net)" stopOpacity={0.95} />
+            <stop offset="100%" stopColor="var(--chart-2)" stopOpacity={0.45} />
+          </linearGradient>
+          <linearGradient id="fillProfitCommission" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--color-commission)" stopOpacity={0.95} />
+            <stop offset="100%" stopColor="var(--color-commission)" stopOpacity={0.45} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid vertical={false} />
+        <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+        <YAxis tickLine={false} axisLine={false} width={68} tickFormatter={compactRub} />
+        <ChartTooltip
+          content={<ChartTooltipContent formatter={(value, name) => (
+            <div className="flex w-full items-center justify-between gap-3">
+              <span className="text-muted-foreground">
+                {profitBreakdownConfig[name as keyof typeof profitBreakdownConfig]?.label ?? name}
+              </span>
+              <span className="font-mono font-medium tabular-nums">{fullRub(Number(value))}</span>
+            </div>
+          )} />}
+        />
+        {/* Per-cell radius: the blue base is rounded at the bottom, and ALSO at
+            the top whenever there is no commission stacked on it — otherwise
+            those buckets would be the only ones with a flat top. */}
+        <Bar
+          dataKey="net"
+          stackId="money"
+          fill="url(#fillProfitNet)"
+          maxBarSize={44}
+          shape={(props: RectangleProps & { payload?: SeriesPoint }) => (
+            <Rectangle
+              {...props}
+              radius={props.payload && props.payload.commission > 0 ? [0, 0, 10, 10] : [10, 10, 10, 10]}
+            />
+          )}
+        />
+        <Bar
+          dataKey="commission"
+          stackId="money"
+          fill="url(#fillProfitCommission)"
+          radius={[10, 10, 0, 0]}
+          maxBarSize={44}
+        />
+      </BarChart>
+    </ChartContainer>
+  );
 }

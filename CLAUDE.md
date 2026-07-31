@@ -344,6 +344,31 @@ const result = await db.select().from(services).where(eq(services.id, id));
   job auto-cancels an order while the user is still slowly completing payment on FK's page.
   Orders with `paymentId` already set are never re-processed.
 
+**Admin Dashboard (`/admin`) — «отчёт о прибыли»:**
+- The headline is **прибыль**, and the card spells out how it was reached:
+  **выручка − комиссии качеров = прибыль**, over the selected window. The stacked bar
+  chart under it is the same split per bucket (blue = kept, amber = paid out), which is
+  why there is no separate «Заработок бустеров» card any more — it plotted the same series.
+- **«Расходы» are ONLY booster commissions.** Hosting, ads, taxes and acquiring fees are
+  not in the DB at all, so the margin reads ~83%. The label says «Комиссии качеров» on
+  purpose — do not rename it to «Расходы» without first adding a real expenses table.
+- **Time window: `?period=month|quarter|year` + `?anchor=YYYY-MM`** (`app/admin/_components/period.ts`).
+  Buckets differ per scope — weeks inside a month, months inside a quarter/year — because at
+  ~30 orders a month a per-day axis is mostly empty (13 of 31 days in July 2026 had none).
+  `?month=` from old bookmarks is still honoured as the anchor. The месяц/квартал/год
+  switcher is the **HeroUI `Tabs`** pill — the same component as «Войти / Регистрация» in
+  `AuthModal` — styled with slate utilities (only those are remapped by `admin-dark`);
+  its indicator carries `.period-tab-indicator` because `bg-white` remaps DARKER than the
+  track on black, which made the selected tab read as a hole.
+  - The quarter/year bucket expression **inlines the month offset with `sql.raw`**. Bound as
+    a parameter, `extract(month from …)::int - $1` fails outright — Postgres can't infer the
+    type of a bare parameter there.
+- Deltas always name their baseline (`win.prevLabel` → «к июню 2026»). A raw «+218%» is
+  misleading here: revenue before **2026-06-19** is written off as «учебная» (see
+  `lessonOrders.ts`), so any window spanning that date compares against a partly zeroed base.
+- **Средний чек** divides by orders whose money was actually counted (non-refunded,
+  post-cutoff), not by all orders in the window.
+
 **Order Lifecycle Cleanup:**
 - `pending` orders older than 1 hour are auto-flipped to `cancelled` (abandoned checkouts).
 - `cancelled` orders with `paymentId IS NULL` and `updatedAt` older than 1 day are hard-deleted.

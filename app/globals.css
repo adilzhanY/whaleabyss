@@ -991,6 +991,11 @@ body:has(#admin-root.admin-dark) {
   /* Sidebar active pill: elevated grey (not brand indigo) — after the
      bg-slate-900 remap above so it wins by order. */
   .admin-nav-pill { background-color: #27272a; }
+  /* Dashboard period switcher (HeroUI Tabs.Indicator): its light-theme fill is
+     `bg-white`, which the remap above turns into #0a0a0a — DARKER than the
+     `bg-slate-100` track, so the selected tab read as a hole instead of a
+     raised chip. Same elevated grey as the nav pill. */
+  .period-tab-indicator { background-color: #27272a; }
 
   /* ── Text ──────────────────────────────────────────────────────────────── */
   .text-slate-900 { color: #f5f5f5; }

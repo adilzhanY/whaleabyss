@@ -38,8 +38,25 @@ export default async function PortalLayout({
   }
 
   return (
-    <PortalShell boosterName={`${ctx.booster.firstName} ${ctx.booster.lastName}`}>
-      {children}
-    </PortalShell>
+    // id="admin-root" on purpose, portal or not: the entire dark palette in
+    // globals.css is scoped to `body:has(#admin-root.admin-dark)`, and the
+    // portal is built from the same slate/white utility vocabulary as the
+    // admin — one anchor id gives it the identical theme with zero new CSS.
+    // The theme preference is shared with /admin via the same storage key;
+    // that is a feature (one mechanism), not an accident.
+    // suppressHydrationWarning: the inline script below may add `admin-dark`
+    // before React hydrates (same pattern as app/admin/layout.tsx).
+    <div id="admin-root" suppressHydrationWarning>
+      {/* Applies the saved theme synchronously during HTML parse — no
+          light-theme flash. Key must match ThemeSwitch's ADMIN_THEME_KEY. */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `try{if(localStorage.getItem("whaleabyss:admin:theme")==="dark")document.currentScript.parentElement.classList.add("admin-dark")}catch(e){}`,
+        }}
+      />
+      <PortalShell boosterName={`${ctx.booster.firstName} ${ctx.booster.lastName}`}>
+        {children}
+      </PortalShell>
+    </div>
   );
 }

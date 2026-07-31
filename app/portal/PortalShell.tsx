@@ -13,6 +13,9 @@ import {
   LogOut,
   Menu as MenuIcon,
 } from "lucide-react";
+// The admin switch verbatim: the portal shares the admin theme scope (see the
+// #admin-root note in app/portal/layout.tsx), so the same component drives it.
+import ThemeSwitch from "@/app/admin/_components/ThemeSwitch";
 
 /**
  * Booster portal shell — same look & behaviour as AdminShell (collapsible
@@ -53,22 +56,21 @@ export default function PortalShell({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Persist sidebar collapsed state across page navigations.
+  // Apply the persisted collapsed state after first paint. Scheduled (rAF)
+  // rather than set synchronously in the effect body — the server always
+  // renders expanded, so this is a deliberate post-hydration correction.
   useEffect(() => {
-    const saved = localStorage.getItem(SIDEBAR_STATE_KEY);
-    if (saved === "1") setCollapsed(true);
-    setMounted(true);
+    const id = requestAnimationFrame(() => {
+      if (localStorage.getItem(SIDEBAR_STATE_KEY) === "1") setCollapsed(true);
+      setMounted(true);
+    });
+    return () => cancelAnimationFrame(id);
   }, []);
 
   useEffect(() => {
     if (!mounted) return;
     localStorage.setItem(SIDEBAR_STATE_KEY, collapsed ? "1" : "0");
   }, [collapsed, mounted]);
-
-  // Close mobile drawer on navigation.
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
 
   const sidebarWidth = collapsed ? "w-[76px]" : "w-[248px]";
 
@@ -88,7 +90,12 @@ export default function PortalShell({
       {/* Sidebar */}
       <aside
         className={[
-          "fixed lg:static inset-y-0 left-0 z-40",
+          "fixed inset-y-0 left-0 z-40",
+          // Desktop: sticky at viewport height, same recipe as AdminShell — as
+          // a `static` item the sidebar stretched to the whole document height
+          // and scrolled away with the page. `bottom-auto` undoes `inset-y-0`:
+          // a sticky box with both top and bottom pinned can't move.
+          "lg:sticky lg:top-0 lg:bottom-auto lg:h-screen lg:self-start",
           "flex flex-col",
           "bg-white border-r border-slate-200",
           "transition-[width,transform] duration-300 ease-out",
@@ -136,6 +143,9 @@ export default function PortalShell({
               <Link
                 key={item.href}
                 href={item.href}
+                // Closes the mobile drawer on tap — event-driven, instead of
+                // the old watch-pathname effect (a lint-flagged sync setState).
+                onClick={() => setMobileOpen(false)}
                 title={collapsed ? item.label : undefined}
                 className={[
                   "group flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors",
@@ -237,6 +247,7 @@ export default function PortalShell({
               {breadcrumbLabel(pathname)}
             </div>
           </div>
+          <ThemeSwitch />
           <button
             onClick={() => router.push("/")}
             className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"

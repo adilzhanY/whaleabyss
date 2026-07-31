@@ -6,8 +6,15 @@ import ManualOrderForm from "./ManualOrderForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewManualOrderPage() {
+export default async function NewManualOrderPage({
+  searchParams,
+}: {
+  // `?userId=` is how the user card's «Заказ вручную» button pre-selects the
+  // customer. Resolved on the server so the form gets it on the first render.
+  searchParams: Promise<{ userId?: string }>;
+}) {
   await requireAdminPage();
+  const { userId } = await searchParams;
 
   const userList = await db
     .select({ id: users.id, username: users.username, email: users.email })
@@ -20,5 +27,11 @@ export default async function NewManualOrderPage() {
     .where(eq(services.isTestService, false))
     .orderBy(asc(services.title));
 
-  return <ManualOrderForm users={userList} services={serviceList} />;
+  return (
+    <ManualOrderForm
+      users={userList}
+      services={serviceList}
+      initialUserId={userId ?? null}
+    />
+  );
 }

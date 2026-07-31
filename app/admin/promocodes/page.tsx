@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Chip } from "@heroui/react";
 import { Plus, Trash2, Calendar, Percent } from "lucide-react";
 import Link from "next/link";
 import PageHeader from "../_components/PageHeader";
+import DataTable, { type Column } from "../_components/DataTable";
 import { confirmDialog } from "@/store/useConfirm";
 
 interface Promocode {
@@ -15,9 +17,12 @@ interface Promocode {
   usageCount: number;
 }
 
+const PROMOCODES_PER_PAGE = 10;
+
 export default function PromocodesPage() {
   const [promocodes, setPromocodes] = useState<Promocode[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     fetchPromocodes();
@@ -65,6 +70,72 @@ export default function PromocodesPage() {
     return new Date(expiresAt) < new Date();
   };
 
+  const columns: Column<Promocode>[] = [
+    {
+      key: "code",
+      header: "Код",
+      render: (promo) => (
+        <span className="font-mono text-base font-bold text-blue-950">{promo.code}</span>
+      ),
+    },
+    {
+      key: "discount",
+      header: "Скидка",
+      render: (promo) => (
+        <span className="inline-flex items-center gap-1 text-sm font-semibold text-slate-700">
+          <Percent className="h-4 w-4 text-green-600" />
+          {promo.discountPercent}%
+        </span>
+      ),
+    },
+    {
+      key: "usage",
+      header: "Использований",
+      render: (promo) => (
+        <span className="text-sm font-semibold text-slate-700">{promo.usageCount} раз</span>
+      ),
+    },
+    {
+      key: "expires",
+      header: "Истекает",
+      render: (promo) => (
+        <span className="inline-flex items-center gap-2 whitespace-nowrap text-sm text-slate-600">
+          <Calendar className="h-4 w-4" />
+          {new Date(promo.expiresAt).toLocaleDateString("ru-RU")}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Статус",
+      render: (promo) => (
+        <Chip
+          size="sm"
+          variant="soft"
+          color={isExpired(promo.expiresAt) ? "danger" : "success"}
+          className="text-[11px] font-bold"
+        >
+          <Chip.Label>{isExpired(promo.expiresAt) ? "Истёк" : "Активен"}</Chip.Label>
+        </Chip>
+      ),
+    },
+    {
+      key: "actions",
+      header: "",
+      align: "right",
+      mobileLabel: "Действия",
+      render: (promo) => (
+        <button
+          onClick={() => handleDelete(promo.id)}
+          className="btn-danger-soft btn-sm text-xs"
+        >
+          <Trash2 className="h-4 w-4" />
+          Удалить
+        </button>
+      ),
+    },
+  ];
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -98,87 +169,16 @@ export default function PromocodesPage() {
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-100">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    Код
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    Скидка
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    Использований
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    Истекает
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    Статус
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    Действия
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {promocodes.map((promo) => {
-                  const expired = isExpired(promo.expiresAt);
-                  return (
-                    <tr key={promo.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono font-bold text-blue-950 text-lg">
-                            {promo.code}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1 text-sm font-semibold text-slate-700">
-                          <Percent className="w-4 h-4 text-green-600" />
-                          {promo.discountPercent}%
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-sm font-semibold text-slate-700">
-                          {promo.usageCount} раз
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                          <Calendar className="w-4 h-4" />
-                          {new Date(promo.expiresAt).toLocaleDateString("ru-RU")}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        {expired ? (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-100 text-red-700">
-                            Истёк
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-green-100 text-green-700">
-                            Активен
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => handleDelete(promo.id)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium text-red-600 hover:bg-red-50 transition-colors shadow-sm hover:shadow"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Удалить
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <DataTable
+          columns={columns}
+          data={promocodes}
+          getRowKey={(promo) => promo.id}
+          page={page}
+          // Paginate only when it actually overflows — otherwise the footer
+          // just prints «1–3 из 3» under three rows.
+          {...(promocodes.length > PROMOCODES_PER_PAGE ? { pageSize: PROMOCODES_PER_PAGE } : {})}
+          onPageChange={setPage}
+        />
       )}
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Hash,
@@ -14,6 +15,7 @@ import {
   Pencil,
 } from "lucide-react";
 import OrderStatusBadge from "../../_components/OrderStatusBadge";
+import DataTable, { type Column } from "../../_components/DataTable";
 import CopyableText, { CopyButton } from "../../_components/CopyableText";
 import EditBoosterModal from "./EditBoosterModal";
 import DocumentsCard, { type BoosterDocument } from "./DocumentsCard";
@@ -62,10 +64,54 @@ export default function BoosterDetailPage({
   params: Promise<{ boosterId: string }>;
 }) {
   const { boosterId } = use(params);
+  const router = useRouter();
   const [data, setData] = useState<Payload | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [ordersPage, setOrdersPage] = useState(1);
+
+  const orderColumns: Column<AssignedOrder>[] = [
+    {
+      key: "id",
+      header: "ID заказа",
+      render: (o) => <span className="font-mono text-xs text-slate-500">{o.id.slice(0, 8)}</span>,
+    },
+    { key: "client", header: "Клиент", render: (o) => o.username ?? "— гость —" },
+    {
+      key: "status",
+      header: "Статус",
+      render: (o) => <OrderStatusBadge status={o.status ?? "pending"} />,
+    },
+    {
+      key: "total",
+      header: "Сумма",
+      align: "right",
+      render: (o) => (
+        <span className="font-medium tabular-nums">
+          {Number(o.totalPrice).toLocaleString("ru-RU")} ₽
+        </span>
+      ),
+    },
+    {
+      key: "earning",
+      header: "Заработок",
+      align: "right",
+      render: (o) => (
+        <span className="font-medium tabular-nums text-emerald-600">
+          {o.boosterEarning != null
+            ? `+${Number(o.boosterEarning).toLocaleString("ru-RU")} ₽`
+            : "—"}
+        </span>
+      ),
+    },
+    {
+      key: "date",
+      header: "Дата",
+      align: "right",
+      render: (o) => <span className="whitespace-nowrap text-slate-500">{fmtDate(o.createdAt)}</span>,
+    },
+  ];
 
   useEffect(() => {
     (async () => {
@@ -216,47 +262,19 @@ export default function BoosterDetailPage({
       {/* Documents (agreement + passport scan, private bucket) */}
       <DocumentsCard key={b.id} boosterId={b.id} initialDocuments={documents ?? []} />
 
-      {/* Orders */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider p-6 pb-4">Заказы качера</h2>
-        {orders.length === 0 ? (
-          <p className="px-6 pb-6 text-sm text-slate-500">Заказов пока нет</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 border-y border-slate-100">
-                <tr className="text-slate-500 text-xs uppercase tracking-wider">
-                  <th className="text-left font-medium px-6 py-3">ID заказа</th>
-                  <th className="text-left font-medium px-6 py-3">Клиент</th>
-                  <th className="text-left font-medium px-6 py-3">Статус</th>
-                  <th className="text-right font-medium px-6 py-3">Сумма</th>
-                  <th className="text-right font-medium px-6 py-3">Заработок</th>
-                  <th className="text-right font-medium px-6 py-3">Дата</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {orders.map((o) => (
-                  <tr key={o.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-3 font-mono text-xs text-slate-500">
-                      <Link href={`/admin/orders/${o.id}`} className="hover:text-indigo-600">
-                        {o.id.slice(0, 8)}...
-                      </Link>
-                    </td>
-                    <td className="px-6 py-3">{o.username ?? "— гость —"}</td>
-                    <td className="px-6 py-3">
-                      <OrderStatusBadge status={o.status ?? "pending"} />
-                    </td>
-                    <td className="px-6 py-3 text-right font-medium">{Number(o.totalPrice).toLocaleString("ru-RU")} ₽</td>
-                    <td className="px-6 py-3 text-right font-medium text-emerald-600">
-                      {o.boosterEarning != null ? `+${Number(o.boosterEarning).toLocaleString("ru-RU")} ₽` : "—"}
-                    </td>
-                    <td className="px-6 py-3 text-right text-slate-500 whitespace-nowrap">{fmtDate(o.createdAt)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+      {/* Orders — shared DataTable, same as every other admin list. */}
+      <div className="space-y-3">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">Заказы качера</h2>
+        <DataTable
+          columns={orderColumns}
+          data={orders}
+          getRowKey={(o) => o.id}
+          emptyMessage="Заказов пока нет"
+          page={ordersPage}
+          {...(orders.length > 10 ? { pageSize: 10 } : {})}
+          onPageChange={setOrdersPage}
+          onRowClick={(o) => router.push(`/admin/orders/${o.id}`)}
+        />
       </div>
 
       {editing && (

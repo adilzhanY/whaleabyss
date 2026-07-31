@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Plus } from "lucide-react";
 import CustomSearchField from "@/components/CustomSearchField";
 import {
@@ -20,6 +21,11 @@ type Order = OrderRow;
 const ORDERS_PER_PAGE = 10;
 
 export default function AdminOrdersPage() {
+  // `?search=` lets other pages deep-link into a filtered list — the user card
+  // links here with the customer's e-mail. Only seeds the initial value; the
+  // field owns it afterwards.
+  const initialSearch = useSearchParams().get("search") ?? "";
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -30,8 +36,8 @@ export default function AdminOrdersPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
 
   // Guards against out-of-order responses: only the latest request's result wins.
   const reqIdRef = useRef(0);

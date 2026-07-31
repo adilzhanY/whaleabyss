@@ -734,22 +734,33 @@ TypeScript paths configured in `tsconfig.json`:
 
 ### Use the shared component — always
 
+> **Never hand-roll a button or a chip. Not once, not "just for this admin page".**
+> A `<button className="rounded-lg border px-3 py-1.5 text-xs font-bold …">` or a
+> `<span className="rounded-full bg-amber-50 px-2.5 py-0.5 …">` is a **bug**, even when it
+> looks fine in the screenshot: it misses the press animation, the focus ring, the
+> disabled state, and both dark palettes, and it makes the next redesign an N-file
+> find-and-replace. **Every button is `.btn-*` from globals.css. Every chip is HeroUI
+> `Chip`.** This applies to the **admin panel** exactly as it does to `/`, `/services`
+> and `/profile` — the admin is not a place where the rules are looser.
+
 **Before building any new feature, screen or element, check this table first.** Reach for
 the existing component; if it *almost* fits, add a prop to it. Only build something new
 when nothing here applies — and then put it in `components/` with its look in globals.css,
-never as one-off classes on a page. Two rounds of drift have already been paid for: 18
-`CustomSelect` call sites in 4 different looks, and an icon hand-positioned over an input
-on 4 pages (which overlapped the text on all of them).
+never as one-off classes on a page. Three rounds of drift have already been paid for: 18
+`CustomSelect` call sites in 4 different looks, an icon hand-positioned over an input on 4
+pages (which overlapped the text on all of them), and a fresh admin page that shipped with
+its own `<span>` chips and three bespoke button styles before being rewritten onto the
+shared ones.
 
 | Need | Use |
 | --- | --- |
-| Button | `.btn-primary` / `-secondary` / `-tertiary` / `-outline` / `-ghost` / `-danger` / `-danger-soft` (HeroUI's button spec ported to our palette, globals.css) |
+| Button | `.btn-primary` / `-secondary` / `-tertiary` / `-outline` / `-ghost` / `-danger` / `-danger-soft`, plus `.btn-sm` / `.btn-lg` / `.btn-icon-only` (HeroUI's button spec ported to our palette, globals.css) |
 | Text / number / password field | `components/CustomInput.tsx` |
 | Multi-line text | `components/Textarea.tsx` |
 | Search field | `components/CustomSearchField.tsx` |
 | Dropdown | `components/CustomSelect.tsx` (never a native `<select>`) |
 | Date range | `components/CustomDateRangePicker.tsx` |
-| Badge / tag / status pill | HeroUI `Chip` (see `components/ServiceCard.tsx`) |
+| Badge / tag / status pill | HeroUI `Chip` + `<Chip.Label>` (see `components/ServiceCard.tsx`) |
 | Confirm / destructive prompt | `confirmDialog()` from `store/useConfirm.ts` |
 | Telegram glyph | `components/TelegramIcon.tsx` (not the lucide `Send` icon) |
 | Table with paging | `app/admin/_components/DataTable.tsx` |
@@ -759,6 +770,13 @@ Rules that apply to all of them: call sites pass **layout only** (`className` fo
 **admin-dark and site-dark** palettes, because HeroUI's own tokens only flip on its `.dark`
 selector which this site does not use; and a HeroUI component also needs its stylesheet
 imported at the top of globals.css (`@import "@heroui/styles/components/<name>.css"`).
+
+**Chip colours are `default | accent | danger | success | warning`** (`variant`:
+`soft | secondary | primary | tertiary`) — there is deliberately no brand-blue chip, so a
+neutral fact is `color="default" variant="secondary"` and only a signal that needs spotting
+gets a colour. If a chip needs a shade the palette doesn't have, add it to the
+`.chip--*` block in globals.css (with both dark palettes), never as inline classes on
+one page.
 - Admin list pages (`/admin/users`, `/admin/boosters`) share a filter+search pattern: `CustomSelect` dropdowns + a debounced `CustomSearchField`
 - **Server-side pagination (orders + users lists):** `/admin/orders` and `/admin/users` do all
   filtering/sorting/paging in SQL — the API takes `?page&pageSize&sort&…&search` and returns

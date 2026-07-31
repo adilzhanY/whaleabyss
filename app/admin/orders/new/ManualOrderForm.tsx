@@ -38,14 +38,19 @@ const fmt = (n: number) => n.toLocaleString("ru-RU", { minimumFractionDigits: 0,
 export default function ManualOrderForm({
   users,
   services,
+  initialUserId = null,
 }: {
   users: UserOption[];
   services: ServiceOption[];
+  /** Pre-selected customer, from `/admin/orders/new?userId=` on the user card. */
+  initialUserId?: string | null;
 }) {
   const router = useRouter();
 
   // Customer
-  const [selectedUser, setSelectedUser] = useState<UserOption | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserOption | null>(
+    () => users.find((u) => u.id === initialUserId) ?? null
+  );
   const [userSearch, setUserSearch] = useState("");
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 

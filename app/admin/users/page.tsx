@@ -8,7 +8,7 @@ import DataTable, { type Column } from "../_components/DataTable";
 import PageHeader from "../_components/PageHeader";
 import CopyableText from "../_components/CopyableText";
 import CopyableTelegram from "../_components/CopyableTelegram";
-import OrderDateRangePicker from "../_components/OrderDateRangePicker";
+import CustomDateRangePicker from "@/components/CustomDateRangePicker";
 
 interface User {
   id: string;
@@ -228,7 +228,7 @@ export default function AdminUsersPage() {
           </div>
 
           <div className="w-full sm:w-72">
-            <OrderDateRangePicker
+            <CustomDateRangePicker
               label="Период регистрации"
               startDate={startDate}
               endDate={endDate}

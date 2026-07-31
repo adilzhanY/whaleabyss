@@ -13,7 +13,7 @@ import DataTable from "../_components/DataTable";
 import { buildOrderColumns, type OrderRow } from "../_components/orderColumns";
 import { isLessonOrder, LESSON_ROW_CLASS } from "../_components/lessonOrders";
 import PageHeader from "../_components/PageHeader";
-import OrderDateRangePicker from "../_components/OrderDateRangePicker";
+import CustomDateRangePicker from "@/components/CustomDateRangePicker";
 
 type Order = OrderRow;
 
@@ -144,7 +144,7 @@ export default function AdminOrdersPage() {
           </div>
 
           <div className="w-full sm:w-72">
-            <OrderDateRangePicker
+            <CustomDateRangePicker
               label="Период"
               startDate={startDate}
               endDate={endDate}

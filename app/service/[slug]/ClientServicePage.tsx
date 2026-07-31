@@ -10,7 +10,7 @@ import { ServiceItem } from "@/lib/services";
 import { useAddToCartWithAddons } from "@/components/QuestAddonModal";
 import { parseMinAdventureRank } from "@/lib/adventureRank";
 import { Info, ShoppingCart, Gauge, Loader2, AlertTriangle, MessageCircle, Star, Plus, ArrowRight } from "lucide-react";
-import DateInput from "@/components/DateInput";
+import CustomDateRangePicker from "@/components/CustomDateRangePicker";
 import ServiceCard from "@/components/ServiceCard";
 import Breadcrumb from "@/components/Breadcrumb";
 
@@ -133,14 +133,24 @@ export default function ClientServicePage({ service, recommended = [] }: ClientS
   const [startDate, setStartDate] = useState(todayYMD);
   const [endDate, setEndDate] = useState(toLocalYMD(tomorrowDate));
 
-  // Calculate days difference (inclusive)
+  // Day count is INCLUSIVE of both ends: 28/07 → 29/07 is 2 days, not 1.
+  // Both strings are `yyyy-mm-dd`, which Date parses as UTC midnight, so the
+  // difference is always a whole number of days (no DST skew to round away).
   const start = new Date(startDate);
   const end = new Date(endDate);
   const timeDiff = end.getTime() - start.getTime();
-  const calculatedDays = timeDiff >= 0 ? Math.floor(timeDiff / (1000 * 3600 * 24)) + 1 : 1;
+  // NaN when either field is mid-edit/empty, and NaN >= 0 is false — so an
+  // incomplete range falls back to 1 rather than rendering "NaN дней".
+  const hasValidRange = Boolean(startDate) && Boolean(endDate) && timeDiff >= 0;
+  const calculatedDays = hasValidRange
+    ? Math.round(timeDiff / (1000 * 3600 * 24)) + 1
+    : 1;
 
   // Use calculatedDays if per day, otherwise default to 1
   const activeDays = service.isPerDay ? calculatedDays : 1;
+  // A per-day service with no period would reach checkout with empty dates and
+  // be rejected there — block it at the button instead.
+  const rangeMissing = service.isPerDay && !hasValidRange;
 
   const pricePerItem = service.price;
   const totalPrice = pricePerItem * activeDays;
@@ -291,30 +301,24 @@ export default function ClientServicePage({ service, recommended = [] }: ClientS
         Выберите срок обслуживания: {activeDays} дн.
       </label>
       <div className="flex flex-col gap-4 mt-4">
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">
-              Дата начала
-            </label>
-            <DateInput
-              value={currentStartDate}
-              min={todayYMD}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="text-sm"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">
-              Дата окончания
-            </label>
-            <DateInput
-              value={currentEndDate}
-              min={currentStartDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="text-sm"
-            />
-          </div>
-        </div>
+        {/* One range instead of two independent day fields: the calendar can't
+            produce end < start, so the "end before start" state is unreachable
+            rather than merely validated after the fact. Not clearable — a
+            per-day service has no meaning without a period. */}
+        <CustomDateRangePicker
+          label="Период обслуживания"
+          labelClassName="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2 block"
+          startDate={currentStartDate}
+          endDate={currentEndDate}
+          minDate={todayYMD}
+          fieldSize="md"
+          months={2}
+          clearable={false}
+          onChange={(start, end) => {
+            setStartDate(start);
+            setEndDate(end);
+          }}
+        />
         <div className="p-3 bg-blue-50 rounded-xl border border-blue-100 flex items-start gap-2.5">
           <Info className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
           <div>
@@ -345,7 +349,7 @@ export default function ClientServicePage({ service, recommended = [] }: ClientS
   const buyButton = (
     <button
       onClick={handleAdd}
-      disabled={addPending}
+      disabled={addPending || rangeMissing}
       aria-busy={addPending}
       className="btn-primary w-full !px-6 !py-4 !text-base flex items-center justify-center gap-2 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
     >
@@ -354,7 +358,13 @@ export default function ClientServicePage({ service, recommended = [] }: ClientS
       ) : (
         <ShoppingCart className="w-5 h-5" />
       )}
-      <span>{addPending ? "Добавляем..." : "Добавить в корзину"}</span>
+      <span>
+        {addPending
+          ? "Добавляем..."
+          : rangeMissing
+            ? "Выберите период"
+            : "Добавить в корзину"}
+      </span>
     </button>
   );
 

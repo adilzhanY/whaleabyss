@@ -1075,13 +1075,13 @@ body:has(#admin-root.admin-dark) {
    horizontally when switching between them. */
 html:has(#admin-root) { scrollbar-gutter: stable; }
 
-#admin-root .date-range-picker {
+.custom-date-range-picker .date-range-picker {
   /* Block-level flex: the default inline-level box leaves a ~6px line-box
      gap under the picker inside its column wrapper, making the column taller
      than the selects' and pushing them down (items-end row). */
   display: flex;
 }
-#admin-root .date-input-group {
+.custom-date-range-picker .date-input-group {
   background-color: #f1f5f9; /* filled, borderless — like the select triggers */
   border: none;
   border-radius: var(--r-card); /* matches the select triggers */
@@ -1091,53 +1091,61 @@ html:has(#admin-root) { scrollbar-gutter: stable; }
   color: #334155;
   box-shadow: none;
 }
-#admin-root .date-input-group:focus-within {
+.custom-date-range-picker .date-input-group:focus-within {
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
 }
-#admin-root .date-input-group__segment {
+.custom-date-range-picker .date-input-group__segment {
   color: #334155;
   border-radius: 0.25rem;
   outline: none;
 }
-#admin-root .date-input-group__segment[data-placeholder="true"],
-#admin-root .date-input-group__segment[data-type="literal"] {
+.custom-date-range-picker .date-input-group__segment[data-placeholder="true"],
+.custom-date-range-picker .date-input-group__segment[data-type="literal"] {
   color: #94a3b8;
 }
-#admin-root .date-input-group__segment:focus {
+.custom-date-range-picker .date-input-group__segment:focus {
   background-color: #dbeafe;
   color: #1e3a8a;
 }
-#admin-root .date-range-picker__range-separator {
+.custom-date-range-picker .date-range-picker__range-separator {
   color: #94a3b8;
   padding: 0 0.25rem;
 }
-#admin-root .date-input-group__suffix {
+.custom-date-range-picker .date-input-group__suffix {
   display: flex;
   align-items: center;
   gap: 0.375rem;
   color: #64748b;
 }
-#admin-root .date-range-picker__trigger {
+.custom-date-range-picker .date-range-picker__trigger {
   color: #64748b;
   cursor: pointer;
   border-radius: 0.375rem;
   padding: 0.125rem;
   transition: color 120ms ease, background-color 120ms ease;
 }
-#admin-root .date-range-picker__trigger:hover {
+.custom-date-range-picker .date-range-picker__trigger:hover {
   color: #0f172a;
   background-color: #f1f5f9;
 }
 /* The indicator carries its own (token-broken) text class — pin it. */
-#admin-root .date-range-picker__trigger-indicator {
+.custom-date-range-picker .date-range-picker__trigger-indicator {
   color: #64748b;
 }
-#admin-root .date-range-picker__trigger:hover .date-range-picker__trigger-indicator {
+.custom-date-range-picker .date-range-picker__trigger:hover .date-range-picker__trigger-indicator {
   color: #0f172a;
 }
+/* `md` — matches .custom-input--md / .custom-search-field--md, so the picker
+   can sit beside the public site's form controls without drifting. The rules
+   above are the `sm` (admin toolbar) default. */
+.custom-date-range-picker--md .date-input-group {
+  height: 2.75rem;
+  padding: 0 1rem;
+  font-size: 0.9375rem;
+}
 
-/* Popover + calendar (rendered in a portal, but inside #admin-root's body
-   scope is not guaranteed — target the picker popover class directly). */
+/* Popover + calendar (rendered in a portal, so it is NOT inside the component
+   wrapper — these stay unscoped and are shared by every picker on the site). */
 .date-range-picker__popover {
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
@@ -1161,6 +1169,63 @@ html:has(#admin-root) { scrollbar-gutter: stable; }
   color: #475569;
   cursor: pointer;
   border-radius: 9999px;
+  /* Filled hit target: as bare glyphs the arrows disappear next to a mostly
+     disabled month, and users read the calendar as "these are the only
+     selectable days" (the /service per-day picker incident). */
+  background-color: #f1f5f9;
+  padding: 0.375rem;
+}
+/* Multi-month calendars: months sit side by side, stacked when narrow.
+   HeroUI pins .range-calendar to one month's width (`w-63` = 15.75rem) and
+   sets `container-type: inline-size` — layout containment, so `max-content`
+   computes to 0 and the width MUST be explicit: two months + the 1.25rem gap.
+   The grids flex to half the container each, so cells regain full size. */
+.range-calendar--multi {
+  width: 32.75rem;
+  max-width: none;
+}
+.range-calendar__months {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+.range-calendar__months > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+/* Per-grid month caption («июль 2026 г.») on multi-month calendars. */
+.range-calendar__month-caption {
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0f172a;
+  padding-bottom: 0.375rem;
+}
+/* Without the heading, the nav arrows own the header row — pin them right. */
+.range-calendar--multi .range-calendar__header {
+  justify-content: flex-end;
+  gap: 0.375rem;
+}
+html.site-dark body:has(#site-header) .range-calendar__month-caption,
+body:has(#admin-root.admin-dark) .range-calendar__month-caption {
+  color: #f5f5f5;
+}
+html.site-dark body:has(#site-header) .date-range-picker__popover .range-calendar__nav-button,
+body:has(#admin-root.admin-dark) .date-range-picker__popover .range-calendar__nav-button {
+  background-color: #262626;
+}
+@media (max-width: 640px) {
+  /* Stacked: back to the one-month width. */
+  .range-calendar--multi {
+    width: 15.75rem;
+  }
+  .range-calendar__months {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .range-calendar__months > * {
+    width: 100%;
+  }
 }
 .date-range-picker__popover .range-calendar__nav-button:hover {
   background-color: #f1f5f9;
@@ -1291,85 +1356,116 @@ body:has(#admin-root.admin-dark) .custom-search-field .search-field__clear-butto
 html.site-dark body:has(#site-header) .custom-search-field .search-field__clear-button:hover {
   color: #f5f5f5;
 }
+html.site-dark body:has(#site-header) .date-input-group,
 body:has(#admin-root.admin-dark) .date-input-group {
   background-color: #171717;
   color: #f5f5f5;
 }
+html.site-dark body:has(#site-header) .date-input-group:focus-within,
 body:has(#admin-root.admin-dark) .date-input-group:focus-within {
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25);
 }
+html.site-dark body:has(#site-header) .date-input-group__segment,
 body:has(#admin-root.admin-dark) .date-input-group__segment {
   color: #e5e5e5;
 }
+html.site-dark body:has(#site-header) .date-input-group__segment[data-placeholder="true"],
 body:has(#admin-root.admin-dark) .date-input-group__segment[data-placeholder="true"],
+html.site-dark body:has(#site-header) .date-input-group__segment[data-type="literal"],
 body:has(#admin-root.admin-dark) .date-input-group__segment[data-type="literal"] {
   color: #737373;
 }
+html.site-dark body:has(#site-header) .date-input-group__segment:focus,
 body:has(#admin-root.admin-dark) .date-input-group__segment:focus {
   background-color: rgba(37, 99, 235, 0.3);
   color: #bfdbfe;
 }
+html.site-dark body:has(#site-header) .date-range-picker__range-separator,
 body:has(#admin-root.admin-dark) .date-range-picker__range-separator {
   color: #737373;
 }
+html.site-dark body:has(#site-header) .date-input-group__suffix,
 body:has(#admin-root.admin-dark) .date-input-group__suffix {
   color: #a3a3a3;
 }
+html.site-dark body:has(#site-header) .date-range-picker__trigger,
 body:has(#admin-root.admin-dark) .date-range-picker__trigger {
   color: #a3a3a3;
 }
+html.site-dark body:has(#site-header) .date-range-picker__trigger:hover,
 body:has(#admin-root.admin-dark) .date-range-picker__trigger:hover {
   color: #f5f5f5;
   background-color: #262626;
 }
+html.site-dark body:has(#site-header) .date-range-picker__trigger-indicator,
 body:has(#admin-root.admin-dark) .date-range-picker__trigger-indicator {
   color: #a3a3a3;
 }
+html.site-dark body:has(#site-header) .date-range-picker__trigger:hover .date-range-picker__trigger-indicator,
 body:has(#admin-root.admin-dark) .date-range-picker__trigger:hover .date-range-picker__trigger-indicator {
   color: #f5f5f5;
 }
+html.site-dark body:has(#site-header) .date-range-picker__popover,
 body:has(#admin-root.admin-dark) .date-range-picker__popover {
   background-color: #171717;
   border-color: #303030;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
 }
+html.site-dark body:has(#site-header) .date-range-picker__popover .range-calendar__heading,
 body:has(#admin-root.admin-dark) .date-range-picker__popover .range-calendar__heading,
+html.site-dark body:has(#site-header) .date-range-picker__popover .calendar-year-picker__trigger,
 body:has(#admin-root.admin-dark) .date-range-picker__popover .calendar-year-picker__trigger {
   color: #f5f5f5;
 }
+html.site-dark body:has(#site-header) .date-range-picker__popover .calendar-year-picker__trigger:hover,
 body:has(#admin-root.admin-dark) .date-range-picker__popover .calendar-year-picker__trigger:hover,
+html.site-dark body:has(#site-header) .date-range-picker__popover .range-calendar__nav-button:hover,
 body:has(#admin-root.admin-dark) .date-range-picker__popover .range-calendar__nav-button:hover {
   background-color: #262626;
   color: #f5f5f5;
 }
+html.site-dark body:has(#site-header) .date-range-picker__popover .range-calendar__nav-button,
 body:has(#admin-root.admin-dark) .date-range-picker__popover .range-calendar__nav-button {
   color: #a3a3a3;
 }
+html.site-dark body:has(#site-header) .date-range-picker__popover .range-calendar__header-cell,
 body:has(#admin-root.admin-dark) .date-range-picker__popover .range-calendar__header-cell {
   color: #737373;
 }
+html.site-dark body:has(#site-header) .date-range-picker__popover .range-calendar__cell,
 body:has(#admin-root.admin-dark) .date-range-picker__popover .range-calendar__cell,
+html.site-dark body:has(#site-header) .date-range-picker__popover .calendar-year-picker__year-cell,
 body:has(#admin-root.admin-dark) .date-range-picker__popover .calendar-year-picker__year-cell {
   color: #d4d4d4;
 }
+html.site-dark body:has(#site-header) .date-range-picker__popover .range-calendar__cell[data-hovered="true"]:not([data-selected="true"]) .range-calendar__cell-button,
 body:has(#admin-root.admin-dark) .date-range-picker__popover .range-calendar__cell[data-hovered="true"]:not([data-selected="true"]) .range-calendar__cell-button,
+html.site-dark body:has(#site-header) .date-range-picker__popover .calendar-year-picker__year-cell[data-hovered="true"],
 body:has(#admin-root.admin-dark) .date-range-picker__popover .calendar-year-picker__year-cell[data-hovered="true"] {
   background-color: #262626;
 }
+html.site-dark body:has(#site-header) .date-range-picker__popover .range-calendar__cell-indicator,
 body:has(#admin-root.admin-dark) .date-range-picker__popover .range-calendar__cell-indicator {
   background-color: #737373;
 }
+html.site-dark body:has(#site-header) .date-range-picker__popover .range-calendar__cell[data-outside-month="true"],
 body:has(#admin-root.admin-dark) .date-range-picker__popover .range-calendar__cell[data-outside-month="true"],
+html.site-dark body:has(#site-header) .date-range-picker__popover .range-calendar__cell[data-disabled="true"],
 body:has(#admin-root.admin-dark) .date-range-picker__popover .range-calendar__cell[data-disabled="true"],
+html.site-dark body:has(#site-header) .date-range-picker__popover .range-calendar__cell[data-unavailable="true"],
 body:has(#admin-root.admin-dark) .date-range-picker__popover .range-calendar__cell[data-unavailable="true"] {
   color: #525252;
 }
+html.site-dark body:has(#site-header) .date-range-picker__popover .range-calendar__cell[data-selected="true"],
 body:has(#admin-root.admin-dark) .date-range-picker__popover .range-calendar__cell[data-selected="true"],
+html.site-dark body:has(#site-header) .date-range-picker__popover .calendar-year-picker__year-cell[data-selected="true"],
 body:has(#admin-root.admin-dark) .date-range-picker__popover .calendar-year-picker__year-cell[data-selected="true"] {
   background-color: rgba(37, 99, 235, 0.25);
   color: #93c5fd;
 }
+html.site-dark body:has(#site-header) .date-range-picker__popover .range-calendar__cell[data-selection-start="true"] .range-calendar__cell-button,
 body:has(#admin-root.admin-dark) .date-range-picker__popover .range-calendar__cell[data-selection-start="true"] .range-calendar__cell-button,
+html.site-dark body:has(#site-header) .date-range-picker__popover .range-calendar__cell[data-selection-end="true"] .range-calendar__cell-button,
 body:has(#admin-root.admin-dark) .date-range-picker__popover .range-calendar__cell[data-selection-end="true"] .range-calendar__cell-button {
   background-color: #2563eb;
   color: #ffffff;

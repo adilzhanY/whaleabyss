@@ -724,7 +724,41 @@ TypeScript paths configured in `tsconfig.json`:
 - **Every dropdown is `components/CustomSelect.tsx`; never a native `<select>`** (unstyleable OS chrome that breaks the brand). Full keyboard support (Enter/Space/arrows/Home/End/Esc) + `aria-activedescendant`, so it's a real replacement for the native control, not just a prettier one.
   - **Call sites pass layout only** — `className` for width, `fieldSize` for height (`sm` = admin toolbars, `md` = public/portal/forms), `ariaLabel` when there's no visible `<label>`. There are deliberately **no** `buttonClassName`/`menuClassName`/`optionClassName` escape hatches: they existed once and 18 call sites drifted into 4 different looks, which is exactly what "shared component" is supposed to prevent. The whole look lives in the `.custom-select__*` block in globals.css — edit there and every dropdown changes at once.
   - `role="listbox"` sits on the element that **directly** owns the option rows. Putting it on the outer menu (with the scroll container in between) silently drops every option from the accessibility tree.
-- **The three form primitives — `.custom-input`, `.custom-search-field`, `.custom-select` — are one family** in globals.css: same fill (`#f1f5f9`), same `var(--r-card)` radius, same focus glow, same `--sm`(2rem)/`--md`(2.75rem) heights, and each has the admin-dark + site-dark palettes. Add a new control by following that block, not by inventing per-page classes
+- **Every date range is `components/CustomDateRangePicker.tsx`** (HeroUI `DateRangePicker` + `RangeCalendar`, locale pinned to `ru-RU`). Controlled with `yyyy-mm-dd` strings; props are `label`/`labelClassName`, `minDate`/`maxDate`, `fieldSize`, `months`, `clearable`. Styled by `.custom-date-range-picker` in globals.css.
+  - **`minValue`/`maxValue` must be passed to BOTH `<DateRangePicker>` and `<RangeCalendar>`.** HeroUI takes the calendar as an explicit child, so the picker's bounds don't reach it — set it only on the root and every past day stays clickable while the field *looks* constrained.
+  - The popover is portaled to `<body>`, so its rules are deliberately **unscoped**; only the trigger/input-group rules live under `.custom-date-range-picker`.
+  - **Pass `months={2}` whenever `minDate` is ~today and the range runs forward** (the /service per-day picker). Near month-end the single-month view is a wall of disabled days with 1–2 clickable cells — a real customer read it as "only these two days can be chosen". Two-month mode also sets `pageBehavior="single"` (default paging jumps the whole visible span), per-grid «июль 2026 г.» captions (the shared heading slot only ever names the first month), and stacks vertically ≤640px.
+  - The two-month width must be **explicit** (`.range-calendar--multi { width: 32.75rem }`): HeroUI sets `container-type: inline-size` on the calendar, and that containment makes `width: max-content` compute to 0.
+  - **Day counts are inclusive**: 28/07 → 29/07 is **2** days. `ClientServicePage` computes `round(diff / 86400000) + 1` and that number becomes the cart quantity (`quantity × price/day` = total). A same-day range is 1 day. Don't "simplify" it to a plain difference.
+- **The form primitives — `.custom-input`, `.custom-search-field`, `.custom-select`, `.custom-date-range-picker` — are one family** in globals.css: same fill (`#f1f5f9`), same `var(--r-card)` radius, same focus glow, same `--sm`(2rem)/`--md`(2.75rem) heights, and each has the admin-dark + site-dark palettes. Add a new control by following that block, not by inventing per-page classes
+
+### Use the shared component — always
+
+**Before building any new feature, screen or element, check this table first.** Reach for
+the existing component; if it *almost* fits, add a prop to it. Only build something new
+when nothing here applies — and then put it in `components/` with its look in globals.css,
+never as one-off classes on a page. Two rounds of drift have already been paid for: 18
+`CustomSelect` call sites in 4 different looks, and an icon hand-positioned over an input
+on 4 pages (which overlapped the text on all of them).
+
+| Need | Use |
+| --- | --- |
+| Button | `.btn-primary` / `-secondary` / `-tertiary` / `-outline` / `-ghost` / `-danger` / `-danger-soft` (HeroUI's button spec ported to our palette, globals.css) |
+| Text / number / password field | `components/CustomInput.tsx` |
+| Multi-line text | `components/Textarea.tsx` |
+| Search field | `components/CustomSearchField.tsx` |
+| Dropdown | `components/CustomSelect.tsx` (never a native `<select>`) |
+| Date range | `components/CustomDateRangePicker.tsx` |
+| Badge / tag / status pill | HeroUI `Chip` (see `components/ServiceCard.tsx`) |
+| Confirm / destructive prompt | `confirmDialog()` from `store/useConfirm.ts` |
+| Telegram glyph | `components/TelegramIcon.tsx` (not the lucide `Send` icon) |
+| Table with paging | `app/admin/_components/DataTable.tsx` |
+
+Rules that apply to all of them: call sites pass **layout only** (`className` for width,
+`fieldSize` for height) — the look belongs to the component; every new component needs the
+**admin-dark and site-dark** palettes, because HeroUI's own tokens only flip on its `.dark`
+selector which this site does not use; and a HeroUI component also needs its stylesheet
+imported at the top of globals.css (`@import "@heroui/styles/components/<name>.css"`).
 - Admin list pages (`/admin/users`, `/admin/boosters`) share a filter+search pattern: `CustomSelect` dropdowns + a debounced `CustomSearchField`
 - **Server-side pagination (orders + users lists):** `/admin/orders` and `/admin/users` do all
   filtering/sorting/paging in SQL — the API takes `?page&pageSize&sort&…&search` and returns

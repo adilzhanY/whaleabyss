@@ -8,7 +8,7 @@ import CustomSelect from "@/components/CustomSelect";
 import DataTable, { type Column } from "../_components/DataTable";
 import ReviewStatusCell from "../_components/ReviewStatusCell";
 import PageHeader from "../_components/PageHeader";
-import OrderDateRangePicker from "../_components/OrderDateRangePicker";
+import CustomDateRangePicker from "@/components/CustomDateRangePicker";
 
 interface Review {
   id: string;
@@ -310,7 +310,7 @@ export default function AdminReviewsPage() {
           </div>
 
           <div className="w-full sm:w-72">
-            <OrderDateRangePicker
+            <CustomDateRangePicker
               label="Период"
               startDate={startDate}
               endDate={endDate}

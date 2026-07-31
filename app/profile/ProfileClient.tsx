@@ -59,54 +59,69 @@ export default function ProfileClient({ overview }: { overview: ProfileOverview 
   return (
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
-      <main className="pt-28 md:pt-32 pb-20">
-        <div className="site-container"><div className="mx-auto max-w-4xl space-y-4">
+      <main className="site-gutter pt-28 md:pt-32 pb-20">
+        {/* Full shared-grid width (the page used to sit in a 56rem column that
+            broke the site-wide margin rule). At 75rem a single stack of cards
+            reads as a ribbon, so the page splits: activity on the left, the
+            account/settings rail on the right; below lg it stacks in the
+            original order. */}
+        <div className="site-container space-y-4">
           <Breadcrumb />
 
-          <ProfileHero
-            user={user}
-            providers={providers}
-            onEdit={startEditing}
-            onAvatarUpload={handleAvatarUpload}
-          />
+          {/* The hero and the stat tiles live INSIDE the left column, so the
+              account rail starts at the very top of the page — the hero no
+              longer spans the full width, and «Личные данные» sits beside it. */}
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start">
+            {/* Activity */}
+            <div className="space-y-4">
+              <ProfileHero
+                user={user}
+                providers={providers}
+                onEdit={startEditing}
+                onAvatarUpload={handleAvatarUpload}
+              />
 
-          <StatsRow
-            completedOrders={stats.completedOrders}
-            activeOrders={stats.activeOrders}
-            reviewCount={stats.reviewCount}
-          />
+              <StatsRow
+                completedOrders={stats.completedOrders}
+                activeOrders={stats.activeOrders}
+                reviewCount={stats.reviewCount}
+              />
 
-          {activeBoost && <ActiveBoostCard order={activeBoost} />}
+              {activeBoost && <ActiveBoostCard order={activeBoost} />}
 
-          <RecentOrdersCard orders={recentOrders} />
+              <RecentOrdersCard orders={recentOrders} />
 
-          <div ref={dataCardRef}>
-            <PersonalDataCard
-              data={{
-                username: user.username,
-                email: user.email,
-                adventureRank: user.adventureRank,
-                telegramUsername: user.telegramUsername,
-                receiptEmail: user.receiptEmail,
-              }}
-              editing={editing}
-              onEditingChange={setEditing}
-              onSaved={() => router.refresh()}
-            />
+              <MyReviewsCard reviews={reviews} />
+
+              <PromocodeHistoryCard uses={promocodes} />
+            </div>
+
+            {/* Account rail */}
+            <div className="space-y-4">
+              <div ref={dataCardRef}>
+                <PersonalDataCard
+                  data={{
+                    username: user.username,
+                    email: user.email,
+                    adventureRank: user.adventureRank,
+                    telegramUsername: user.telegramUsername,
+                    receiptEmail: user.receiptEmail,
+                  }}
+                  editing={editing}
+                  onEditingChange={setEditing}
+                  onSaved={() => router.refresh()}
+                />
+              </div>
+
+              <SecurityCard
+                hasPassword={user.hasPassword}
+                providers={providers}
+                onPasswordChanged={() => router.refresh()}
+              />
+
+              <DangerZone />
+            </div>
           </div>
-
-          <MyReviewsCard reviews={reviews} />
-
-          <PromocodeHistoryCard uses={promocodes} />
-
-          <SecurityCard
-            hasPassword={user.hasPassword}
-            providers={providers}
-            onPasswordChanged={() => router.refresh()}
-          />
-
-          <DangerZone />
-        </div>
         </div>
       </main>
       <Footer />

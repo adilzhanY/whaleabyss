@@ -68,7 +68,15 @@ export default function PersonalDataCard({
         setError(payload.error || "Не удалось сохранить изменения");
         return;
       }
-      await update({ name: name.trim() });
+      // Nudge the header to the new name right away. It is only an optimisation
+      // — the jwt callback re-reads the row on the next request — so a failure
+      // here must not be reported as a failed save. (`update()` also returns
+      // undefined when the provider is still loading, hence try/catch.)
+      try {
+        await update({ name: name.trim() });
+      } catch {
+        /* self-heals on the next session read */
+      }
       onEditingChange(false);
       onSaved();
     } catch {

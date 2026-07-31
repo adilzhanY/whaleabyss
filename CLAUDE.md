@@ -262,6 +262,22 @@ const result = await db.select().from(services).where(eq(services.id, id));
   App: oauth.yandex.ru, scopes `login:email login:info login:avatar`, redirect URIs
   registered for prod + localhost (`/api/auth/callback/yandex`)
 - User roles: `user`, `admin`, `booster` (enum in DB)
+- **The JWT is a cache of the `users` row, never a second source of truth.** The `jwt`
+  callback re-reads `role`, `username` and `avatarUrl` from the DB on every request
+  (one query, the one that already existed for `role`) and only then applies an explicit
+  `trigger === 'update'` override. Anything a client renders from `useSession()` — the
+  header avatar and name — therefore self-heals on the next session read.
+  - **Why:** the avatar used to live *only* in the token, written by the client's
+    `useSession().update({ image })` after the upload. `/profile` reads the DB and showed
+    the new picture, while the header kept the old one **permanently** (the token lives 30
+    days) whenever that one call didn't land: a failed/raced POST, or simply the change
+    being made in another browser or device. Verified with a hand-minted token whose
+    `image`/`name` disagreed with the row — before the fix `/api/auth/session` served the
+    stale values forever, after it serves the row.
+  - The `update()` calls in `ProfileClient`/`PersonalDataCard` are kept as an *optimistic*
+    nudge for instant feedback, wrapped in try/catch: they must never fail a save or block
+    the following `router.refresh()`. (`update()` also silently returns `undefined` while
+    `SessionProvider` is loading — one more reason not to depend on it for correctness.)
 - Middleware (`middleware.ts`) protects `/admin/*` and `/api/admin/*` routes
 - Admin routes have two-layer protection: Edge middleware + server-side checks
 - **Never decide "logged in or not" from `useSession()` alone when it changes what

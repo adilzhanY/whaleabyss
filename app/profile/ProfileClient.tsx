@@ -43,7 +43,14 @@ export default function ProfileClient({ overview }: { overview: ProfileOverview 
 
   const handleAvatarUpload = useCallback(
     async (url: string) => {
-      await update({ image: url });
+      // Optimistic: swap the header avatar without waiting for a session
+      // refetch. The DB is already written, and the jwt callback re-reads it on
+      // the next request, so this must never block the page refresh below.
+      try {
+        await update({ image: url });
+      } catch {
+        /* self-heals on the next session read */
+      }
       router.refresh();
     },
     [router, update],

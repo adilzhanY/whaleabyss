@@ -110,40 +110,52 @@ export const authOptions: AuthOptions = {
       return true;
     },
     async jwt({ token, user, trigger, session }) {
-      if (trigger === "update") {
-        if (session?.image) token.image = session.image;
-        if (session?.name) token.name = session.name;
-      }
       if (user) {
         token.id = user.id;
         token.name = user.name;
         token.image = user.image;
-        // @ts-ignore - augmented in types/next-auth.d.ts
         token.role = user.role ?? 'user';
       }
 
-      // Refresh role on every request so admin promotion/demotion takes
-      // effect without the user re-logging in (e.g. linking a booster
-      // account must grant /portal access on the next session refresh).
+      // The token is a CACHE of the users row, not a second source of truth.
+      // Re-read every mutable identity field on each request so nothing that
+      // renders from `useSession()` (the header avatar + name) can disagree
+      // with the DB: role, so admin/booster promotion takes effect without
+      // re-logging in; avatar + username, because they are edited on /profile
+      // and the client `update()` below is only an optimistic nudge — if it
+      // never lands (failed POST, a race with a concurrent session refetch, or
+      // the change was made in another browser) the old value used to stay in
+      // the token until it expired, leaving a stale avatar in the header while
+      // /profile showed the new one. One query, same as before.
       if (token.id && !user) {
         const dbUser = await db
-          .select({ role: users.role })
+          .select({ role: users.role, username: users.username, avatarUrl: users.avatarUrl })
           .from(users)
           .where(eq(users.id, token.id as string))
           .limit(1);
-        if (dbUser[0]) token.role = dbUser[0].role ?? 'user';
+        if (dbUser[0]) {
+          token.role = dbUser[0].role ?? 'user';
+          token.name = dbUser[0].username;
+          token.image = dbUser[0].avatarUrl;
+        }
+      }
+
+      // Applied last so an explicit client update wins over the row just read:
+      // the profile writes the DB before calling update(), so they agree, but
+      // this ordering keeps the optimistic value if a read ever lags behind.
+      if (trigger === "update") {
+        if (session?.image) token.image = session.image;
+        if (session?.name) token.name = session.name;
       }
 
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        // @ts-ignore
-        session.user.id = token.id;
+        session.user.id = token.id as string;
         session.user.name = token.name;
         session.user.image = token.image as string | null | undefined;
-        // @ts-ignore
-        session.user.role = (token.role as string) ?? 'user';
+        session.user.role = token.role ?? 'user';
       }
       return session;
     }

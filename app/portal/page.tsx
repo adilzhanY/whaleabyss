@@ -1,26 +1,26 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import {
-  Wallet,
-  TrendingUp,
-  ShoppingBag,
-  CheckCircle2,
-  Loader2,
-} from "lucide-react";
-import PortalOrderCard, { type PortalOrder, rub } from "./_components/PortalOrderCard";
+import { Loader2 } from "lucide-react";
+import { type PortalOrder } from "./_components/PortalOrderCard";
+import DashboardHero, {
+  type RevenuePayload,
+  type StatsPayload,
+} from "./_components/DashboardHero";
+import ShiftQueue from "./_components/ShiftQueue";
 import { confirmDialog } from "@/store/useConfirm";
 
 /**
- * Portal dashboard: greeting, revenue/work metrics, and ACTIVE orders only
- * (with the online toggle + complete action). Past orders live on
- * /portal/orders. Auth/identity is enforced by the layout + API.
+ * Portal dashboard: «касса» (money with momentum + the milestone goal), the
+ * «путь» strip, and the shift queue of ACTIVE orders (online toggle +
+ * complete). Past orders live on /portal/orders. Auth/identity is enforced by
+ * the layout + API.
  */
 
 interface MePayload {
   profile: { firstName: string; lastName: string };
-  revenue: { balance: number; totalEarned: number };
-  stats: { totalOrders: number; activeOrders: number; completedOrders: number };
+  revenue: RevenuePayload;
+  stats: StatsPayload;
 }
 
 export default function PortalDashboardPage() {
@@ -112,8 +112,14 @@ export default function PortalDashboardPage() {
 
   const activeOrders = orders.filter((o) => o.status === "in_progress");
 
+  const today = new Date().toLocaleDateString("ru-RU", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-5">
       {/* Greeting */}
       <div>
         <h1
@@ -123,7 +129,8 @@ export default function PortalDashboardPage() {
           Здравствуйте, {me?.profile.firstName ?? "качер"}!
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          Ваша сводка: заработок и активные заказы
+          Сегодня {today} · у вас {activeOrders.length}{" "}
+          {pluralOrders(activeOrders.length)} в работе
         </p>
       </div>
 
@@ -133,82 +140,38 @@ export default function PortalDashboardPage() {
         </div>
       )}
 
-      {/* Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          icon={Wallet}
-          tone="bg-emerald-50 text-emerald-600"
-          label="К выплате"
-          value={rub(me?.revenue.balance ?? 0)}
-        />
-        <StatCard
-          icon={TrendingUp}
-          tone="bg-blue-50 text-blue-700"
-          label="Заработано всего"
-          value={rub(me?.revenue.totalEarned ?? 0)}
-        />
-        <StatCard
-          icon={ShoppingBag}
-          tone="bg-amber-50 text-amber-600"
-          label="В работе"
-          value={String(me?.stats.activeOrders ?? 0)}
-        />
-        <StatCard
-          icon={CheckCircle2}
-          tone="bg-slate-100 text-slate-600"
-          label="Выполнено"
-          value={String(me?.stats.completedOrders ?? 0)}
-        />
-      </div>
+      {/* Касса + путь */}
+      {me && <DashboardHero revenue={me.revenue} stats={me.stats} />}
 
-      {/* Active orders */}
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900">Активные заказы</h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Включайте «Я на аккаунте», когда заходите на аккаунт клиента — клиент видит это в своём заказе.
+      {/* Смена */}
+      <section className="space-y-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-lg font-bold text-slate-900">
+            Смена · {activeOrders.length} {pluralOrders(activeOrders.length)}
+          </h2>
+          <p className="text-xs text-slate-400">
+            старые — сверху, чтобы ничего не зависало
           </p>
         </div>
-        {activeOrders.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center text-sm text-slate-500">
-            Сейчас нет заказов в работе
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {activeOrders.map((o) => (
-              <PortalOrderCard
-                key={o.id}
-                order={o}
-                busy={busyOrder === o.id}
-                onToggleOnline={toggleOnline}
-                onComplete={completeOrder}
-              />
-            ))}
-          </div>
-        )}
+        <p className="text-xs text-slate-400 -mt-1">
+          Включайте «Я на аккаунте», когда заходите на аккаунт клиента — клиент видит это в своём заказе.
+        </p>
+        <ShiftQueue
+          orders={activeOrders}
+          busyOrderId={busyOrder}
+          onToggleOnline={toggleOnline}
+          onComplete={completeOrder}
+        />
       </section>
     </div>
   );
 }
 
-function StatCard({
-  icon: Icon,
-  tone,
-  label,
-  value,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  tone: string;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="bg-white rounded-3xl border border-slate-200 p-5">
-      <div className={`w-10 h-10 rounded-2xl ${tone} flex items-center justify-center mb-3`}>
-        <Icon className="w-5 h-5" />
-      </div>
-      <div className="text-xs text-slate-400 font-medium">{label}</div>
-      <div className="text-xl font-black text-slate-900 mt-0.5 tracking-tight">{value}</div>
-    </div>
-  );
+/** «1 заказ / 3 заказа / 6 заказов». */
+function pluralOrders(n: number): string {
+  const m10 = n % 10;
+  const m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return "заказ";
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return "заказа";
+  return "заказов";
 }

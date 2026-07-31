@@ -23,6 +23,7 @@ export async function GET() {
     const rows = await db
       .select({
         id: orders.id,
+        userId: orders.userId,
         status: orders.status,
         boosterOnline: orders.boosterOnline,
         boosterEarning: orders.boosterEarning,
@@ -51,17 +52,22 @@ export async function GET() {
           .where(inArray(orderItems.orderId, orderIds))
       : [];
 
-    const itemsByOrder = new Map<string, { title: string | null; quantity: number | null }[]>();
+    const itemsByOrder = new Map<
+      string,
+      { title: string | null; quantity: number | null; startDate: Date | null; endDate: Date | null }[]
+    >();
     for (const it of itemRows) {
       if (!it.orderId) continue;
       const arr = itemsByOrder.get(it.orderId) ?? [];
-      arr.push({ title: it.title, quantity: it.quantity });
+      // start/end travel through so per-day services show their period.
+      arr.push({ title: it.title, quantity: it.quantity, startDate: it.startDate, endDate: it.endDate });
       itemsByOrder.set(it.orderId, arr);
     }
 
     return NextResponse.json(
       rows.map((o) => ({
         id: o.id,
+        userId: o.userId,
         status: o.status,
         boosterOnline: o.boosterOnline,
         // Only the booster's cut — never the order total.

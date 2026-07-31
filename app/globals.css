@@ -1379,6 +1379,8 @@ body:has(#admin-root.admin-dark) {
   .text-yellow-700 { color: #facc15; }
   .text-blue-600, .text-blue-700, .text-blue-900,
   .hover\:text-blue-800:hover, .hover\:text-blue-900:hover { color: #60a5fa; }
+  /* Near-black navy headings (portal greeting) — same recipe as site-dark. */
+  .text-blue-950 { color: #dbeafe; }
   .text-sky-500, .text-sky-600 { color: #38bdf8; }
   .text-indigo-500, .text-indigo-600, .text-indigo-700, .hover\:text-indigo-600:hover { color: #818cf8; }
   .text-purple-600, .text-purple-700 { color: #c084fc; }

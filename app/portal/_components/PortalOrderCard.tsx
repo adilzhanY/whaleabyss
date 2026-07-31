@@ -11,13 +11,21 @@ import OrderStatusBadge from "../../admin/_components/OrderStatusBadge";
 
 export interface PortalOrder {
   id: string;
+  /** Customer's account id — the only customer identifier the portal shows. */
+  userId: string | null;
   status: string;
   boosterOnline: boolean;
   earning: number;
   earningCredited: boolean;
   userNotes: string | null;
   createdAt: string;
-  items: { title: string | null; quantity: number | null }[];
+  items: {
+    title: string | null;
+    quantity: number | null;
+    /** Per-day services carry their booked period (ISO strings over the wire). */
+    startDate?: string | null;
+    endDate?: string | null;
+  }[];
 }
 
 export const fmtDate = (d: string | null) =>

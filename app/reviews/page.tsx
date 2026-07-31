@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import AuthModal from "@/components/AuthModal";
 import Breadcrumb from "@/components/Breadcrumb";
+import ReviewsMasonry from "@/components/ReviewsMasonry";
 
 interface Review {
   id: string;
@@ -26,7 +27,6 @@ export default function ReviewsPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
-  const [columns, setColumns] = useState<Review[][]>([[], [], []]);
   const [averageRating, setAverageRating] = useState(0);
 
   useEffect(() => {
@@ -34,8 +34,6 @@ export default function ReviewsPage() {
   }, []);
 
   useEffect(() => {
-    // Recalculate columns when reviews change
-    distributeToColumns();
     calculateStats();
   }, [reviews]);
 
@@ -54,34 +52,6 @@ export default function ReviewsPage() {
     } else {
       setAverageRating(0);
     }
-  };
-
-  const distributeToColumns = () => {
-    const columnCount = 3; // 3 columns
-    const newColumns: Review[][] = Array.from({ length: columnCount }, () => []);
-
-    // Distribute reviews in order, filling shortest column first
-    reviews.forEach((review) => {
-      // Find the shortest column by total height
-      let shortestIndex = 0;
-      let shortestHeight = Infinity;
-
-      newColumns.forEach((col, idx) => {
-        const colHeight = col.reduce((sum, r) => {
-          const dims = getCardDimensions(r.description.length);
-          return sum + dims.height + 20; // 20px for margin
-        }, 0);
-
-        if (colHeight < shortestHeight) {
-          shortestHeight = colHeight;
-          shortestIndex = idx;
-        }
-      });
-
-      newColumns[shortestIndex].push(review);
-    });
-
-    setColumns(newColumns);
   };
 
   useEffect(() => {
@@ -117,55 +87,13 @@ export default function ReviewsPage() {
     fetchReviews(reviews.length);
   };
 
-  const renderStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <Star key={i} className="h-3.5 w-3.5 fill-current shrink-0" style={{ color: "#f59e0b" }} />
-      );
-    }
-    if (hasHalfStar) {
-      stars.push(
-        <div key="half" className="relative h-3.5 w-3.5 shrink-0">
-          <Star className="h-3.5 w-3.5 absolute" style={{ color: "#f59e0b", opacity: 0.3 }} />
-          <div className="overflow-hidden absolute" style={{ width: '50%' }}>
-            <Star className="h-3.5 w-3.5 fill-current" style={{ color: "#f59e0b" }} />
-          </div>
-        </div>
-      );
-    }
-    return stars;
-  };
-
-  const getCardDimensions = (textLength: number) => {
-    // Dynamic sizing based on content length
-    // Short reviews: compact and can be 1-2 columns wide
-    // Medium reviews: standard size
-    // Long reviews: taller, can span 2 columns
-
-    if (textLength < 80) {
-      return { height: 180, span: 1, priority: 'compact' };
-    } else if (textLength < 150) {
-      return { height: 240, span: 1, priority: 'small' };
-    } else if (textLength < 250) {
-      return { height: 300, span: 1, priority: 'medium' };
-    } else if (textLength < 400) {
-      return { height: 380, span: 2, priority: 'large' };
-    } else {
-      return { height: 480, span: 2, priority: 'xlarge' };
-    }
-  };
-
   return (
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
-      <main className="flex-1 pt-28 md:pt-32 pb-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <main className="site-gutter flex-1 pt-28 md:pt-32 pb-20">
+        <div className="site-container">
           <Breadcrumb />
           <div className="mb-12 text-center">
             <h1
@@ -219,107 +147,7 @@ export default function ReviewsPage() {
             </div>
           ) : (
             <>
-              <div
-                className="masonry-grid"
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                  gap: '1.25rem',
-                  alignItems: 'start'
-                }}
-              >
-                {columns.map((column, colIndex) => (
-                  <div
-                    key={colIndex}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '1.25rem'
-                    }}
-                  >
-                    {column.map((review) => {
-                      const rating = parseFloat(review.rating);
-                      const dimensions = getCardDimensions(review.description.length);
-
-                      return (
-                        <div
-                          key={review.id}
-                          className="flex flex-col rounded-3xl p-5 sm:p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
-                          style={{
-                            backgroundColor: "var(--bg-card)",
-                            border: "1px solid var(--accent-border)",
-                            boxShadow: "var(--card-shadow)",
-                            borderRadius: "1.5rem",
-                            overflow: 'hidden'
-                          }}
-                            >
-                          <div className="mb-4 flex items-center gap-3">
-                            <div
-                              className="relative shrink-0 overflow-hidden rounded-full bg-slate-200"
-                              style={{
-                                height: dimensions.span === 2 ? '48px' : '40px',
-                                width: dimensions.span === 2 ? '48px' : '40px'
-                              }}
-                            >
-                              {review.userAvatar ? (
-                                <img
-                                  src={review.userAvatar}
-                                  alt={review.userName || 'User'}
-                                  className="h-full w-full object-cover"
-                                />
-                              ) : (
-                                <div
-                                  className="h-full w-full flex items-center justify-center text-slate-500 font-bold"
-                                  style={{ fontSize: dimensions.span === 2 ? '1.25rem' : '1rem' }}
-                                >
-                                  {review.userName ? review.userName[0].toUpperCase() : '?'}
-                                </div>
-                              )}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p
-                                className="font-bold truncate"
-                                style={{
-                                  color: "var(--text-primary)",
-                                  fontSize: dimensions.span === 2 ? '1rem' : '0.875rem'
-                                }}
-                              >
-                                {review.userName || 'Аноним'}
-                              </p>
-                              <p
-                                className="text-xs"
-                                style={{ color: "var(--text-secondary)" }}
-                              >
-                                {new Date(review.createdAt).toLocaleDateString('ru-RU', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric'
-                                })}
-                              </p>
-                            </div>
-                            <div className="flex shrink-0 gap-0.5">
-                              {renderStars(rating)}
-                            </div>
-                          </div>
-                          <p
-                            className="flex-1 leading-relaxed italic"
-                            style={{
-                              color: "var(--text-primary)",
-                              fontSize: dimensions.span === 2 ? '1.125rem' : '0.9375rem',
-                              lineHeight: dimensions.span === 2 ? '1.75' : '1.6',
-                              wordWrap: 'break-word',
-                              overflowWrap: 'break-word',
-                              hyphens: 'auto'
-                            }}
-                          >
-                            &ldquo;{review.description}&rdquo;
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
+              <ReviewsMasonry reviews={reviews} />
 
               {hasMore && (
                 <div className="mt-12 flex justify-center">

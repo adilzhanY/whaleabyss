@@ -8,6 +8,7 @@ import DataTable, { type Column } from "../_components/DataTable";
 import PageHeader from "../_components/PageHeader";
 import CopyableText from "../_components/CopyableText";
 import CopyableTelegram from "../_components/CopyableTelegram";
+import UserRoleChip from "../_components/UserRoleChip";
 import CustomDateRangePicker from "@/components/CustomDateRangePicker";
 
 interface User {
@@ -19,6 +20,10 @@ interface User {
   telegramUsername: string | null;
   adventureRank: number | null;
   createdAt: string;
+  /** Orders that count as money spent (everything but pending/cancelled). */
+  orderCount: number;
+  /** Same sum the user card shows, as a decimal string from Postgres. */
+  totalSpent: string;
 }
 
 const USERS_PER_PAGE = 10;
@@ -82,29 +87,6 @@ export default function AdminUsersPage() {
     } finally {
       if (reqId === reqIdRef.current) setLoading(false);
     }
-  };
-
-  const getRoleBadge = (role: string) => {
-    const styles = {
-      user: "bg-blue-100 text-blue-700 border-blue-200",
-      admin: "bg-purple-100 text-purple-700 border-purple-200",
-      booster: "bg-green-100 text-green-700 border-green-200",
-    };
-    const labels = {
-      user: "Пользователь",
-      admin: "Администратор",
-      booster: "Бустер",
-    };
-
-    return (
-      <span
-        className={`px-2 py-1 rounded-lg text-xs font-semibold border ${
-          styles[role as keyof typeof styles] || styles.user
-        }`}
-      >
-        {labels[role as keyof typeof labels] || role}
-      </span>
-    );
   };
 
   const columns: Column<User>[] = [
@@ -171,6 +153,36 @@ export default function AdminUsersPage() {
       ),
     },
     {
+      key: "orderCount",
+      header: "Заказов",
+      width: "w-24",
+      align: "right",
+      mobileLabel: "Заказов",
+      render: (u) =>
+        u.orderCount > 0 ? (
+          <span className="font-medium tabular-nums">{u.orderCount}</span>
+        ) : (
+          <span className="text-slate-400">—</span>
+        ),
+    },
+    {
+      key: "totalSpent",
+      header: "Потрачено",
+      width: "w-32",
+      align: "right",
+      mobileLabel: "Потрачено",
+      render: (u) => {
+        const spent = Number(u.totalSpent);
+        return spent > 0 ? (
+          <span className="font-medium whitespace-nowrap tabular-nums">
+            {spent.toLocaleString("ru-RU")} ₽
+          </span>
+        ) : (
+          <span className="text-slate-400">—</span>
+        );
+      },
+    },
+    {
       key: "createdAt",
       header: "Дата",
       width: "w-32",
@@ -184,7 +196,7 @@ export default function AdminUsersPage() {
       key: "role",
       header: "Роль",
       width: "w-32",
-      render: (u) => getRoleBadge(u.role),
+      render: (u) => <UserRoleChip role={u.role} />,
     },
   ];
 

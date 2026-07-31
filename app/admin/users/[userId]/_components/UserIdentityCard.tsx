@@ -7,27 +7,8 @@ import { Chip } from "@heroui/react";
 import { Copy, Check, Mail, Plus, ShieldCheck } from "lucide-react";
 import TelegramIcon from "@/components/TelegramIcon";
 import CopyableText from "../../../_components/CopyableText";
+import UserRoleChip from "../../../_components/UserRoleChip";
 import type { CartLine, MonthSpend, Stats, UserDetails } from "./types";
-
-const ROLE_LABELS: Record<string, string> = {
-  user: "Пользователь",
-  admin: "Администратор",
-  booster: "Бустер",
-};
-
-/**
- * HeroUI Chip colours per role — same component the service cards use.
- * The palette has no brand-blue chip, so the ordinary case stays neutral and
- * only the privileged roles get a colour: they're rare and worth spotting.
- */
-const ROLE_CHIP: Record<
-  string,
-  { color: React.ComponentProps<typeof Chip>["color"]; variant: React.ComponentProps<typeof Chip>["variant"] }
-> = {
-  user: { color: "default", variant: "secondary" },
-  admin: { color: "danger", variant: "soft" },
-  booster: { color: "success", variant: "soft" },
-};
 
 const MONTHS_SHORT = ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
 
@@ -199,14 +180,7 @@ export default function UserIdentityCard({
         <div className="min-w-0 flex-1 basis-60">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-xl font-black tracking-tight text-slate-900">{user.username}</h2>
-            <Chip
-              size="sm"
-              color={(ROLE_CHIP[role] ?? ROLE_CHIP.user).color}
-              variant={(ROLE_CHIP[role] ?? ROLE_CHIP.user).variant}
-              className="text-[11px] font-bold"
-            >
-              <Chip.Label>{ROLE_LABELS[role] ?? role}</Chip.Label>
-            </Chip>
+            <UserRoleChip role={role} />
             {user.adventureRank != null && (
               <Chip size="sm" color="default" variant="secondary" className="text-[11px] font-bold text-slate-600">
                 <Chip.Label>AR {user.adventureRank}</Chip.Label>

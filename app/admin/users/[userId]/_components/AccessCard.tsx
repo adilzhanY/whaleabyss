@@ -3,14 +3,11 @@
 import { useState } from "react";
 import { confirmDialog } from "@/store/useConfirm";
 import UserCard from "./UserCard";
+import { USER_ROLE_LABELS } from "../../../_components/UserRoleChip";
 import { shortDate } from "./UserIdentityCard";
 import type { UserDetails } from "./types";
 
-const ROLE_LABELS: Record<string, string> = {
-  user: "Пользователь",
-  admin: "Администратор",
-  booster: "Бустер",
-};
+
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -101,7 +98,7 @@ export default function AccessCard({
         <Row label="Профиль изменён">{shortDate(user.updatedAt)}</Row>
         <Row label="Роль">
           <span className="inline-flex items-center gap-2">
-            {ROLE_LABELS[user.role] ?? user.role}
+            {USER_ROLE_LABELS[user.role] ?? user.role}
             {canSwitch && (
               <button
                 type="button"

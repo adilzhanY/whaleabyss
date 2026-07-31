@@ -1,13 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { users } from '@/lib/schema';
-import { and, asc, desc, gte, ilike, lte, or, sql, type SQL } from 'drizzle-orm';
+import { users, orders } from '@/lib/schema';
+import { and, asc, desc, eq, gte, ilike, inArray, lte, or, sql, type SQL } from 'drizzle-orm';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export const dynamic = 'force-dynamic';
 
 const VALID_ROLES = new Set(['user', 'admin', 'booster']);
+
+/**
+ * Orders that count as money spent — everything except abandoned checkouts
+ * (`pending`) and cancellations. Refunds ARE included, which is what
+ * `/admin/users/[userId]` has always summed, so the list and the card can
+ * never show two different «Потрачено» for the same person.
+ */
+const SPENT_STATUSES = ['paid', 'in_progress', 'completed', 'refunded'] as const;
+
+/**
+ * Per-user aggregate as a correlated subquery: it runs for the ten rows of the
+ * current page only and leaves the count query and every filter above untouched.
+ *
+ * Built with the query builder rather than a hand-written `sql` fragment on
+ * purpose — inside a raw fragment Drizzle emits column names UNQUALIFIED, so
+ * `${orders.userId} = ${users.id}` came out as `"user_id" = "id"`, both of
+ * which bind to `orders` inside the subquery. It silently returned 0 for
+ * everyone. The builder form emits `"orders"."user_id" = "users"."id"`.
+ */
+function spentAggregate(value: SQL) {
+  return db
+    .select({ value })
+    .from(orders)
+    .where(and(eq(orders.userId, users.id), inArray(orders.status, SPENT_STATUSES)));
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -73,6 +98,10 @@ export async function GET(req: NextRequest) {
         telegramUsername: users.telegramUsername,
         adventureRank: users.adventureRank,
         createdAt: users.createdAt,
+        orderCount: sql<number>`(${spentAggregate(sql`count(*)::int`)})`,
+        totalSpent: sql<string>`(${spentAggregate(
+          sql`coalesce(sum(${orders.totalPrice}), 0)::text`
+        )})`,
       })
       .from(users)
       .where(whereExpr)

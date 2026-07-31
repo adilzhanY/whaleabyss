@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useCart } from "@/store/useCart";
+import { cartSyncFailed, useCart } from "@/store/useCart";
 import { useSession } from "next-auth/react";
 
 /**
@@ -17,13 +17,33 @@ import { useSession } from "next-auth/react";
  *    DB copy, so any sync that had quietly failed (offline, 5xx) silently
  *    reverted the user's cart mid-session. Now it runs once per account.
  *
- * 2. It loads with `merge: true`. This is the login transition, and the local
- *    cart may be a guest cart that exists nowhere else yet — nothing uploads it
- *    before this point. Replacing instead of merging destroyed it, which was
- *    its own lost-sale bug: it hit hardest via «Войти с Яндексом», where
- *    signing in is a full-page redirect away and back, and the customer
- *    returned to /cart to find it empty. See mergeCarts in store/useCart.
+ * 2. It merges ONLY on the first mount for this account in this browser. The
+ *    merge exists because a guest cart exists nowhere else yet — nothing
+ *    uploads it before this point — and replacing it destroyed it, which was
+ *    its own lost-sale bug via «Войти с Яндексом» (a full-page redirect away
+ *    and back, landing on an empty /cart). But merging on EVERY mount let a
+ *    stale client union deleted lines back in and re-upload them, which is one
+ *    half of «удалил всё, вернулось». Later mounts therefore just read.
  */
+const MERGED_KEY = "cart-merged-for";
+
+/** Which account this browser has already merged its guest cart into. */
+function alreadyMerged(userId: string) {
+  try {
+    return localStorage.getItem(MERGED_KEY) === userId;
+  } catch {
+    return false; // private mode / storage disabled — merging again is the safe side
+  }
+}
+
+function rememberMerged(userId: string) {
+  try {
+    localStorage.setItem(MERGED_KEY, userId);
+  } catch {
+    /* ignore */
+  }
+}
+
 export default function CartSync() {
   const loadFromDb = useCart((s) => s.loadFromDb);
   const { data: session, status } = useSession();
@@ -36,7 +56,16 @@ export default function CartSync() {
     // reason to re-read (and possibly clobber) the cart.
     if (loadedForUserRef.current === userId) return;
     loadedForUserRef.current = userId;
-    loadFromDb({ merge: true });
+
+    // Merge ONLY on the real login transition — the first time this browser
+    // sees this account. Every later mount (a second tab, a hard reload, a Fast
+    // Refresh in dev) does a plain read, so the DB stays authoritative and a
+    // client whose copy is behind can no longer union deleted lines back in and
+    // push them up. The exception is a cart whose last sync failed: there the
+    // browser holds the only copy of a change, and merging is what protects it.
+    const merge = !alreadyMerged(userId) || cartSyncFailed();
+    if (merge) rememberMerged(userId);
+    loadFromDb({ merge });
   }, [status, userId, loadFromDb]);
 
   return null; // This component doesn't render anything

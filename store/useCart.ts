@@ -41,6 +41,30 @@ const bumpRevision = () => {
 };
 
 /**
+ * Sync serialisation — the fix for «удалил всё, перешёл на другую страницу, и
+ * товары вернулись».
+ *
+ * Every mutation used to fire its own un-awaited POST /api/cart/sync, and that
+ * route is delete-everything-then-insert-the-payload. Nothing ordered them, and
+ * the requests are NOT equally fast: the bigger the payload, the longer the
+ * route takes. Deleting items one after another therefore produced requests
+ * that got progressively faster, so the older, larger snapshots finished LAST
+ * and put the deleted lines straight back. Measured on a real cart: the
+ * five-item sync took 1.08 s, the «cart is empty» sync fired 60 ms later took
+ * 0.65 s — the empty state was overwritten and the DB kept all five rows. The
+ * next page load read them back and the cart «came back».
+ *
+ * Now at most one request is ever in flight, and each one reads the CURRENT
+ * state at the moment it is sent, so the last write is by construction the
+ * newest one. Bursts collapse into a single trailing request.
+ */
+let syncInFlight: Promise<void> | null = null;
+let syncQueued = false;
+/** True when the most recent sync did not reach the server (offline, 5xx). */
+let lastSyncFailed = false;
+export const cartSyncFailed = () => lastSyncFailed;
+
+/**
  * Union of the DB cart and the local one, used ONLY on the login transition.
  *
  * Signing in used to replace the local cart with the DB copy outright, so a
@@ -239,23 +263,43 @@ export const useCart = create<CartState>()(
           return sum + (isPerDay ? 1 : item.quantity);
         }, 0),
 
-      // Sync localStorage cart to database (for logged-in users)
-      syncToDb: async () => {
-        try {
-          const items = get().items;
-          const res = await fetch('/api/cart/sync', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ items }),
-          });
+      // Push the local cart to the database (logged-in users only).
+      //
+      // Serialised: concurrent calls collapse into the single in-flight
+      // request plus one trailing request that carries the state as it is at
+      // send time. See the syncInFlight comment above for why.
+      syncToDb: () => {
+        syncQueued = true;
+        if (syncInFlight) return syncInFlight;
 
-          if (!res.ok && res.status !== 401) {
-            console.error('Failed to sync cart to DB');
+        syncInFlight = (async () => {
+          try {
+            while (syncQueued) {
+              syncQueued = false;
+              // Read INSIDE the loop: whatever the user did while the previous
+              // request was in flight is what gets sent next.
+              const items = get().items;
+              try {
+                const res = await fetch('/api/cart/sync', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ items }),
+                });
+                // 401 just means "not logged in" — the cart lives in
+                // localStorage and there is nothing to sync.
+                lastSyncFailed = !res.ok && res.status !== 401;
+                if (lastSyncFailed) console.error('Failed to sync cart to DB');
+              } catch (error) {
+                lastSyncFailed = true;
+                console.debug('Cart sync skipped:', error);
+              }
+            }
+          } finally {
+            syncInFlight = null;
           }
-        } catch (error) {
-          // Silently fail - user might not be logged in
-          console.debug('Cart sync skipped:', error);
-        }
+        })();
+
+        return syncInFlight;
       },
 
       // Load the cart from the database for a logged-in user.

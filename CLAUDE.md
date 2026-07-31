@@ -327,6 +327,23 @@ const result = await db.select().from(services).where(eq(services.id, id));
   - Known trade-off: an item deleted on another device can reappear after login. Accepted — a
     stale line is visible and one tap to remove; silently losing the cart is a lost sale. Strict
     cross-device last-write-wins would need per-line timestamps in `cart_items`.
+- **Syncs are SERIALISED — never fire two `POST /api/cart/sync` at once.** The route is
+  delete-everything-then-insert-the-payload, and its latency scales with cart size, so
+  concurrent syncs complete in the WRONG order: deleting lines one after another produced
+  progressively smaller (faster) requests, and the older, bigger snapshot landed last and
+  re-inserted the deleted rows. Measured on a real cart: a 5-item sync took 1.08 s, the
+  «cart is empty» sync fired 60 ms later took 0.65 s — the DB kept all five rows and the
+  next page load read them back («удалил всё, перешёл на страницу, товары вернулись»).
+  - `store/useCart.ts` now keeps at most one request in flight (`syncInFlight`) and each
+    request reads `get().items` at SEND time, so a burst collapses into one trailing write
+    that carries the final state. Don't reintroduce a bare `fetch` per mutation.
+  - The route resolves all slugs in ONE `inArray` query (it was a SELECT per item in a loop)
+    and does delete+insert in a transaction.
+- **`CartSync` merges only on the FIRST mount for an account in this browser** (marker
+  `localStorage['cart-merged-for']`), then plain-reads. Merging on every mount let any client
+  whose copy was behind — a second tab, a hard reload, a Fast Refresh — union deleted lines
+  back in and push them up. The exception is `cartSyncFailed()`: if the last sync never
+  reached the server the browser holds the only copy of the change, so it merges instead.
 
 **Payment Flow:**
 - Public checkout (`/api/checkout`) recomputes every line price and the order

@@ -211,7 +211,7 @@ export default function ServiceCard({ item, categorySlug, isBestseller }: Servic
         <div className="flex items-baseline gap-1.5"
           style={{ fontFamily: "var(--font-primary), sans-serif" }}>
           <span
-            className={`text-[17px] font-bold whitespace-nowrap ${
+            className={`text-[16px] font-bold whitespace-nowrap ${
               isOnDiscount ? "text-red-600" : "text-blue-950"
             }`}
           >

@@ -11,6 +11,7 @@ import { ORDER_STATUSES, orderStatusLabel } from "@/lib/orderStatus";
 import Breadcrumb from "@/components/Breadcrumb";
 import CustomSelect from "@/components/CustomSelect";
 import CustomSearchField from "@/components/CustomSearchField";
+import { resolveDisplayStatus } from "@/lib/justPaidOrders";
 
 interface OrderItem {
   serviceId?: string;
@@ -65,12 +66,27 @@ export default function OrdersPage() {
     }
   }, [session, status, fetchOrders]);
 
+  // OrderEventWatcher broadcasts this the moment it learns an order changed
+  // (paid/completed) — refetch right away so the list under the celebration
+  // modal is already fresh, instead of gambling on the next poll tick.
+  useEffect(() => {
+    const refresh = () => fetchOrders(true);
+    window.addEventListener("wa:orders-changed", refresh);
+    return () => window.removeEventListener("wa:orders-changed", refresh);
+  }, [fetchOrders]);
+
   // Only orders in a non-terminal state can still change server-side (booster
   // assignment, «на аккаунте» toggle, completion). If the customer is only
   // viewing finished history, we never poll — zero extra requests.
   const hasActiveOrder = orders.some((o) =>
     ["pending", "paid", "in_progress"].includes(o.status)
   );
+
+  // A pending order means the payment is literally in flight — the customer
+  // was just redirected back here while the gateway webhook lands a few
+  // seconds later. 20s made that window feel broken (the order sat «pending»
+  // until a manual reload), so pending polls fast until it flips.
+  const hasPendingOrder = orders.some((o) => o.status === "pending");
 
   // Keep an actively-watched order fresh without a persistent connection:
   // refetch on tab refocus (feels instant) + a light poll, both paused while
@@ -83,13 +99,13 @@ export default function OrdersPage() {
     };
 
     document.addEventListener("visibilitychange", refreshIfVisible);
-    const interval = setInterval(refreshIfVisible, 20000);
+    const interval = setInterval(refreshIfVisible, hasPendingOrder ? 5000 : 20000);
 
     return () => {
       document.removeEventListener("visibilitychange", refreshIfVisible);
       clearInterval(interval);
     };
-  }, [status, hasActiveOrder, fetchOrders]);
+  }, [status, hasActiveOrder, hasPendingOrder, fetchOrders]);
 
   const filteredOrders = orders.filter((order) => {
     // Status Filter
@@ -125,6 +141,23 @@ export default function OrdersPage() {
 
     return true;
   });
+
+  // What the customer is waiting on comes first: в работе, then оплачен (about
+  // to be picked up), then everything finished (выполнен/отменён/возвращён).
+  // Newest first inside each group; the API already sorts by date, so the sort
+  // must be stable — Array.prototype.sort is, since ES2019.
+  const STATUS_RANK: Record<string, number> = {
+    in_progress: 0,
+    paid: 1,
+    pending: 2,
+  };
+  const rank = (s: string) => STATUS_RANK[s] ?? 3;
+  // Rank by the DISPLAY status: a just-paid order (optimistic «Оплачен», see
+  // lib/justPaidOrders.ts) belongs in the paid group at the top, not buried
+  // with pending ones. Polling above deliberately stays on the real status.
+  const sortedOrders = [...filteredOrders].sort(
+    (a, b) => rank(resolveDisplayStatus(a)) - rank(resolveDisplayStatus(b))
+  );
 
   if (status === "loading") {
     return (
@@ -202,7 +235,7 @@ export default function OrdersPage() {
             <Clock className="w-8 h-8 animate-spin text-slate-300 mb-4" />
             <span>Загрузка истории заказов...</span>
           </div>
-        ) : filteredOrders.length === 0 ? (
+        ) : sortedOrders.length === 0 ? (
           <div className="py-20 bg-white rounded-3xl border border-slate-100 text-center flex flex-col items-center">
             <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-400">
               <Search className="w-8 h-8" />
@@ -212,7 +245,7 @@ export default function OrdersPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {filteredOrders.map((order) => (
+            {sortedOrders.map((order) => (
               <div key={order.id}>
                 <OrderCard
                   order={order}

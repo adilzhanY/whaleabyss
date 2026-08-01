@@ -6,6 +6,7 @@ import CartModal from "@/components/CartModal";
 import ConfirmDialogHost from "@/components/ConfirmDialogHost";
 import FloatingBanner from "@/components/FloatingBanner";
 import ReviewPrompt from "@/components/ReviewPrompt";
+import OrderEventWatcher from "@/components/OrderEventWatcher";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -18,6 +19,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <ConfirmDialogHost />
       <FloatingBanner />
       <ReviewPrompt />
+      {/* Celebration modals: «оплата прошла» / «заказ выполнен», once per order. */}
+      <OrderEventWatcher />
       {children}
     </SessionProvider>
   );

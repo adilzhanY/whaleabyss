@@ -125,6 +125,11 @@ export const orders = pgTable('orders', {
   isTestPayment: boolean('is_test_payment').default(false),
   userNotes: text('user_notes'),
   promocode: varchar('promocode', { length: 10 }),
+  // Celebration modals («оплата прошла» / «заказ выполнен») are shown to the
+  // customer exactly once per order: NULL = event not yet shown, the client
+  // watcher acks by setting the timestamp (see /api/user/order-events).
+  paidNotifiedAt: timestamp('paid_notified_at', { withTimezone: true }),
+  completedNotifiedAt: timestamp('completed_notified_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });

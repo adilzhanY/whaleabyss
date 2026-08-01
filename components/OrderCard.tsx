@@ -3,6 +3,7 @@
 import { Fragment, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { getOrderStatusMeta, type OrderStatus } from "@/lib/orderStatus";
+import { resolveDisplayStatus } from "@/lib/justPaidOrders";
 import TelegramIcon from "@/components/TelegramIcon";
 
 interface OrderItem {
@@ -86,21 +87,24 @@ function shortDate(value?: string) {
  * The one line that answers «где мой заказ» without inventing a progress bar:
  * how long it has been in its current state, plus the date it was placed.
  */
-function timingLine(order: OrderCardProps["order"]) {
+function timingLine(order: OrderCardProps["order"], displayStatus: string) {
   const placed = shortDate(order.createdAt);
   const inStatus = daysBetween(order.updatedAt ?? order.createdAt);
 
-  if (order.status === "in_progress") {
+  if (displayStatus === "in_progress") {
     return inStatus != null && inStatus > 0
       ? `В работе ${plural(inStatus)} · заказ от ${placed}`
       : `Взят в работу сегодня · заказ от ${placed}`;
   }
-  if (order.status === "paid") {
+  if (displayStatus === "paid") {
+    // Optimistic state: the success redirect happened but the webhook hasn't
+    // confirmed yet — don't assert «ждёт качера» before the money is verified.
+    if (order.status === "pending") return `Оплачен · подтверждаем оплату`;
     return inStatus != null && inStatus > 0
       ? `Оплачен ${plural(inStatus)} назад · ждёт качера`
       : `Оплачен сегодня · ждёт качера`;
   }
-  if (order.status === "completed") {
+  if (displayStatus === "completed") {
     const took = order.updatedAt ? daysBetween(order.createdAt, new Date(order.updatedAt).getTime()) : null;
     const done = shortDate(order.updatedAt) || placed;
     return took != null && took > 0 ? `Выполнен ${done} · занял ${plural(took)}` : `Выполнен ${done}`;
@@ -145,7 +149,12 @@ function DottedLink({ done }: { done: boolean }) {
   return (
     <span
       aria-hidden
-      className="mt-2 h-2 min-w-[18px] flex-1"
+      // Negative margins pull the line under the step columns, towards the
+      // dots: the 20px dot sits centred in a 74px label column, so without them
+      // the connector stops ~27px short of the dot on each side. −16px leaves
+      // an ~11px breath — close, but visibly not touching (−24px read as the
+      // line running straight through the dots).
+      className="mt-2 h-2 min-w-[18px] flex-1 -mx-4"
       style={{
         backgroundImage: `radial-gradient(circle, ${done ? "#6ee7b7" : "#cbd5e1"} 40%, transparent 44%)`,
         backgroundSize: "9px 9px",
@@ -218,9 +227,13 @@ function Timeline({ status, createdAt, updatedAt }: { status: string; createdAt:
  *    to support, and that is exactly where the support link sits.
  */
 export default function OrderCard({ order, isGrayscale = false }: OrderCardProps) {
-  const meta = getOrderStatusMeta(order.status);
+  // What the customer sees: the real status, except a pending order whose
+  // payment-success redirect this browser just witnessed renders as «Оплачен»
+  // until the webhook confirms (see lib/justPaidOrders.ts).
+  const displayStatus = resolveDisplayStatus(order);
+  const meta = getOrderStatusMeta(displayStatus);
   const StatusIcon = meta.icon;
-  const isActive = ACTIVE_STATUSES.has(order.status);
+  const isActive = ACTIVE_STATUSES.has(displayStatus);
   const total = Number(order.totalPrice ?? order.totalAmount ?? 0);
   const items = order.items ?? [];
   const [expanded, setExpanded] = useState(false);
@@ -237,7 +250,7 @@ export default function OrderCard({ order, isGrayscale = false }: OrderCardProps
     >
       <span
         aria-hidden
-        className={`absolute inset-y-0 left-0 w-[5px] ${RAIL[order.status] ?? "bg-slate-300"}`}
+        className={`absolute inset-y-0 left-0 w-[5px] ${RAIL[displayStatus] ?? "bg-slate-300"}`}
       />
 
       <div className="flex flex-1 flex-col p-5 pl-7">
@@ -251,7 +264,7 @@ export default function OrderCard({ order, isGrayscale = false }: OrderCardProps
                 <StatusIcon className="h-3.5 w-3.5" strokeWidth={2.5} />
                 {meta.label}
               </span>
-              {order.status === "in_progress" && order.boosterOnline && (
+              {displayStatus === "in_progress" && order.boosterOnline && (
                 <span
                   className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700"
                   title="Качер сейчас выполняет заказ на вашем аккаунте"
@@ -264,7 +277,7 @@ export default function OrderCard({ order, isGrayscale = false }: OrderCardProps
                 </span>
               )}
             </div>
-            <p className="mt-1.5 text-[13px] text-slate-500">{timingLine(order)}</p>
+            <p className="mt-1.5 text-[13px] text-slate-500">{timingLine(order, displayStatus)}</p>
           </div>
 
           <div className="text-right">
@@ -278,9 +291,9 @@ export default function OrderCard({ order, isGrayscale = false }: OrderCardProps
         </div>
 
         {/* the honest «where is my order» track, only while it is moving */}
-        {isActive && order.status !== "pending" && (
+        {isActive && displayStatus !== "pending" && (
           <div className="mt-4 rounded-xl bg-slate-50 px-3 py-3">
-            <Timeline status={order.status} createdAt={order.createdAt} updatedAt={order.updatedAt} />
+            <Timeline status={displayStatus} createdAt={order.createdAt} updatedAt={order.updatedAt} />
           </div>
         )}
 

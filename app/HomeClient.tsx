@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
 	CreditCard,
 	Star,
@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import type { SiteStats } from "@/lib/siteStats";
 import { displayCompletedOrders, displayReviewCount } from "@/lib/completedOrders";
+import { markJustPaid } from "@/lib/justPaidOrders";
 import type { CategoryTile } from "@/lib/homeShowcase";
 import type { ServiceItem } from "@/lib/services";
 import Header from "@/components/Header";
@@ -166,8 +167,14 @@ export default function HomeClient({
 			setShowDeletedModal(true);
 			router.replace("/");
 		}
+		// `?status=success` (return from Freekassa): clear the cart and remember
+		// WHICH order the gateway just confirmed — `?order=<id>` — so the UI can
+		// show it as «Оплачен» immediately, before the webhook writes the DB
+		// (lib/justPaidOrders.ts; must run BEFORE router.replace strips the URL).
+		// The «Оплата прошла!» celebration modal is shown by OrderEventWatcher
+		// once the webhook lands — the old green toast here doubled that message.
 		if (searchParams.get("status") === "success") {
-			setShowSuccessToast(true);
+			markJustPaid(searchParams.get("order"));
 			clearCart();
 			router.replace("/");
 		}
@@ -175,7 +182,6 @@ export default function HomeClient({
 
 	const [authOpen, setAuthOpen] = useState(false);
 	const [suggestOpen, setSuggestOpen] = useState(false);
-	const [showSuccessToast, setShowSuccessToast] = useState(false);
 	const [activeOrders, setActiveOrders] = useState<OrderData[]>([]);
 	const [pastOrders, setPastOrders] = useState<OrderData[]>([]);
 	// A guest never fetches orders, so it must not start in a loading state —
@@ -190,36 +196,54 @@ export default function HomeClient({
 	// next-auth refetch), which would fire a second identical pair of requests.
 	const userId = session?.user?.id;
 
+	// `silent` skips the loading state — used by the wa:orders-changed refresh
+	// so the strip doesn't flash away under the customer.
+	const fetchHomeOrders = useCallback(
+		(silent = false) => {
+			if (!userId) return () => {};
+			let cancelled = false;
+			if (!silent) setLoadingOrders(true);
+
+			fetch("/api/user/orders/active", { cache: "no-store" })
+				.then((res) => res.json())
+				.then((data) => {
+					if (!cancelled && Array.isArray(data)) setActiveOrders(data);
+				})
+				.catch(console.error)
+				.finally(() => {
+					if (!cancelled && !silent) setLoadingOrders(false);
+				});
+
+			fetch("/api/user/orders/past", { cache: "no-store" })
+				.then((res) => res.json())
+				.then((data) => {
+					if (!cancelled && Array.isArray(data)) setPastOrders(data);
+				})
+				.catch(console.error);
+
+			return () => {
+				cancelled = true;
+			};
+		},
+		[userId]
+	);
+
 	useEffect(() => {
 		if (!userId) {
 			setLoadingOrders(false);
 			return;
 		}
+		return fetchHomeOrders();
+	}, [userId, fetchHomeOrders]);
 
-		let cancelled = false;
-		setLoadingOrders(true);
-
-		fetch("/api/user/orders/active")
-			.then((res) => res.json())
-			.then((data) => {
-				if (!cancelled && Array.isArray(data)) setActiveOrders(data);
-			})
-			.catch(console.error)
-			.finally(() => {
-				if (!cancelled) setLoadingOrders(false);
-			});
-
-		fetch("/api/user/orders/past")
-			.then((res) => res.json())
-			.then((data) => {
-				if (!cancelled && Array.isArray(data)) setPastOrders(data);
-			})
-			.catch(console.error);
-
-		return () => {
-			cancelled = true;
-		};
-	}, [userId]);
+	// OrderEventWatcher broadcasts this when an order changed server-side (the
+	// payment webhook landed, the booster finished) — refresh the strips right
+	// away so the list under the celebration modal is already up to date.
+	useEffect(() => {
+		const refresh = () => fetchHomeOrders(true);
+		window.addEventListener("wa:orders-changed", refresh);
+		return () => window.removeEventListener("wa:orders-changed", refresh);
+	}, [fetchHomeOrders]);
 
 	return (
 		<div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh" }}>
@@ -659,7 +683,6 @@ export default function HomeClient({
 			)}
 
 			<Footer />
-			<Toast show={showSuccessToast} onClose={() => setShowSuccessToast(false)} />
 			{/* `?deleted=true` (the redirect after deleting an account) set this
 			    flag but nothing ever rendered it, so the account was deleted
 			    with no confirmation at all. */}

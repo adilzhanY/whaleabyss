@@ -168,3 +168,13 @@ ALTER TABLE services DROP COLUMN IF EXISTS cover_url;
 -- itself instead. NULL keeps the old crop-to-fill behaviour.
 -- Backfilled by scripts/covers/flag-icon-artwork.mjs.
 ALTER TABLE services ADD COLUMN IF NOT EXISTS image_fit varchar(10);
+
+-- 2026-08-01: celebration modals ("оплата прошла" / "заказ выполнен") shown
+-- once per order. NULL = event not yet shown; the client watcher acks by
+-- setting the timestamp. Backfilled on migration so nothing fired
+-- retroactively: paid_notified_at for every non-pending order,
+-- completed_notified_at for already-completed ones.
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS paid_notified_at timestamptz;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS completed_notified_at timestamptz;
+UPDATE orders SET paid_notified_at = NOW() WHERE paid_notified_at IS NULL AND status <> 'pending';
+UPDATE orders SET completed_notified_at = NOW() WHERE completed_notified_at IS NULL AND status = 'completed';

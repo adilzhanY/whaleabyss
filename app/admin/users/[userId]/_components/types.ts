@@ -87,11 +87,6 @@ export interface Stats {
   statusCounts: Record<string, number>;
 }
 
-export interface MonthSpend {
-  month: string;
-  total: number;
-}
-
 export interface TopService {
   serviceId: string;
   title: string;
@@ -107,6 +102,5 @@ export interface UserDetailPayload {
   cartUpdatedAt: string | null;
   promocodeUses: PromocodeUse[];
   stats: Stats;
-  monthlySpend: MonthSpend[];
   topServices: TopService[];
 }

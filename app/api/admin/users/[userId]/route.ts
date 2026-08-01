@@ -21,11 +21,6 @@ import { notTestOrder } from '@/lib/testOrders';
 const REVENUE_STATUSES = new Set(['paid', 'in_progress', 'completed', 'refunded']);
 const DAY_MS = 86_400_000;
 
-/** `YYYY-MM` key used to bucket spend for the sparkline. */
-function monthKey(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-}
-
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ userId: string }> }
@@ -168,19 +163,6 @@ export async function GET(
       .filter((t): t is number => t != null);
     const lastOrderAt = orderDates.length ? Math.max(...orderDates) : null;
 
-    // Spend per month for the last 6 months, oldest first (sparkline input).
-    const now = new Date();
-    const months: { month: string; total: number }[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      months.push({ month: monthKey(d), total: 0 });
-    }
-    for (const order of revenueOrders) {
-      if (!order.createdAt) continue;
-      const bucket = months.find((m) => m.month === monthKey(new Date(order.createdAt!)));
-      if (bucket) bucket.total += Number(order.totalPrice);
-    }
-
     const statusCounts: Record<string, number> = {};
     for (const order of userOrders) {
       const key = order.status ?? 'pending';
@@ -277,7 +259,6 @@ export async function GET(
           : null,
         statusCounts,
       },
-      monthlySpend: months,
       topServices,
     });
   } catch (error) {

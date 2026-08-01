@@ -8,9 +8,7 @@ import { Copy, Check, Mail, Plus, ShieldCheck } from "lucide-react";
 import TelegramIcon from "@/components/TelegramIcon";
 import CopyableText from "../../../_components/CopyableText";
 import UserRoleChip from "../../../_components/UserRoleChip";
-import type { CartLine, MonthSpend, Stats, UserDetails } from "./types";
-
-const MONTHS_SHORT = ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
+import type { CartLine, Stats, UserDetails } from "./types";
 
 export function money(n: number) {
   return `${Math.round(n).toLocaleString("ru-RU")} ₽`;
@@ -39,55 +37,20 @@ function Stat({
   value,
   label,
   sub,
-  big = false,
 }: {
   value: React.ReactNode;
   label: string;
   sub?: React.ReactNode;
-  big?: boolean;
 }) {
   return (
-    // Sized to content, not stretched: with only three stats (the common case —
-    // no orders) `flex-1` blew each cell up to a third of the card.
-    <div className="min-w-[128px] border-r border-slate-100 px-4 py-2.5 last:border-r-0">
-      <div
-        className={`whitespace-nowrap font-extrabold text-slate-900 leading-tight tabular-nums ${
-          big ? "text-[21px]" : "text-[17px]"
-        }`}
-      >
+    // Equal-width, centered cells: one value size and one alignment for every
+    // stat, so the ribbon reads as a row of tiles rather than a ragged list.
+    <div className="min-w-[128px] flex-1 border-r border-slate-100 px-4 py-2.5 text-center last:border-r-0">
+      <div className="whitespace-nowrap font-extrabold text-slate-900 leading-tight tabular-nums text-[18px]">
         {value}
       </div>
       <div className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</div>
       {sub && <div className="whitespace-nowrap text-[11px] text-slate-500">{sub}</div>}
-    </div>
-  );
-}
-
-/** Six-month spend bars. Rendered only when there is something to show. */
-function Sparkline({ data }: { data: MonthSpend[] }) {
-  const max = Math.max(...data.map((m) => m.total));
-  if (max <= 0) return null;
-  return (
-    // Fixed width: as a flex-1 cell it swallowed all the leftover ribbon space
-    // and the bars ended up floating in an empty column.
-    <div className="w-[150px] shrink-0 px-4 py-2.5">
-      <div className="flex h-[26px] items-end gap-[3px]">
-        {data.map((m) => {
-          const [, month] = m.month.split("-");
-          const label = `${MONTHS_SHORT[Number(month) - 1]}: ${money(m.total)}`;
-          return (
-            <span
-              key={m.month}
-              title={label}
-              className={`flex-1 rounded-t-sm ${m.total > 0 ? "bg-blue-600" : "bg-slate-200"}`}
-              style={{ height: `${Math.max((m.total / max) * 100, 6)}%` }}
-            />
-          );
-        })}
-      </div>
-      <div className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-        Траты за 6 мес.
-      </div>
     </div>
   );
 }
@@ -126,13 +89,11 @@ export default function UserIdentityCard({
   stats,
   cart,
   cartTotal,
-  monthlySpend,
 }: {
   user: UserDetails;
   stats: Stats;
   cart: CartLine[];
   cartTotal: number;
-  monthlySpend: MonthSpend[];
 }) {
   const role = user.role ?? "user";
   const telegram = user.telegramUsername?.replace(/^@/, "") ?? null;
@@ -237,7 +198,7 @@ export default function UserIdentityCard({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2">
           {telegram && (
             <a
               href={`https://t.me/${telegram}`}
@@ -263,7 +224,6 @@ export default function UserIdentityCard({
       {/* stat ribbon */}
       <div className="flex flex-wrap border-t border-slate-100">
         <Stat
-          big
           value={money(stats.totalSpent)}
           label="Потрачено"
           sub={
@@ -301,7 +261,6 @@ export default function UserIdentityCard({
             sub={`${stats.totalReviews} шт.`}
           />
         )}
-        <Sparkline data={monthlySpend} />
       </div>
     </div>
   );

@@ -84,7 +84,6 @@ export default function UserDetailPage() {
     cartUpdatedAt,
     promocodeUses,
     stats,
-    monthlySpend,
     topServices,
   } = data;
 
@@ -238,17 +237,16 @@ export default function UserDetailPage() {
         <span className="text-sm text-slate-500">Все пользователи</span>
       </div>
 
-      <UserIdentityCard
-        user={user}
-        stats={stats}
-        cart={cart}
-        cartTotal={cartTotal}
-        monthlySpend={monthlySpend}
-      />
-
-      <div className="mt-4 grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         {/* ── left column ─────────────────────────────────────────────── */}
         <div className="space-y-4">
+          <UserIdentityCard
+            user={user}
+            stats={stats}
+            cart={cart}
+            cartTotal={cartTotal}
+          />
+
           <UserCard
             title={`Заказы · ${orders.length}`}
             right={

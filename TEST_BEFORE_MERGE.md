@@ -290,7 +290,7 @@ rather than `timingSafeEqual`. Low impact (it compares hashes, not the secret) b
 [x]  3. notify/route.ts — trim header/payload logging to one line         §3.2  (commit 2f844a4)
 [x]  4. vitest.config.mts env block + lib/__tests__/dbGuard.test.ts       §3.3
 [x]  5. .gitignore + git rm the dead scripts                              §3.4  (2026-08-02; misc/migrations.sql was a STALE bootstrap DDL contradicting lib/schema.ts — deleted, git history keeps it; dangling pointer in docs/WEBHOOK_ANALYSIS.md fixed)
-[ ]  6. tsc --noEmit && npm test && npm run build                         §3.5  (tsc+test green ×3; `npm run build` needs the DB tunnel — owner runs it)
+[x]  6. tsc --noEmit && npm test && npm run build                         §3.5  (all three green 2026-08-02; build 64/64 pages, run by the owner with the tunnel up)
 [ ]  7. Merge rebranding-v2 → main, push (this is a production release)   §3.5  (push of deploy.yml needs a workflow-scope token or SSH auth)
 [x]  8. deploy.yml — add the blocking `npm test` step                     §4    (2026-08-02; between Typecheck and Lint, no continue-on-error; suite needs no DB/secrets. vitest testTimeout/hookTimeout raised to 30 s so PGlite cold boot can never flake the deploy gate)
 [x]  9. Install PGlite, build test/utils/{pgliteDb,dbStub}.ts             TEST_PLAN §1

@@ -402,8 +402,10 @@ const result = await db.select().from(services).where(eq(services.id, id));
 
 **Order Notifications:**
 - Telegram bot sends notifications to admin chat on new paid orders
-- Inline keyboard buttons allow admins to update order status directly from Telegram
-- Bot handles callback queries to update order status in DB
+- Notifications are informational only (2026-08-01): status buttons were removed —
+  orders are managed in the admin panel / booster portal. The callback handler is
+  kept but only answers «кнопки отключены» and strips the keyboard, so buttons on
+  pre-removal messages can't silently flip a status or credit a booster
 - **Webhook authenticity:** `/api/telegram/webhook` verifies the
   `X-Telegram-Bot-Api-Secret-Token` header against `TELEGRAM_WEBHOOK_SECRET`
   (constant-time) before calling `bot.handleUpdate`. This is the real auth —

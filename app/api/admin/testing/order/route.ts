@@ -110,7 +110,20 @@ export async function POST(req: NextRequest) {
       return order.id;
     });
 
-    // No Telegram, no e-mail, no notifier — that is the whole point.
+    // No Telegram, no notifier — but the PAID email IS sent (2026-08-01):
+    // test orders skip the FK webhook entirely, so this is the only way the
+    // admin can preview the payment email end-to-end. Safe by construction:
+    // the recipient resolves to the admin's OWN account (order.userId is the
+    // session user), the DB claim in claimAndSendPaidEmail makes it
+    // exactly-once, and the helper never throws — a mail failure can't fail
+    // the order creation.
+    try {
+      const { claimAndSendPaidEmail } = await import('@/lib/orderEmails');
+      await claimAndSendPaidEmail(orderId);
+    } catch (e) {
+      console.error('[Test Order] paid email failed:', e);
+    }
+
     return NextResponse.json({ success: true, orderId, total });
   } catch (error) {
     console.error('[Test Order Error]', error);

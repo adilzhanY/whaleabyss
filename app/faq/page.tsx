@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ChevronDown } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import AuthModal from "@/components/AuthModal";
 
 import { ReactNode } from "react";
 
@@ -31,7 +32,7 @@ const FAQ_ITEMS: { q: string; a: ReactNode }[] = [
   },
   {
     q: "4. Кто занимается выполнением заказов?",
-    a: "На данный момент я курирую и выполняю все заказы самостоятельно, что гарантирует персональный контроль качества. Однако наш проект активно развивается, и в ближайшее время к работе присоединятся квалифицированные специалисты. Это позволит нам сократить время ожидания и обрабатывать большее количество заявок без потери качества.",
+    a: "Заказы выполняет наша команда бустеров — опытные игроки, которых мы отбираем лично. Каждый исполнитель оформлен официально: он работает в статусе самозанятого, подписывает договор с сервисом и проходит проверку документов, поэтому за каждым заказом стоит конкретный человек, который несёт ответственность за результат. Администрация сервиса дополнительно курирует все заказы и контролирует качество и сроки на каждом этапе.",
   },
   {
     q: "5. Где посмотреть отзывы о вашей работе?",
@@ -88,6 +89,7 @@ export default function FaqPage() {
   return (
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
+      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
       <main className="site-gutter flex-1 pt-28 md:pt-32 pb-20">
         <div className="site-container">

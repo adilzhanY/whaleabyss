@@ -41,9 +41,8 @@ export async function GET(req: NextRequest) {
 
 async function handle(req: NextRequest) {
   try {
-    console.log('[Freekassa] Notification received at:', new Date().toISOString());
-    console.log('[Freekassa] Request method:', req.method);
-    console.log('[Freekassa] Request headers:', Object.fromEntries(req.headers.entries()));
+    console.log('[Freekassa] Notification received at:', new Date().toISOString(), req.method);
+    // Never dump the raw headers here — they can carry forwarded auth/cookies.
 
     // 1. IP allow-list (optional hardening, enabled via FREEKASSA_CHECK_IP=true).
     if (shouldCheckNotifyIp()) {
@@ -76,7 +75,8 @@ async function handle(req: NextRequest) {
       if (!(k in data)) data[k] = v;
     });
 
-    console.log('[Freekassa] Parsed notification data:', data);
+    // Log only what traces a payment — the full payload carries P_EMAIL / P_PHONE (customer PII).
+    console.log('[Freekassa] notify', { order: data.MERCHANT_ORDER_ID, amount: data.AMOUNT });
 
     const merchantId = data.MERCHANT_ID;
     const amount = data.AMOUNT;

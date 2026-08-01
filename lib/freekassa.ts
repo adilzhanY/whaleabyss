@@ -353,10 +353,11 @@ export function verifyFreekassaNotification(params: {
 
   if (String(shopId) !== String(params.merchantId)) return false;
 
+  // NEVER log `signatureString`, `secret2`, its length, or any prefix of it — it
+  // embeds FREEKASSA_SECRET_2 in plaintext, and a leak lets anyone forge a "paid"
+  // webhook. This once printed the secret to pm2 logs and forced a rotation
+  // (2026-08-02). Logging the md5 hashes below is fine — they are one-way.
   const signatureString = `${params.merchantId}:${params.amount}:${secret2}:${params.merchantOrderId}`;
-  console.log('[Freekassa] Signature string:', signatureString);
-  console.log('[Freekassa] SECRET_2 length:', secret2.length);
-  console.log('[Freekassa] SECRET_2 first 4 chars:', secret2.substring(0, 4));
 
   const expected = crypto
     .createHash('md5')

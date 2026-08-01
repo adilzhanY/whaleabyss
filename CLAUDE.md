@@ -355,6 +355,17 @@ const result = await db.select().from(services).where(eq(services.id, id));
 - Webhook at `/api/payment/freekassa/notify` verifies signature and updates order status
 - Signature verification: `md5("{shop_id}:{amount}:{SECRET_2}:{merchant_order_id}")`
 - Must respond with plain text "YES" to webhook
+- **NEVER log `FREEKASSA_SECRET_2` — or any secret — and never put one in a tracked/public
+  file.** `SECRET_2` signs the money webhook, so a leak lets anyone forge a "заказ оплачен"
+  notification and get services for free. It was printed to pm2 logs once (the full
+  signature-source string, plus its length and first chars, in `lib/freekassa.ts`) and had to
+  be **rotated on 2026-08-02** (dashboard + prod `.env` + `pm2 flush`). The logging is gone;
+  do not reintroduce a `console.log` of the signature source, secret length, or secret bytes —
+  **log md5/HMAC hashes only, they are one-way.** Same rule for `FREEKASSA_SECRET_1`,
+  `FREEKASSA_API_KEY`, `NEXTAUTH_SECRET`, `CRON_SECRET`, `TELEGRAM_*`, DB/SMTP/S3 creds. And
+  never log the raw webhook payload — it carries `P_EMAIL`/`P_PHONE` (customer PII); log
+  `{ order, amount }` only. `.env` is gitignored; keep it that way, and delete any
+  `.env.bak*` you make on the VM once done (it holds the old secret in plaintext).
 - Late-payment re-open: a webhook for an order with `status='cancelled' AND paymentId IS NULL`
   is treated as a first-time payment — the order is flipped to `paid` and full fulfillment
   runs (admin notified, email sent, cart cleared). This covers the case where the cleanup

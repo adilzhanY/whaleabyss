@@ -48,6 +48,10 @@ LEARNING_PATH.md
 /learning
 
 # public assets (managed/served separately; new files not tracked)
+# NB: ~92 pre-existing files under /public (incl. the valle_chibi_* pngs that
+# next/image statically imports) were tracked before this rule existed and STAY
+# tracked — gitignore never affects tracked files. Keep it that way: statically
+# imported assets must be in the repo or a cold-checkout tsc/build breaks.
 /public
 
 # lavish review artifacts

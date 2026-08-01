@@ -14,12 +14,16 @@ import { notTestOrder } from '@/lib/testOrders';
  * too small to be worth showing, the hero drops that item rather than rounding
  * it up (see HomeClient).
  *
- * `reviewCount`/`rating` deliberately exclude `reviews.isFake` rows: those are
- * seeded display copy, and counting them would be the same lie in a different
- * table.
+ * `reviewCount`/`rating` cover every APPROVED review — exactly the set a
+ * visitor can scroll through on /reviews, so the claim is verifiable on the
+ * next click. Since 2026-08-01 `isFake=true` no longer implies invented copy:
+ * the 111 reviews imported from the owner's Telegram channel carry that flag
+ * only for its inline-author mechanics (userId is NULL), while their content
+ * is authentic customer feedback. Filtering isFake out here would hide real
+ * history and undercount against the visible page.
  */
 export interface SiteStats {
-  /** Genuine (non-seeded) published reviews. */
+  /** Approved reviews — what /reviews actually renders. */
   reviewCount: number;
   /** Mean rating over those reviews, 1 decimal — null when there are none. */
   rating: number | null;
@@ -39,7 +43,7 @@ export const getSiteStats = cache(async (): Promise<SiteStats> => {
         avg: sql<number | null>`avg(${reviews.rating})`,
       })
       .from(reviews)
-      .where(eq(reviews.isFake, false));
+      .where(eq(reviews.status, 'approved'));
 
     const [orderRow] = await db
       .select({

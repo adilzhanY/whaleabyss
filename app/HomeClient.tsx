@@ -11,7 +11,7 @@ import {
 	CheckCircle2,
 } from "lucide-react";
 import type { SiteStats } from "@/lib/siteStats";
-import { displayCompletedOrders } from "@/lib/completedOrders";
+import { displayCompletedOrders, displayReviewCount } from "@/lib/completedOrders";
 import type { CategoryTile } from "@/lib/homeShowcase";
 import type { ServiceItem } from "@/lib/services";
 import Header from "@/components/Header";
@@ -138,14 +138,14 @@ export default function HomeClient({
 		: "";
 	const trustSignals: { icon: React.ReactNode; label: string }[] = [];
 	if (stats?.rating != null && stats.reviewCount > 0) {
+		// Count is floored to a round fifty («161» → «150+ отзывов») and hidden
+		// under 50, so the claim always understates and never needs a manual bump.
+		const reviewFloor = displayReviewCount(stats.reviewCount);
 		trustSignals.push({
 			icon: <Star className="h-5 w-5 fill-amber-400 text-amber-400" />,
-			label: `${stats.rating.toFixed(1).replace(".", ",")} · ${stats.reviewCount} ${plural(
-				stats.reviewCount,
-				"отзыв",
-				"отзыва",
-				"отзывов",
-			)}`,
+			label: `${stats.rating.toFixed(1).replace(".", ",")}${
+				reviewFloor ? ` · ${reviewFloor} отзывов` : ""
+			}`,
 		});
 	}
 	if (stats?.completedOrders) {

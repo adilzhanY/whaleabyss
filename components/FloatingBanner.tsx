@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 
 // Master toggle for the floating bottom-right banner.
 // Set to `true` to show the banner site-wide again.
-const BANNER_ENABLED = true;
+const BANNER_ENABLED = false;
 
 export default function FloatingBanner() {
   const pathname = usePathname();

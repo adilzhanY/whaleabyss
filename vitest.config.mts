@@ -22,5 +22,13 @@ export default defineConfig({
     // defence in depth behind the per-suite vi.mock('@/lib/db'); the dbGuard
     // canary test pins it. See docs/testing/TEST_PLAN.md §1.1.
     env: { DATABASE_URL: "postgres://vitest:vitest@127.0.0.1:1/blocked" },
+    // The first makeTestDb() in a file cold-boots a PGlite WASM instance and
+    // pushes the whole schema; with 37 files running in parallel (and on slow
+    // 2-core CI runners) that can exceed the 5 s default and flake — observed
+    // locally on the one suite that boots inside it() rather than beforeEach.
+    // Timeouts are ceilings, not waits: passing tests are not slowed. This
+    // suite is a BLOCKING deploy gate, so it must never fail on timing.
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
   },
 });

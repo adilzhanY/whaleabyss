@@ -53,5 +53,8 @@ LEARNING_PATH.md
 # lavish review artifacts
 .lavish/
 
+# generated email previews (scripts/test/preview_emails.ts output)
+.email-previews/
+
 # generated quest covers (review output; the artwork of record lives in S3)
 scripts/covers/out/

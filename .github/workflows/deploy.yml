@@ -27,6 +27,12 @@ jobs:
       - name: Typecheck (blocks deploy on failure)
         run: npx tsc --noEmit
 
+      # Blocking: a red suite skips the deploy job entirely. The suite needs no
+      # DB and no secrets — vitest.config.mts pins DATABASE_URL to a blocked
+      # sentinel and every external service is mocked (~10 s, 270+ tests).
+      - name: Unit tests (blocks deploy on failure)
+        run: npm test
+
       - name: Lint (informational, non-blocking)
         run: npm run lint
         continue-on-error: true

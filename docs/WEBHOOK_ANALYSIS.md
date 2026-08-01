@@ -121,8 +121,8 @@ The webhook code is solid with extensive logging. If Freekassa was calling it, y
    - If no logs, Freekassa isn't sending notifications
 
 3. **Test Manually:**
-   - Use the `test-webhook.mjs` script (when DB is accessible)
-   - Or use curl to manually trigger the webhook
+   - Use curl to manually trigger the webhook (the old `test-webhook.mjs`
+     helper was removed in the 2026-08 repo cleanup; it lives in git history)
    - This verifies the webhook code works
 
 4. **Verify Environment:**

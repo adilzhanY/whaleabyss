@@ -27,14 +27,26 @@ export default function OrderEventWatcher() {
   // Sticky guard: while an event is showing (or just closed and we're between
   // polls), don't fetch — one modal at a time, no double-fire from fast polls.
   const busyRef = useRef(false);
+  // Latest-request-wins: two checks CAN be in flight at once (busyRef is only
+  // set when a response arrives; in dev the first hit also compiles the route,
+  // taking seconds). A stale response used to re-open the just-closed modal —
+  // its DB read predated the ack. Only the newest request may act.
+  const reqIdRef = useRef(0);
+  // Never show the same event twice in this tab, whatever the server says —
+  // belt and braces on top of the server-side ack.
+  const shownRef = useRef<Set<string>>(new Set());
 
   const check = useCallback(async () => {
     if (busyRef.current || document.visibilityState === "hidden") return;
+    const reqId = ++reqIdRef.current;
     try {
       const res = await fetch("/api/user/order-events", { cache: "no-store" });
-      if (!res.ok) return;
+      if (!res.ok || reqId !== reqIdRef.current) return;
       const data = await res.json();
-      if (!data.event || busyRef.current) return;
+      if (!data.event || busyRef.current || reqId !== reqIdRef.current) return;
+      const eventKey = `${data.event.orderId}:${data.event.type}`;
+      if (shownRef.current.has(eventKey)) return;
+      shownRef.current.add(eventKey);
       busyRef.current = true;
       setEvent(data.event);
       // The event IS the news that an order changed server-side. Broadcast it

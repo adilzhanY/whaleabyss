@@ -15,5 +15,12 @@ export default defineConfig({
     setupFiles: ["./vitest.setup.ts"],
     include: ["**/__tests__/**/*.test.{ts,tsx}"],
     globals: false,
+    // On the dev machine DATABASE_URL points at the PRODUCTION database through
+    // an SSH tunnel, and lib/db.ts builds a pg.Pool at module scope. Force every
+    // test process onto a sentinel that refuses instantly (port 1 = ECONNREFUSED)
+    // so a stray real import of @/lib/db can never reach production. This is
+    // defence in depth behind the per-suite vi.mock('@/lib/db'); the dbGuard
+    // canary test pins it. See docs/testing/TEST_PLAN.md §1.1.
+    env: { DATABASE_URL: "postgres://vitest:vitest@127.0.0.1:1/blocked" },
   },
 });

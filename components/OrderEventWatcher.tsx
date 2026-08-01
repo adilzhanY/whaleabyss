@@ -4,18 +4,23 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import OrderEventModal, { type OrderEvent } from "./OrderEventModal";
+import { markJustCompleted, markJustPaid } from "@/lib/justPaidOrders";
 
 /**
  * Watches for unseen order events («оплата прошла» / «заказ выполнен») and
- * shows the celebration modal exactly once per order — the server flag is
- * acked the moment the modal opens, so a refresh or second tab can't repeat it.
+ * shows the celebration modal EXACTLY once per order. Once-ness lives on the
+ * SERVER: one POST atomically claims-and-returns the next unseen event (see
+ * /api/user/order-events) — by the time we hold an event object, the DB has
+ * already marked it seen, so no reload, second tab, dev remount or lost
+ * network request can ever surface it again. (The first design acked after
+ * showing; a lost ack meant a repeat. Never go back to that.)
  *
  * Suppressed on /cart (the customer is mid-payment there; the event waits and
  * fires after they return, e.g. to the home page) and on /admin + /portal
- * (back-office). Polls a light endpoint every 30s while the tab is visible;
- * landing on a new page triggers an immediate check plus two quick retries —
- * that covers the Freekassa webhook landing a few seconds after the customer
- * is redirected back to the site.
+ * (back-office). Polls every 30s while the tab is visible; landing on a new
+ * page triggers an immediate check plus two quick retries — that covers the
+ * Freekassa webhook landing a few seconds after the customer is redirected
+ * back to the site.
  */
 const SUPPRESSED = (path: string | null) =>
   !path || path === "/cart" || path.startsWith("/admin") || path.startsWith("/portal");
@@ -40,7 +45,10 @@ export default function OrderEventWatcher() {
     if (busyRef.current || document.visibilityState === "hidden") return;
     const reqId = ++reqIdRef.current;
     try {
-      const res = await fetch("/api/user/order-events", { cache: "no-store" });
+      // POST = atomic claim: the server stamps the event as seen BEFORE we
+      // ever receive it. A claimed event must therefore always be displayed —
+      // the client-side guards below are display hygiene, not once-ness.
+      const res = await fetch("/api/user/order-events", { method: "POST", cache: "no-store" });
       if (!res.ok || reqId !== reqIdRef.current) return;
       const data = await res.json();
       if (!data.event || busyRef.current || reqId !== reqIdRef.current) return;
@@ -49,17 +57,16 @@ export default function OrderEventWatcher() {
       shownRef.current.add(eventKey);
       busyRef.current = true;
       setEvent(data.event);
+      // Optimistic display: any card already on screen may hold a snapshot
+      // fetched BEFORE this status change — mark the order so it renders its
+      // new status instantly instead of waiting for the refetch to land.
+      if (data.event.type === "completed") markJustCompleted(data.event.orderId);
+      else markJustPaid(data.event.orderId);
       // The event IS the news that an order changed server-side. Broadcast it
       // so open views (e.g. /orders) refetch immediately instead of waiting
       // for their own poll tick — the list under the modal must already show
       // the new status when the customer closes it.
       window.dispatchEvent(new CustomEvent("wa:orders-changed"));
-      // Ack immediately on display — "shown once" must not depend on a click.
-      fetch("/api/user/order-events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: data.event.orderId, type: data.event.type }),
-      }).catch(() => {});
       // The legacy ReviewPrompt nudge asks for a review too — snooze it for
       // this visit so the customer never gets two popups in one session.
       if (data.event.type === "completed") {

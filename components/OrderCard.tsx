@@ -105,6 +105,10 @@ function timingLine(order: OrderCardProps["order"], displayStatus: string) {
       : `Оплачен сегодня · ждёт качера`;
   }
   if (displayStatus === "completed") {
+    // Optimistic state: the completion modal was just shown but this card's
+    // data predates the status flip — the stale updatedAt would date the
+    // completion wrongly, so say the honest thing instead.
+    if (order.status !== "completed") return "Выполнен только что";
     const took = order.updatedAt ? daysBetween(order.createdAt, new Date(order.updatedAt).getTime()) : null;
     const done = shortDate(order.updatedAt) || placed;
     return took != null && took > 0 ? `Выполнен ${done} · занял ${plural(took)}` : `Выполнен ${done}`;

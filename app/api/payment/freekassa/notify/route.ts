@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { orders, promocodes, promocodeUsage } from '@/lib/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull, or } from 'drizzle-orm';
 import {
   verifyFreekassaNotification,
   FREEKASSA_NOTIFY_IPS,
@@ -137,25 +137,19 @@ async function handle(req: NextRequest) {
     //    - any other status: already processed (paid, in_progress, completed,
     //      refunded, or admin-cancelled after payment). Answer YES so FK
     //      stops retrying, but DO NOT re-run fulfillment.
-    const isReopenableCancellation =
-      order.status === 'cancelled' && !order.paymentId;
-    const shouldProcess = order.status === 'pending' || isReopenableCancellation;
-
-    if (!shouldProcess) {
-      console.log(
-        `[Freekassa] Order ${merchantOrderId} already processed with status: ${order.status}, skipping fulfillment.`
-      );
-      return new NextResponse('YES', { status: 200 });
-    }
-
-    if (isReopenableCancellation) {
+    if (order.status === 'cancelled' && !order.paymentId) {
       console.warn(
         `[Freekassa] Late payment on auto-cancelled order ${merchantOrderId}. Re-opening and running fulfillment.`
       );
     }
 
-    // 6. Mark paid; store FK's internal order id as paymentId.
-    console.log('[Freekassa] Updating order status to paid...');
+    // 6. ATOMIC claim of the paid transition. The eligibility check lives in
+    //    the UPDATE's WHERE, not in a separate read: FK retries webhooks
+    //    aggressively and two deliveries used to both observe `pending` and
+    //    both run fulfillment (double email/telegram/promocode). Whichever
+    //    delivery wins this UPDATE fulfils; everyone else gets 0 rows.
+    //    Eligible: `pending` (normal), or `cancelled` with no paymentId (the
+    //    cleanup job auto-cancelled while the customer was still paying).
     const updateResult = await db
       .update(orders)
       .set({
@@ -163,11 +157,34 @@ async function handle(req: NextRequest) {
         paymentId: fkOrderId ?? null,
         updatedAt: new Date(),
       })
-      .where(eq(orders.id, order.id))
+      .where(
+        and(
+          eq(orders.id, order.id),
+          or(eq(orders.status, 'pending'), and(eq(orders.status, 'cancelled'), isNull(orders.paymentId)))
+        )
+      )
       .returning();
 
+    if (updateResult.length === 0) {
+      // Already processed (by a concurrent delivery or long ago). If the order
+      // is in a paid-family status, use this free retry to re-attempt a
+      // previously failed confirmation email — the claim inside makes it a
+      // no-op when the email already went out.
+      console.log(
+        `[Freekassa] Order ${merchantOrderId} already processed with status: ${order.status}, skipping fulfillment.`
+      );
+      if (['paid', 'in_progress', 'completed'].includes(order.status ?? '')) {
+        try {
+          const { claimAndSendPaidEmail } = await import('@/lib/orderEmails');
+          await claimAndSendPaidEmail(order.id, { recipientHint: data.P_EMAIL || undefined });
+        } catch (e) {
+          console.error('[Freekassa] paid-email retry failed:', e);
+        }
+      }
+      return new NextResponse('YES', { status: 200 });
+    }
+
     console.log(`[Freekassa] Order ${merchantOrderId} successfully PAID (fk intid=${fkOrderId}).`);
-    console.log('[Freekassa] Update result:', updateResult);
 
     // 6.5. Record promocode usage now that payment is confirmed.
     if (order.promocode && order.userId) {
@@ -290,59 +307,12 @@ async function handle(req: NextRequest) {
       console.error('[Telegram] Failed to send admin notification:', tgError);
     }
 
-    // 8. Send order confirmation email to customer (best effort).
+    // 8. Send the confirmation email — exactly-once via the DB claim in
+    //    lib/orderEmails (paid_email_sent_at). Best effort; a failed send
+    //    re-arms the claim and FK's next webhook retry re-attempts it.
     try {
-      const { sendOrderConfirmationEmail } = await import('@/lib/email');
-      const { orderItems, services, users } = await import('@/lib/schema');
-      const { eq: eqInner } = await import('drizzle-orm');
-
-      // Get customer email
-      let customerEmail = data.P_EMAIL || null;
-      if (!customerEmail && order.userId) {
-        const userRows = await db
-          .select({ email: users.email, receiptEmail: users.receiptEmail })
-          .from(users)
-          .where(eqInner(users.id, order.userId))
-          .limit(1);
-        if (userRows.length > 0) {
-          customerEmail = userRows[0].receiptEmail || userRows[0].email;
-        }
-      }
-
-      // Extract email from userNotes if not found
-      if (!customerEmail && order.userNotes) {
-        const emailMatch = order.userNotes.match(/Email:\s*([^\n]+)/);
-        if (emailMatch) {
-          customerEmail = emailMatch[1].trim();
-        }
-      }
-
-      if (customerEmail) {
-        const items = await db
-          .select({
-            title: services.title,
-            quantity: orderItems.quantity,
-            price: orderItems.priceAtPurchase,
-          })
-          .from(orderItems)
-          .leftJoin(services, eqInner(orderItems.serviceId, services.id))
-          .where(eqInner(orderItems.orderId, merchantOrderId));
-
-        await sendOrderConfirmationEmail({
-          orderId: merchantOrderId,
-          customerEmail,
-          items: items.map((i) => ({
-            title: i.title || 'Услуга',
-            quantity: i.quantity || 1,
-            price: parseFloat(i.price || '0'),
-          })),
-          totalAmount: parseFloat(amount),
-          orderDate: order.createdAt || new Date(),
-        });
-        console.log(`[Email] Order confirmation sent to ${customerEmail}`);
-      } else {
-        console.warn('[Email] No customer email found, skipping confirmation email');
-      }
+      const { claimAndSendPaidEmail } = await import('@/lib/orderEmails');
+      await claimAndSendPaidEmail(order.id, { recipientHint: data.P_EMAIL || undefined });
     } catch (emailError) {
       console.error('[Email] Failed to send order confirmation:', emailError);
     }

@@ -130,6 +130,11 @@ export const orders = pgTable('orders', {
   // watcher acks by setting the timestamp (see /api/user/order-events).
   paidNotifiedAt: timestamp('paid_notified_at', { withTimezone: true }),
   completedNotifiedAt: timestamp('completed_notified_at', { withTimezone: true }),
+  // Email exactly-once claims (lib/orderEmails.ts) — SEPARATE from the modal
+  // columns above: those are stamped when the modal is shown in a browser,
+  // these when the email send is claimed. NULL = email not sent yet.
+  paidEmailSentAt: timestamp('paid_email_sent_at', { withTimezone: true }),
+  completedEmailSentAt: timestamp('completed_email_sent_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });

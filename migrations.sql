@@ -178,3 +178,15 @@ ALTER TABLE orders ADD COLUMN IF NOT EXISTS paid_notified_at timestamptz;
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS completed_notified_at timestamptz;
 UPDATE orders SET paid_notified_at = NOW() WHERE paid_notified_at IS NULL AND status <> 'pending';
 UPDATE orders SET completed_notified_at = NOW() WHERE completed_notified_at IS NULL AND status = 'completed';
+
+-- 2026-08-01: customer-email exactly-once claims (lib/orderEmails.ts), separate
+-- from the *_notified_at modal columns. Backfilled: paid for every non-pending
+-- order EXCEPT reopenable cancellations (late payment still emails), completed
+-- for already-completed orders.
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS paid_email_sent_at timestamptz;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS completed_email_sent_at timestamptz;
+UPDATE orders SET paid_email_sent_at = NOW()
+  WHERE paid_email_sent_at IS NULL AND status <> 'pending'
+    AND NOT (status = 'cancelled' AND payment_id IS NULL);
+UPDATE orders SET completed_email_sent_at = NOW()
+  WHERE completed_email_sent_at IS NULL AND status = 'completed';

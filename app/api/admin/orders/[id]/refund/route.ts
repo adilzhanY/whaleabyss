@@ -75,10 +75,10 @@ export async function POST(
       } else {
         refundResult = await refundFreekassaOrder({ paymentId: id });
       }
-    } catch (fkError: any) {
+    } catch (fkError) {
       console.error("[Refund] Freekassa API error:", fkError);
       return NextResponse.json(
-        { error: `Refund failed: ${fkError.message}` },
+        { error: `Refund failed: ${fkError instanceof Error ? fkError.message : String(fkError)}` },
         { status: 500 }
       );
     }
@@ -99,10 +99,10 @@ export async function POST(
       order: result[0],
       refundId: refundResult.refundId,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("[Refund] Unexpected error:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: error instanceof Error ? error.message : "Internal server error" },
       { status: 500 }
     );
   }

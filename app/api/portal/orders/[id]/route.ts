@@ -70,6 +70,15 @@ export async function PATCH(
 
       await creditBoosterForCompletedOrder(id);
 
+      // Customer «заказ выполнен» email — exactly-once via the DB claim
+      // (the admin PATCH path shares the same claim).
+      try {
+        const { claimAndSendCompletedEmail } = await import('@/lib/orderEmails');
+        await claimAndSendCompletedEmail(id);
+      } catch (e) {
+        console.error('[Portal] completed email failed:', e);
+      }
+
       // Full context for the admin chat.
       const items = await db
         .select({ title: services.title, quantity: orderItems.quantity })

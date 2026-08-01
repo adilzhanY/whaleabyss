@@ -130,6 +130,14 @@ export async function PATCH(
   // Idempotent — safe even if the order was already completed.
   if (result[0].status === "completed") {
     await creditBoosterForCompletedOrder(id);
+    // Customer «заказ выполнен» email — exactly-once via the DB claim, so a
+    // repeat PATCH (booster reassignment on a completed order) can't resend.
+    try {
+      const { claimAndSendCompletedEmail } = await import("@/lib/orderEmails");
+      await claimAndSendCompletedEmail(id);
+    } catch (e) {
+      console.error("[Admin] completed email failed:", e);
+    }
   }
 
   return NextResponse.json({ ok: true, order: result[0] });

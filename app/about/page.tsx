@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Header from "@/components/Header";
+import AuthModal from "@/components/AuthModal";
 import Footer from "@/components/Footer";
 import Breadcrumb from "@/components/Breadcrumb";
 
@@ -11,6 +12,7 @@ export default function AboutPage() {
   return (
     <div style={{ backgroundColor: "var(--bg-main)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Header onAuthOpen={() => setAuthOpen(true)} />
+      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
 
       <main className="site-gutter flex-1 pt-28 md:pt-32 pb-20">
         <div className="site-container">
@@ -18,7 +20,7 @@ export default function AboutPage() {
           <div className="mx-auto" style={{ maxWidth: "50rem" }}>
           <div className="mb-12 text-center">
             <h1
-              className="text-4xl sm:text-5xl font-black text-blue-950 mb-4"
+              className="text-4xl sm:text-5xl font-black tracking-tight text-blue-950 mb-4"
               style={{ fontFamily: "var(--font-primary), sans-serif" }}
             >
               О нас

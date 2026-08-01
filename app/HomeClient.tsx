@@ -264,7 +264,7 @@ export default function HomeClient({
 							<div className="w-full">
 								<div className="flex items-center justify-between mb-6">
 									<h2
-										className="text-2xl font-black text-slate-800"
+										className="text-2xl font-black tracking-tight text-slate-800"
 										style={{
 											fontFamily:
 												"var(--font-primary), sans-serif",
@@ -325,7 +325,7 @@ export default function HomeClient({
 								<div className="w-full mt-12 z-20 relative">
 									<div className="flex items-center justify-between mb-6">
 										<h2
-											className="text-2xl font-black text-slate-800"
+											className="text-2xl font-black tracking-tight text-slate-800"
 											style={{
 												fontFamily:
 													"var(--font-primary), sans-serif",
@@ -356,7 +356,7 @@ export default function HomeClient({
 								<div className="w-full mt-12 z-20 relative">
 									<div className="flex items-center justify-between mb-6">
 										<h2
-											className="text-2xl font-black text-slate-800"
+											className="text-2xl font-black tracking-tight text-slate-800"
 											style={{
 												fontFamily:
 													"var(--font-primary), sans-serif",
@@ -523,7 +523,7 @@ export default function HomeClient({
 				<div className="site-container">
 					<div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
 						<h2
-							className="text-3xl font-black"
+							className="text-3xl font-black tracking-tight"
 							style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
 						>
 							Чем поможем?
@@ -583,7 +583,7 @@ export default function HomeClient({
 						<>
 							<div className="mt-16 mb-6 flex flex-wrap items-baseline justify-between gap-3">
 								<h2
-									className="text-3xl font-black"
+									className="text-3xl font-black tracking-tight"
 									style={{ fontFamily: "var(--font-primary), sans-serif", color: "var(--text-primary)" }}
 								>
 									Популярные услуги
@@ -622,7 +622,7 @@ export default function HomeClient({
 					<div className="site-container">
 						<div className="mb-12 text-center">
 							<h2
-								className="text-3xl font-black"
+								className="text-3xl font-black tracking-tight"
 								style={{
 									fontFamily: "var(--font-primary), sans-serif",
 									color: "var(--text-primary)",

@@ -106,7 +106,7 @@ export default function EventsClient() {
         <Breadcrumb />
         <div className="mb-12 text-center">
           <h1
-            className="text-4xl sm:text-5xl font-black text-blue-950 mb-4"
+            className="text-4xl sm:text-5xl font-black tracking-tight text-blue-950 mb-4"
             style={{ fontFamily: "var(--font-primary), sans-serif" }}
           >
             Активные события

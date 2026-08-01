@@ -211,14 +211,14 @@ export default function ServiceCard({ item, categorySlug, isBestseller }: Servic
         <div className="flex items-baseline gap-1.5"
           style={{ fontFamily: "var(--font-primary), sans-serif" }}>
           <span
-            className={`text-[15px] font-bold whitespace-nowrap ${
+            className={`text-[17px] font-bold whitespace-nowrap ${
               isOnDiscount ? "text-red-600" : "text-blue-950"
             }`}
           >
             {finalPrice.toLocaleString("ru-RU")} {item.isPerDay ? "₽/день" : "₽"}
           </span>
           {isOnDiscount && (
-            <span className="truncate text-xs font-semibold line-through text-slate-400">
+            <span className="truncate text-[13px] font-semibold line-through text-slate-400">
               {item.price.toLocaleString("ru-RU")} ₽
             </span>
           )}

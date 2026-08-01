@@ -18,7 +18,12 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # 22 = the major the test suite is developed and verified on. On the
+          # runner's Node 20, every jsdom-environment vitest worker failed to
+          # boot ("webidl.util.markAsUncloneable is not a function" — jsdom's
+          # chain needs a newer bundled undici than Node 20 ships). CI-only:
+          # the prod build runs on the VM with its own Node.
+          node-version: 22
           cache: npm
 
       - name: Install dependencies

@@ -607,18 +607,18 @@ h6 {
 
 /* ── Blocked-field attention pulse (/cart) ──────────────────────────────────
    Played when the pinned mobile pay bar scrolls the customer to the field that
-   is blocking checkout — the consent checkbox, or an empty/invalid input. A smooth scroll on a long page is easy to miss
-   — this says which row just arrived and why. Red to match the error text that
-   sits directly under it. box-shadow, not border/outline, so it paints outside
-   the box and shifts nothing. */
+   is blocking checkout — the consent checkbox, or an empty/invalid input. A
+   smooth scroll on a long page is easy to miss; this says which row just
+   arrived and why. Red to match the error text that sits under it. box-shadow,
+   not border/outline, so it paints outside the box and shifts nothing.
+   Duration is mirrored by FIELD_PULSE_MS in app/cart/page.tsx, which clears the
+   class — keep the two in step. */
 @keyframes field-attention {
   0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
   15%      { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.20); }
   40%      { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.10); }
   65%      { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.20); }
 }
-   Duration is mirrored by FIELD_PULSE_MS in app/cart/page.tsx, which clears
-   the class — keep the two in step. */
 .field-attention {
   animation: field-attention 1.4s ease-out 1;
 }

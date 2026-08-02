@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { users, oauthAccounts } from '@/lib/schema';
 import { and, eq, ilike } from 'drizzle-orm';
+import { normalizeEmail } from './normalizeEmail';
 
 /** Fields we read from the Yandex ID userinfo (login.yandex.ru/info). */
 export interface YandexProfile {
@@ -118,7 +119,7 @@ async function backfillFromProfile(
  * Returns null when Yandex supplied no email — we can't provision without one.
  */
 export async function getOrCreateUserFromYandex(profile: YandexProfile) {
-  const email = (profile.default_email ?? profile.emails?.[0] ?? '').toLowerCase().trim();
+  const email = normalizeEmail(profile.default_email ?? profile.emails?.[0] ?? '');
   if (!email) return null;
 
   const linked = await db

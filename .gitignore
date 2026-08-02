@@ -62,3 +62,6 @@ LEARNING_PATH.md
 
 # generated quest covers (review output; the artwork of record lives in S3)
 scripts/covers/out/
+
+# graphify knowledge graph (regenerate with /graphify)
+graphify-out/

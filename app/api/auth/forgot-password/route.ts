@@ -4,6 +4,7 @@ import { users, passwordResetTokens } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
 import { checkRateLimit, recordRateLimitHit, getClientIp } from '@/lib/rateLimit';
+import { normalizeEmail } from '@/lib/normalizeEmail';
 
 // Throttle reset emails by source IP and target email to prevent inbox-bombing
 // and email-quota abuse. (The route already returns a uniform response to avoid
@@ -14,15 +15,20 @@ const RESET_PER_IP = 15;
 
 export async function POST(req: NextRequest) {
   try {
-    const { email } = await req.json();
+    const { email: rawEmail } = await req.json();
 
-    if (!email || typeof email !== 'string') {
+    if (!rawEmail || typeof rawEmail !== 'string') {
       return NextResponse.json({ error: 'Email обязателен' }, { status: 400 });
     }
 
+    // Identity key: the user lookup below and the token row must agree with how
+    // register/authorize spell the address, or a reset mail is never sent (and
+    // the uniform response makes that indistinguishable from "no such account").
+    const email = normalizeEmail(rawEmail);
+
     const clientIp = getClientIp(req.headers);
     const ipKey = `reset:ip:${clientIp}`;
-    const emailKey = `reset:email:${email.toLowerCase().trim()}`;
+    const emailKey = `reset:email:${email}`;
     const ipCheck = checkRateLimit(ipKey, RESET_PER_IP, RESET_WINDOW_MS);
     const emailCheck = checkRateLimit(emailKey, RESET_PER_EMAIL, RESET_WINDOW_MS);
     if (!ipCheck.success || !emailCheck.success) {

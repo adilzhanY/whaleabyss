@@ -4,9 +4,10 @@ import { makeTestDb, type TestDb } from "@/test/utils/pgliteDb";
 import { users, otps } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 
-// The OTP is compared by plain string inequality, expiry checked AFTER the code
-// match, and the row deleted ONLY on success — so a wrong guess doesn't
-// invalidate the code. Pinning today's behaviour. See TEST_PLAN §C9.
+// Expiry is checked BEFORE the code match (and the dead row deleted with it),
+// and a wrong guess now costs an attempt: five misses burn the code. Without
+// that a miss was free — the row was deleted only on success, so the only
+// ceiling was the auth rate tier. See TEST_PLAN §C9, AUDIT_FINDINGS §1.4.
 const h = vi.hoisted(() => ({ db: null as unknown as TestDb }));
 vi.mock("@/lib/db", () => ({
   get db() {
@@ -39,19 +40,42 @@ function post(body: Record<string, unknown>, ip = `12.0.${uniq++}.1`) {
 const otpRows = (email: string) => db.select().from(otps).where(eq(otps.email, email));
 
 describe("POST /api/auth/register", () => {
-  it("wrong OTP → 400 «Неверный код», the otps row is NOT deleted", async () => {
+  it("wrong OTP → 400 «Неверный код», the row survives but the attempt is counted", async () => {
     await seedOtp("a@x.ru", "123456");
     const res = await post({ username: "a", email: "a@x.ru", password: "secret1", otp: "000000" });
     expect(res.status).toBe(400);
     expect((await res.json()).error).toMatch(/Неверный код/);
-    expect(await otpRows("a@x.ru")).toHaveLength(1); // survives a wrong guess
+    const [row] = await otpRows("a@x.ru");
+    expect(row.attempts).toBe(1); // a miss is no longer free
   });
 
-  it("expired but correct code → 400 «Код истек»", async () => {
+  it("the 5th wrong guess burns the code instead of leaving it guessable", async () => {
+    await seedOtp("brute@x.ru", "123456");
+    for (let i = 1; i <= 4; i++) {
+      const res = await post({ username: "brute", email: "brute@x.ru", password: "secret1", otp: "000000" });
+      expect((await res.json()).error).toMatch(/Неверный код/);
+      const [row] = await otpRows("brute@x.ru");
+      expect(row.attempts).toBe(i);
+    }
+
+    const res = await post({ username: "brute", email: "brute@x.ru", password: "secret1", otp: "000000" });
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toMatch(/Слишком много неверных попыток/);
+    expect(await otpRows("brute@x.ru")).toHaveLength(0);
+
+    // Even the CORRECT code is dead now — the attacker has to request a new one,
+    // which costs them a send from send-otp's own per-email budget.
+    const after = await post({ username: "brute", email: "brute@x.ru", password: "secret1", otp: "123456" });
+    expect((await after.json()).error).toMatch(/не найден/i);
+  });
+
+  it("expired but correct code → 400 «Код истек» and the dead row is deleted", async () => {
     await seedOtp("b@x.ru", "123456", new Date(Date.now() - 1000));
     const res = await post({ username: "b", email: "b@x.ru", password: "secret1", otp: "123456" });
     expect(res.status).toBe(400);
     expect((await res.json()).error).toMatch(/истек/i);
+    // Otherwise an expired code lingers and absorbs guesses for free.
+    expect(await otpRows("b@x.ru")).toHaveLength(0);
   });
 
   it("success → user with receiptEmail=email and a hash, THEN the otp is deleted", async () => {

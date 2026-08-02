@@ -8,7 +8,9 @@ import { eq } from "drizzle-orm";
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !session.user || !session.user.email) {
+    // By uuid, not by email — see the note in /api/user/orders: a JWT minted
+    // before emails were normalised still carries the original casing.
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -21,7 +23,7 @@ export async function GET() {
         adventureRank: users.adventureRank,
       })
       .from(users)
-      .where(eq(users.email, session.user.email));
+      .where(eq(users.id, session.user.id));
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -41,7 +43,7 @@ export async function PUT(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user || !session.user.email) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -81,7 +83,7 @@ export async function PUT(req: Request) {
     await db
       .update(users)
       .set(updateData)
-      .where(eq(users.email, session.user.email));
+      .where(eq(users.id, session.user.id));
 
     return NextResponse.json({ success: true, name, receiptEmail, telegramUsername, adventureRank: updateData.adventureRank });
   } catch (error) {

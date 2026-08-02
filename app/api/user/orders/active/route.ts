@@ -9,11 +9,14 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user || !session.user.email) {
+    // Resolve by the uuid in the token, not by email: emails are normalised to
+    // lowercase now, and a JWT minted before that migration still carries the
+    // old casing for up to 30 days — an email lookup would 404 those users.
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const [user] = await db.select({ id: users.id }).from(users).where(eq(users.email, session.user.email));
+    const [user] = await db.select({ id: users.id }).from(users).where(eq(users.id, session.user.id));
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });

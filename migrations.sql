@@ -190,3 +190,32 @@ UPDATE orders SET paid_email_sent_at = NOW()
     AND NOT (status = 'cancelled' AND payment_id IS NULL);
 UPDATE orders SET completed_email_sent_at = NOW()
   WHERE completed_email_sent_at IS NULL AND status = 'completed';
+
+-- 2026-08-02: identity emails normalised to lowercase + trimmed. users.email is
+-- a case-sensitive varchar with a UNIQUE constraint, and the entry points
+-- disagreed: authorize() lowercased before its lookup while register inserted
+-- the raw string, so an account created as User@x.ru could never be logged into.
+-- Run via normalize_emails.mjs, which refuses to apply while case-variant user
+-- pairs exist (the UNIQUE constraint would reject the UPDATE and those pairs are
+-- genuinely distinct accounts). otps/password_reset_tokens are keyed by email
+-- but hold 15-minute / 1-hour rows, so colliding pairs are dropped, not merged.
+DELETE FROM otps a USING otps b
+  WHERE lower(btrim(a.email)) = lower(btrim(b.email))
+    AND a.email <> b.email AND a.created_at < b.created_at;
+DELETE FROM password_reset_tokens a USING password_reset_tokens b
+  WHERE lower(btrim(a.email)) = lower(btrim(b.email))
+    AND a.email <> b.email AND a.created_at < b.created_at;
+UPDATE users SET email = lower(btrim(email)) WHERE email <> lower(btrim(email));
+UPDATE otps SET email = lower(btrim(email)) WHERE email <> lower(btrim(email));
+UPDATE password_reset_tokens SET email = lower(btrim(email)) WHERE email <> lower(btrim(email));
+-- The guard: a non-normalised write now fails loudly instead of silently
+-- creating an account nobody can log into.
+ALTER TABLE users ADD CONSTRAINT users_email_lowercase
+  CHECK (email = lower(btrim(email)));
+
+-- 2026-08-02: attempt counter on registration OTPs. A wrong guess used to cost
+-- nothing (expiry checked after the code match, row deleted only on success), so
+-- the only ceiling was the auth rate tier — ~11k guesses/day from one IP against
+-- a 1e6 keyspace. register/route.ts now burns the code after 5 misses.
+-- Run via add_otp_attempts.mjs.
+ALTER TABLE otps ADD COLUMN IF NOT EXISTS attempts integer NOT NULL DEFAULT 0;

@@ -39,6 +39,11 @@ export const oauthAccounts = pgTable('oauth_accounts', {
 export const otps = pgTable('otps', {
   email: varchar('email', { length: 255 }).primaryKey(),
   code: varchar('code', { length: 6 }).notNull(),
+  // Wrong guesses against this code. A 6-digit code is a 1e6 keyspace, and a
+  // miss used to cost nothing (the row was deleted only on success), so the
+  // only ceiling was the route's rate tier — ~11k guesses/day from one IP.
+  // register/route.ts burns the code once this reaches OTP_MAX_ATTEMPTS.
+  attempts: integer('attempts').notNull().default(0),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });

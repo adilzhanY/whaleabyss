@@ -4,6 +4,7 @@ import { otps, users } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { verifySmartCaptcha } from "@/lib/smartcaptcha";
 import { checkRateLimit, recordRateLimitHit, getClientIp } from "@/lib/rateLimit";
+import { normalizeEmail } from "@/lib/normalizeEmail";
 
 // Email sends are the expensive, abusable resource here, so limit by both the
 // source IP and the target email. Checked AFTER the captcha so the budget only
@@ -14,11 +15,17 @@ const OTP_PER_IP = 20;
 
 export async function POST(req: Request) {
   try {
-    const { email, username, captchaToken } = await req.json();
+    const { email: rawEmail, username, captchaToken } = await req.json();
 
-    if (!email || !username) {
+    if (!rawEmail || !username) {
       return NextResponse.json({ error: "Отсутствуют email или имя пользователя" }, { status: 400 });
     }
+
+    // Identity key. The "already registered" check below compared the RAW
+    // address while the rate-limit key lowercased it, so `User@x.ru` sailed
+    // past the 409 when `user@x.ru` already existed and only blew up later on
+    // the unique constraint. See AUDIT_FINDINGS §1.5.
+    const email = normalizeEmail(String(rawEmail));
 
     // Gate the OTP send behind the captcha — verify before touching the DB or
     // sending any email, so bots can't probe or spam through this endpoint.
@@ -30,7 +37,7 @@ export async function POST(req: Request) {
 
     // Throttle actual sends per IP and per target email.
     const ipKey = `otp:ip:${clientIp}`;
-    const emailKey = `otp:email:${String(email).toLowerCase().trim()}`;
+    const emailKey = `otp:email:${email}`;
     const ipCheck = checkRateLimit(ipKey, OTP_PER_IP, OTP_WINDOW_MS);
     const emailCheck = checkRateLimit(emailKey, OTP_PER_EMAIL, OTP_WINDOW_MS);
     if (!ipCheck.success || !emailCheck.success) {

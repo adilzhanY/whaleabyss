@@ -9,6 +9,7 @@ import { AuthOptions } from "next-auth";
 import { getAuthSecret } from "@/lib/auth/secret";
 import { getOrCreateUserFromYandex, type YandexProfile } from "@/lib/oauthUser";
 import { checkRateLimit, recordRateLimitHit, resetRateLimit, getClientIp } from "@/lib/rateLimit";
+import { normalizeEmail } from "@/lib/normalizeEmail";
 
 // Brute-force protection: count only FAILED attempts and forgive them on a
 // successful login, so a legit user fumbling their password is never locked out.
@@ -31,7 +32,7 @@ export const authOptions: AuthOptions = {
         }
 
         const ip = getClientIp(req?.headers);
-        const email = credentials.email.toLowerCase().trim();
+        const email = normalizeEmail(credentials.email);
         const accountKey = `login:${ip}:${email}`;
         const ipKey = `login:ip:${ip}`;
 

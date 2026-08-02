@@ -605,6 +605,27 @@ h6 {
   .cart-fab { transition: none; }
 }
 
+/* ── Consent row attention pulse (/cart) ────────────────────────────────────
+   Played when the pinned mobile pay bar scrolls the customer to the consent
+   checkbox they haven't ticked. A smooth scroll on a long page is easy to miss
+   — this says which row just arrived and why. Red to match the error text that
+   sits directly under it. box-shadow, not border/outline, so it paints outside
+   the box and shifts nothing. */
+@keyframes agreement-attention {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  15%      { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.20); }
+  40%      { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.10); }
+  65%      { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.20); }
+}
+   Duration is mirrored by AGREEMENT_PULSE_MS in app/cart/page.tsx, which clears
+   the class — keep the two in step. */
+.agreement-attention {
+  animation: agreement-attention 1.4s ease-out 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .agreement-attention { animation: none; }
+}
+
 /* Count badge. Only rendered when the cart is non-empty, so its presence is
    itself the signal; the ring keeps it legible where it overlaps the button. */
 .cart-fab__badge {
@@ -1786,6 +1807,17 @@ html.site-dark body:has(#site-header) .cart-fab:hover {
 }
 html.site-dark body:has(#site-header) .cart-fab__badge {
   box-shadow: 0 0 0 2px #000000;
+}
+
+/* The consent pulse needs more alpha to register against #000. */
+html.site-dark body:has(#site-header) .agreement-attention {
+  animation-name: agreement-attention-dark;
+}
+@keyframes agreement-attention-dark {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
+  15%      { box-shadow: 0 0 0 6px rgba(248, 113, 113, 0.34); }
+  40%      { box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.18); }
+  65%      { box-shadow: 0 0 0 6px rgba(248, 113, 113, 0.34); }
 }
 
 html.site-dark body:has(#site-header) .date-input-group,

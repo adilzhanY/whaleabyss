@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, type ReactNode } from "react";
+import { useState, useEffect, useMemo, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useCart, type CartItem } from "@/store/useCart";
 import Header from "@/components/Header";
@@ -28,6 +28,10 @@ import { useSession } from "next-auth/react";
 import Breadcrumb from "@/components/Breadcrumb";
 import { useAddonPrompt } from "@/store/useAddonPrompt";
 import { confirmDialog } from "@/store/useConfirm";
+
+/** Duration of the consent-row pulse. Keep in step with the
+ *  `.agreement-attention` animation in app/globals.css. */
+const AGREEMENT_PULSE_MS = 1400;
 import { useAddToCartWithAddons } from "@/components/QuestAddonModal";
 import { ADDON_CHOICE_CART_LABEL, ADDON_CHOICE_TEXT_CLASS } from "@/lib/addonChoice";
 
@@ -140,6 +144,65 @@ export default function CartPage() {
   const [testOrderPending, setTestOrderPending] = useState(false);
   const [isDataSecurityModalOpen, setIsDataSecurityModalOpen] = useState(false);
   const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
+
+  /**
+   * The consent checkbox lives in the «Итог» column, which below lg stacks to
+   * the very BOTTOM of the page — while the pay CTA is duplicated in a bar
+   * pinned to the bottom of the viewport. So on mobile the customer taps
+   * «Оплатить», the guard sets an error next to a checkbox that is hundreds of
+   * pixels off-screen, and from where they are standing the button simply does
+   * nothing. Scroll them to the thing that is blocking them.
+   */
+  const agreementRef = useRef<HTMLDivElement>(null);
+  const AGREEMENT_CHECKBOX_ID = "cart-privacy-agreement";
+  const [agreementAttention, setAgreementAttention] = useState(false);
+  const attentionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (attentionTimer.current) clearTimeout(attentionTimer.current);
+    },
+    []
+  );
+
+  const revealAgreement = () => {
+    const row = agreementRef.current;
+    if (!row) return;
+
+    const reducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // `center` rather than `start`: the pinned pay bar covers the bottom of the
+    // viewport, and centring also brings the error text right below the row
+    // into view, so the scroll explains itself.
+    row.scrollIntoView({
+      behavior: reducedMotion ? "auto" : "smooth",
+      block: "center",
+    });
+
+    // preventScroll — focus() would otherwise jump instantly and fight the
+    // smooth scroll we just started. Keyboard and screen-reader users land on
+    // the control itself, so «Оплатить» stays one keystroke from working.
+    document
+      .getElementById(AGREEMENT_CHECKBOX_ID)
+      ?.focus({ preventScroll: true });
+
+    // A scroll alone is easy to miss on a long page; the ring pulse says which
+    // row moved into view and why. Skipped under reduced motion.
+    //
+    // Cleared on a timer rather than `animationend`: that event never arrives
+    // if the animation doesn't actually run, which would strand the ring on the
+    // row permanently. A timer always fires, and restarting it on a second tap
+    // is what lets the pulse replay.
+    if (!reducedMotion) {
+      if (attentionTimer.current) clearTimeout(attentionTimer.current);
+      setAgreementAttention(true);
+      attentionTimer.current = setTimeout(
+        () => setAgreementAttention(false),
+        AGREEMENT_PULSE_MS
+      );
+    }
+  };
 
   // Form Fields
   const [adventureRank, setAdventureRank] = useState("");
@@ -409,6 +472,7 @@ export default function CartPage() {
 
     if (!agreedToPrivacy) {
       setError("Необходимо согласиться на обработку персональных данных");
+      revealAgreement();
       return;
     }
     const ar = Number(adventureRank);
@@ -1000,9 +1064,16 @@ export default function CartPage() {
                     </span>
                   </div>
 
-                  {/* Согласие на обработку ПД */}
-                  <div className="mt-3 flex items-start gap-2.5 select-none">
+                  {/* Согласие на обработку ПД. Скролл-цель для мобильной
+                      панели оплаты — см. revealAgreement(). */}
+                  <div
+                    ref={agreementRef}
+                    className={`mt-3 flex items-start gap-2.5 select-none rounded-xl ${
+                      agreementAttention ? "agreement-attention" : ""
+                    }`}
+                  >
                     <Checkbox
+                      id={AGREEMENT_CHECKBOX_ID}
                       checked={agreedToPrivacy}
                       onChange={setAgreedToPrivacy}
                       size={20}

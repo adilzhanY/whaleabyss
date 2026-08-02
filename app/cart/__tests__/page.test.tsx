@@ -124,3 +124,110 @@ describe("/cart destructive decrement guard", () => {
     await waitFor(() => expect(useCart.getState().items).toHaveLength(0));
   });
 });
+
+/**
+ * Below lg the consent checkbox stacks to the very bottom of the page while the
+ * pay CTA is duplicated in a bar pinned to the viewport. Setting an error next
+ * to an off-screen checkbox reads, from the customer's position, as «the pay
+ * button does nothing» — so the guard has to bring them to the blocker.
+ */
+describe("/cart consent scroll-to on the pinned mobile pay bar", () => {
+  const CONSENT_LABEL = "Согласие на обработку персональных данных";
+  let scrollSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    scrollSpy = vi.spyOn(window.HTMLElement.prototype, "scrollIntoView");
+  });
+  afterEach(() => scrollSpy.mockRestore());
+
+  /** The pinned bar's CTA — the desktop one reads «Перейти к оплате». */
+  const tapMobilePay = async () => {
+    await waitFor(() => expect(screen.getByText("Оплатить")).toBeTruthy());
+    await act(async () => {
+      fireEvent.click(screen.getByText("Оплатить"));
+    });
+  };
+
+  it("scrolls the consent row into view, smoothly and centred, and focuses it", async () => {
+    render(<CartPage />);
+    await tapMobilePay();
+
+    expect(scrollSpy).toHaveBeenCalledWith({ behavior: "smooth", block: "center" });
+
+    // Centred, not `start`: the pinned bar covers the bottom of the viewport.
+    // And it must be the CONSENT row that scrolled, not some other element.
+    const checkbox = screen.getByLabelText(CONSENT_LABEL);
+    expect(scrollSpy.mock.instances[0]).toContainElement(checkbox);
+
+    // Keyboard/screen-reader users land on the control, so paying is one
+    // keystroke away rather than a hunt back down the page.
+    expect(document.activeElement).toBe(checkbox);
+
+    // The reason is still stated, right under the row we scrolled to.
+    expect(screen.getByText(/Необходимо согласиться/)).toBeTruthy();
+  });
+
+  it("plays the attention pulse and clears it on a timer, so it can replay", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      render(<CartPage />);
+      await tapMobilePay();
+
+      const row = screen.getByLabelText(CONSENT_LABEL).parentElement!;
+      expect(row).toHaveClass("agreement-attention");
+
+      // Cleared on a timer rather than `animationend`: that event never fires
+      // if the animation doesn't run, which would strand the ring permanently.
+      await act(async () => {
+        vi.advanceTimersByTime(1400);
+      });
+      expect(row).not.toHaveClass("agreement-attention");
+
+      // ...and a second tap replays it rather than doing nothing.
+      await tapMobilePay();
+      expect(row).toHaveClass("agreement-attention");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("honours prefers-reduced-motion: jumps instead of animating, and no pulse", async () => {
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn((query: string) => ({
+        matches: query.includes("prefers-reduced-motion"),
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }))
+    );
+
+    render(<CartPage />);
+    await tapMobilePay();
+
+    expect(scrollSpy).toHaveBeenCalledWith({ behavior: "auto", block: "center" });
+    // The pulse never runs under reduced motion, so animationend never fires —
+    // applying the class would strand it on the row forever.
+    expect(screen.getByLabelText(CONSENT_LABEL).parentElement!).not.toHaveClass(
+      "agreement-attention"
+    );
+    vi.unstubAllGlobals();
+  });
+
+  it("does not hijack the page once consent IS given — checkout proceeds", async () => {
+    checkoutResponse = () => new Response(JSON.stringify({ url: "https://pay.example/x" }), { status: 200 });
+    render(<CartPage />);
+    await waitFor(() => expect(screen.getByText("Оплатить")).toBeTruthy());
+    fireEvent.click(screen.getByLabelText(CONSENT_LABEL));
+    await act(async () => {
+      fireEvent.click(screen.getByText("Оплатить"));
+    });
+
+    expect(scrollSpy).not.toHaveBeenCalled();
+    expect(screen.queryByText(/Необходимо согласиться/)).toBeNull();
+  });
+});

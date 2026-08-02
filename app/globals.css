@@ -555,6 +555,78 @@ h6 {
   background-color: #fef2f2;
 }
 
+/* ── Cart FAB (components/CartFab.tsx) ──────────────────────────────────────
+   Below lg the header bar holds only burger + profile, so the cart lives
+   inside the burger sheet — two taps and a menu scan to reach the thing the
+   whole site is selling. This is the one-tap route to it.
+
+   Mobile-only BY CONSTRUCTION: from lg up the header has a labelled cart
+   button, and two cart entry points on one screen is worse than one. The
+   breakpoint lives here rather than at the call site so it can't drift. */
+.cart-fab {
+  position: fixed;
+  right: 1rem;
+  /* Above the iOS home indicator, not under it. */
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  z-index: 40; /* under the cart drawer + mobile menu, both z-50 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background-color: var(--accent-primary);
+  color: #fff;
+  box-shadow: var(--shadow-btn-primary);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 100ms ease-out,
+    box-shadow 100ms ease-out;
+}
+@media (min-width: 1024px) {
+  .cart-fab { display: none; }
+}
+@media (hover: hover) {
+  .cart-fab:hover {
+    background-color: var(--accent-primary-hover);
+    box-shadow: var(--shadow-btn-primary-hover);
+  }
+}
+.cart-fab:active { transform: scale(0.94); }
+.cart-fab:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cart-fab { transition: none; }
+}
+
+/* Count badge. Only rendered when the cart is non-empty, so its presence is
+   itself the signal; the ring keeps it legible where it overlaps the button. */
+.cart-fab__badge {
+  position: absolute;
+  top: -0.125rem;
+  right: -0.125rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.375rem;
+  height: 1.375rem;
+  padding-inline: 0.3rem;
+  border-radius: 999px;
+  background-color: #ef4444;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 2px var(--bg-main);
+}
+
 /* In Tailwind's `components` layer so per-input utilities (e.g. pl-12 for a
  * search icon, pr-12 for a password eye) can override the padding. */
 @layer components {
@@ -1693,6 +1765,29 @@ body:has(#admin-root.admin-dark) .custom-search-field .search-field__clear-butto
 html.site-dark body:has(#site-header) .custom-search-field .search-field__clear-button:hover {
   color: #f5f5f5;
 }
+/* Cart FAB on black. The light shadow is a soft ambient cast that simply
+   disappears against #000 — the circle then reads as a flat sticker with no
+   separation from the page. Re-derive as a lift: a faint white hairline to
+   draw the edge, a hard black cast for depth, and the brand-blue glow that
+   makes it findable at a glance. The badge ring flips to the dark page
+   background so it keeps cutting the button edge instead of drawing a white
+   halo on black. */
+html.site-dark body:has(#site-header) .cart-fab {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 6px 16px rgba(0, 0, 0, 0.7),
+    0 0 22px rgba(59, 130, 246, 0.45);
+}
+html.site-dark body:has(#site-header) .cart-fab:hover {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.2),
+    0 10px 24px rgba(0, 0, 0, 0.8),
+    0 0 30px rgba(59, 130, 246, 0.6);
+}
+html.site-dark body:has(#site-header) .cart-fab__badge {
+  box-shadow: 0 0 0 2px #000000;
+}
+
 html.site-dark body:has(#site-header) .date-input-group,
 body:has(#admin-root.admin-dark) .date-input-group {
   background-color: #171717;

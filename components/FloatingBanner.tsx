@@ -28,7 +28,11 @@ export default function FloatingBanner() {
 
   return (
     <div
-      className={`fixed right-2 sm:right-4 z-50 group animate-in fade-in slide-in-from-bottom-4 duration-500 ${
+      // Below lg the bottom-right corner belongs to the cart FAB (the only
+      // one-tap route to the cart on mobile), so the banner sits on the left
+      // there. From lg up the FAB is gone and the banner takes the corner back.
+      // Keep this breakpoint in step with `.cart-fab` in globals.css.
+      className={`fixed left-2 right-auto lg:left-auto lg:right-4 z-50 group animate-in fade-in slide-in-from-bottom-4 duration-500 ${
         // /cart pins a pay bar to the bottom of the screen below lg. Sit above
         // it rather than covering the primary CTA of the whole site.
         pathname === "/cart" ? "bottom-24 lg:bottom-4" : "bottom-2 sm:bottom-4"

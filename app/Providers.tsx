@@ -3,6 +3,7 @@
 import { SessionProvider } from "next-auth/react";
 import CartSync from "@/components/CartSync";
 import CartModal from "@/components/CartModal";
+import CartFab from "@/components/CartFab";
 import ConfirmDialogHost from "@/components/ConfirmDialogHost";
 import FloatingBanner from "@/components/FloatingBanner";
 import ReviewPrompt from "@/components/ReviewPrompt";
@@ -17,6 +18,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
           first, and the two fight over the body scroll lock and focus trap. */}
       <CartModal />
       <ConfirmDialogHost />
+      {/* Bottom-right on mobile. FloatingBanner yields the corner to it and
+          moves left below lg — see the comment in FloatingBanner. */}
+      <CartFab />
       <FloatingBanner />
       <ReviewPrompt />
       {/* Celebration modals: «оплата прошла» / «заказ выполнен», once per order. */}

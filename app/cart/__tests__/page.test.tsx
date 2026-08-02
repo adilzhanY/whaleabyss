@@ -131,7 +131,7 @@ describe("/cart destructive decrement guard", () => {
  * to an off-screen checkbox reads, from the customer's position, as «the pay
  * button does nothing» — so the guard has to bring them to the blocker.
  */
-describe("/cart consent scroll-to on the pinned mobile pay bar", () => {
+describe("/cart scroll-to-blocker on the pinned mobile pay bar", () => {
   const CONSENT_LABEL = "Согласие на обработку персональных данных";
   let scrollSpy: ReturnType<typeof vi.spyOn>;
 
@@ -174,18 +174,18 @@ describe("/cart consent scroll-to on the pinned mobile pay bar", () => {
       await tapMobilePay();
 
       const row = screen.getByLabelText(CONSENT_LABEL).parentElement!;
-      expect(row).toHaveClass("agreement-attention");
+      expect(row).toHaveClass("field-attention");
 
       // Cleared on a timer rather than `animationend`: that event never fires
       // if the animation doesn't run, which would strand the ring permanently.
       await act(async () => {
         vi.advanceTimersByTime(1400);
       });
-      expect(row).not.toHaveClass("agreement-attention");
+      expect(row).not.toHaveClass("field-attention");
 
       // ...and a second tap replays it rather than doing nothing.
       await tapMobilePay();
-      expect(row).toHaveClass("agreement-attention");
+      expect(row).toHaveClass("field-attention");
     } finally {
       vi.useRealTimers();
     }
@@ -213,7 +213,7 @@ describe("/cart consent scroll-to on the pinned mobile pay bar", () => {
     // The pulse never runs under reduced motion, so animationend never fires —
     // applying the class would strand it on the row forever.
     expect(screen.getByLabelText(CONSENT_LABEL).parentElement!).not.toHaveClass(
-      "agreement-attention"
+      "field-attention"
     );
     vi.unstubAllGlobals();
   });
@@ -229,5 +229,82 @@ describe("/cart consent scroll-to on the pinned mobile pay bar", () => {
 
     expect(scrollSpy).not.toHaveBeenCalled();
     expect(screen.queryByText(/Необходимо согласиться/)).toBeNull();
+  });
+});
+
+/** Same blind spot, the other three guards: the «Ваши данные» inputs sit in the
+ *  left column, equally off-screen from the pinned bar. */
+describe("/cart scroll-to-blocker for the profile fields", () => {
+  const CONSENT_LABEL = "Согласие на обработку персональных данных";
+  let scrollSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    scrollSpy = vi.spyOn(window.HTMLElement.prototype, "scrollIntoView");
+  });
+  afterEach(() => scrollSpy.mockRestore());
+
+  /** Consent given, so the next guard down is the one under test. */
+  const consentThenPay = async () => {
+    await waitFor(() => expect(screen.getByText("Оплатить")).toBeTruthy());
+    fireEvent.click(screen.getByLabelText(CONSENT_LABEL));
+    await act(async () => {
+      fireEvent.click(screen.getByText("Оплатить"));
+    });
+  };
+
+  /** Empty the profile so a given field comes back blank. */
+  const blankProfile = (over: Record<string, unknown>) => {
+    const original = globalThis.fetch as unknown as (url: string) => Promise<Response>;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url: string) => {
+        if (String(url).includes("/api/user/profile"))
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({ adventureRank: 30, receiptEmail: "c@x.ru", telegramUsername: "c", ...over }),
+              { status: 200 }
+            )
+          );
+        return original(url);
+      })
+    );
+  };
+
+  const rowOf = (labelText: string) =>
+    screen.getByText(labelText).parentElement!;
+
+  it("an empty Ранг приключений scrolls to that field, not to the consent row", async () => {
+    blankProfile({ adventureRank: null });
+    render(<CartPage />);
+    await consentThenPay();
+
+    expect(scrollSpy).toHaveBeenCalledWith({ behavior: "smooth", block: "center" });
+    const rankRow = rowOf("Ранг приключений:");
+    expect(scrollSpy.mock.instances[0]).toBe(rankRow);
+    expect(rankRow).toHaveClass("field-attention");
+    // The focused control is the input itself, so typing works immediately.
+    expect(document.activeElement).toBe(rankRow.querySelector("input"));
+  });
+
+  it("an empty E-mail scrolls to the email field", async () => {
+    blankProfile({ receiptEmail: "" });
+    render(<CartPage />);
+    await consentThenPay();
+    expect(scrollSpy.mock.instances[0]).toBe(rowOf("E-mail для чека:"));
+  });
+
+  it("an empty Telegram scrolls to the telegram field", async () => {
+    blankProfile({ telegramUsername: "" });
+    render(<CartPage />);
+    await consentThenPay();
+    expect(scrollSpy.mock.instances[0]).toBe(rowOf("Username в Telegram:"));
+  });
+
+  it("an out-of-range rank scrolls to the rank field", async () => {
+    blankProfile({ adventureRank: 999 });
+    render(<CartPage />);
+    await consentThenPay();
+    expect(screen.getByText(/числом от 1 до 60/)).toBeTruthy();
+    expect(scrollSpy.mock.instances[0]).toBe(rowOf("Ранг приключений:"));
   });
 });

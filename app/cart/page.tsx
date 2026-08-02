@@ -29,9 +29,9 @@ import Breadcrumb from "@/components/Breadcrumb";
 import { useAddonPrompt } from "@/store/useAddonPrompt";
 import { confirmDialog } from "@/store/useConfirm";
 
-/** Duration of the consent-row pulse. Keep in step with the
- *  `.agreement-attention` animation in app/globals.css. */
-const AGREEMENT_PULSE_MS = 1400;
+/** Duration of the blocked-field pulse. Keep in step with the
+ *  `.field-attention` animation in app/globals.css. */
+const FIELD_PULSE_MS = 1400;
 import { useAddToCartWithAddons } from "@/components/QuestAddonModal";
 import { ADDON_CHOICE_CART_LABEL, ADDON_CHOICE_TEXT_CLASS } from "@/lib/addonChoice";
 
@@ -146,16 +146,25 @@ export default function CartPage() {
   const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
 
   /**
-   * The consent checkbox lives in the «Итог» column, which below lg stacks to
-   * the very BOTTOM of the page — while the pay CTA is duplicated in a bar
-   * pinned to the bottom of the viewport. So on mobile the customer taps
-   * «Оплатить», the guard sets an error next to a checkbox that is hundreds of
-   * pixels off-screen, and from where they are standing the button simply does
-   * nothing. Scroll them to the thing that is blocking them.
+   * Scroll-to-blocker for the checkout guards.
+   *
+   * Below lg the two columns stack, so every field a guard can reject — the
+   * consent checkbox in «Итог», the three inputs in «Ваши данные» — ends up far
+   * off-screen from the pay CTA, which is duplicated in a bar pinned to the
+   * viewport. The guard would set an error next to a control the customer
+   * cannot see, and from where they are standing «Оплатить» simply does
+   * nothing. Every `return` in handleCheckout therefore names the field that
+   * blocked it and sends the customer there.
    */
-  const agreementRef = useRef<HTMLDivElement>(null);
-  const AGREEMENT_CHECKBOX_ID = "cart-privacy-agreement";
-  const [agreementAttention, setAgreementAttention] = useState(false);
+  const blockerRefs = {
+    agreement: useRef<HTMLDivElement>(null),
+    rank: useRef<HTMLDivElement>(null),
+    email: useRef<HTMLDivElement>(null),
+    telegram: useRef<HTMLDivElement>(null),
+  };
+  type Blocker = keyof typeof blockerRefs;
+
+  const [attentionField, setAttentionField] = useState<Blocker | null>(null);
   const attentionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(
     () => () => {
@@ -164,8 +173,8 @@ export default function CartPage() {
     []
   );
 
-  const revealAgreement = () => {
-    const row = agreementRef.current;
+  const revealBlocker = (which: Blocker) => {
+    const row = blockerRefs[which].current;
     if (!row) return;
 
     const reducedMotion =
@@ -173,18 +182,21 @@ export default function CartPage() {
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // `center` rather than `start`: the pinned pay bar covers the bottom of the
-    // viewport, and centring also brings the error text right below the row
-    // into view, so the scroll explains itself.
+    // viewport, and centring also brings the error text into view along with
+    // the field, so the scroll explains itself.
     row.scrollIntoView({
       behavior: reducedMotion ? "auto" : "smooth",
       block: "center",
     });
 
+    // First focusable in DOM order: the input while the field is editable, the
+    // «Изменить» pencil once it has been filled in and collapsed to read-only
+    // (which is exactly how you'd change it), the checkbox for the consent row.
     // preventScroll — focus() would otherwise jump instantly and fight the
     // smooth scroll we just started. Keyboard and screen-reader users land on
     // the control itself, so «Оплатить» stays one keystroke from working.
-    document
-      .getElementById(AGREEMENT_CHECKBOX_ID)
+    row
+      .querySelector<HTMLElement>('input, [role="checkbox"], button')
       ?.focus({ preventScroll: true });
 
     // A scroll alone is easy to miss on a long page; the ring pulse says which
@@ -196,13 +208,17 @@ export default function CartPage() {
     // is what lets the pulse replay.
     if (!reducedMotion) {
       if (attentionTimer.current) clearTimeout(attentionTimer.current);
-      setAgreementAttention(true);
+      setAttentionField(which);
       attentionTimer.current = setTimeout(
-        () => setAgreementAttention(false),
-        AGREEMENT_PULSE_MS
+        () => setAttentionField(null),
+        FIELD_PULSE_MS
       );
     }
   };
+
+  /** Class for a field wrapper that is currently the flagged blocker. */
+  const attentionClass = (which: Blocker) =>
+    attentionField === which ? "field-attention" : "";
 
   // Form Fields
   const [adventureRank, setAdventureRank] = useState("");
@@ -472,16 +488,22 @@ export default function CartPage() {
 
     if (!agreedToPrivacy) {
       setError("Необходимо согласиться на обработку персональных данных");
-      revealAgreement();
+      revealBlocker("agreement");
       return;
     }
     const ar = Number(adventureRank);
     if (!adventureRank || !email || telegram.replace("@", "").trim().length === 0) {
       setError("Пожалуйста, заполните все поля (Ранг приключений, Email, Telegram)");
+      // Send them to the FIRST empty one, in the order the message lists them —
+      // "fill in all the fields" is not actionable when you can't see any.
+      revealBlocker(
+        !adventureRank ? "rank" : !email ? "email" : "telegram"
+      );
       return;
     }
     if (!Number.isInteger(ar) || ar < 1 || ar > 60) {
       setError("Ранг приключений должен быть числом от 1 до 60");
+      revealBlocker("rank");
       return;
     }
 
@@ -492,6 +514,7 @@ export default function CartPage() {
       setError(
         `«${item.subtitle || item.title}» доступна с ${required} ранга приключений, у вас указан ${ar}.`
       );
+      revealBlocker("rank");
       return;
     }
     if (questIssues.length > 0) {
@@ -819,7 +842,10 @@ export default function CartPage() {
                 }
               >
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2 sm:col-span-1">
+                  <div
+                    ref={blockerRefs.rank}
+                    className={`col-span-2 sm:col-span-1 rounded-xl ${attentionClass("rank")}`}
+                  >
                     <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Ранг приключений:</label>
                     {isEditingAdventureRank ? (
                       <CustomInput type="text" inputMode="numeric" value={adventureRank} onChange={e => handleAdventureRankChange(e.target.value)} placeholder="Например, 45" className="text-sm font-medium" />
@@ -827,7 +853,10 @@ export default function CartPage() {
                       readOnlyField(adventureRank, () => setIsEditingAdventureRank(true))
                     )}
                   </div>
-                  <div className="col-span-2 sm:col-span-1">
+                  <div
+                    ref={blockerRefs.telegram}
+                    className={`col-span-2 sm:col-span-1 rounded-xl ${attentionClass("telegram")}`}
+                  >
                     <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Username в Telegram:</label>
                     {isEditingTelegram ? (
                       <CustomInput type="text" value={telegram} onChange={e => handleTelegramChange(e.target.value)} placeholder="@username" className="text-sm font-medium" />
@@ -838,7 +867,10 @@ export default function CartPage() {
                       Адрес вида @username, а не имя профиля — по нему мы свяжемся с вами.
                     </p>
                   </div>
-                  <div className="col-span-2">
+                  <div
+                    ref={blockerRefs.email}
+                    className={`col-span-2 rounded-xl ${attentionClass("email")}`}
+                  >
                     <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">E-mail для чека:</label>
                     {isEditingEmail ? (
                       <CustomInput type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="name@example.com" className="text-sm font-medium" />
@@ -1065,15 +1097,14 @@ export default function CartPage() {
                   </div>
 
                   {/* Согласие на обработку ПД. Скролл-цель для мобильной
-                      панели оплаты — см. revealAgreement(). */}
+                      панели оплаты — см. revealBlocker(). */}
                   <div
-                    ref={agreementRef}
-                    className={`mt-3 flex items-start gap-2.5 select-none rounded-xl ${
-                      agreementAttention ? "agreement-attention" : ""
-                    }`}
+                    ref={blockerRefs.agreement}
+                    className={`mt-3 flex items-start gap-2.5 select-none rounded-xl ${attentionClass(
+                      "agreement"
+                    )}`}
                   >
                     <Checkbox
-                      id={AGREEMENT_CHECKBOX_ID}
                       checked={agreedToPrivacy}
                       onChange={setAgreedToPrivacy}
                       size={20}

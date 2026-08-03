@@ -1147,6 +1147,16 @@ html.site-dark body:has(#site-header) [data-phase="completed"] .hs-cap--done { c
   max-width: 100%;
   max-height: 100%;
 }
+/* Landscape artwork (see ServiceArtwork): fills the box and crops the sides
+ * instead of floating at its natural size inside a blurred frame. */
+.service-art__img--fill {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  object-position: center;
+}
 
 /* ---------------------------------------------------------------------------
  * Quest cover (components/QuestCover.tsx) — artwork for services that have none.

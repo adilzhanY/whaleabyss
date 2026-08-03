@@ -31,18 +31,18 @@ export default function PaymentPage() {
         <div className="site-container">
         <Breadcrumb />
         <div
-          className="mx-auto max-w-4xl bg-white p-8 sm:p-12 text-black"
+          className="mx-auto max-w-4xl text-black"
           style={{ fontFamily: "var(--font-primary), sans-serif" }}
         >
-          <div className="mb-12 text-center">
-            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-blue-950 mb-4" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
+          <div className="mb-8 sm:mb-12 text-center">
+            <h1 className="legal-title font-black tracking-tight text-blue-950 mb-4 text-balance break-words" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
               Правила оплаты и безопасность платежей
             </h1>
           </div>
 
           <div className="space-y-8 text-sm sm:text-base leading-relaxed text-black">
             <section>
-              <h2 className="text-lg font-bold mb-3">1. СПОСОБЫ ОПЛАТЫ</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">1. СПОСОБЫ ОПЛАТЫ</h2>
               <div className="space-y-2">
                 <p>
                   1.1. К оплате принимается <b>СБП (Система быстрых платежей)</b>.
@@ -61,7 +61,7 @@ export default function PaymentPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold mb-3">
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">
                 2. ПЛАТЁЖНЫЙ АГРЕГАТОР
               </h2>
               <div className="space-y-2">
@@ -90,7 +90,7 @@ export default function PaymentPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold mb-3">3. БЕЗОПАСНОСТЬ ДАННЫХ</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">3. БЕЗОПАСНОСТЬ ДАННЫХ</h2>
               <div className="space-y-2">
                 <p>
                   3.1. {LEGAL.COMPANY_NAME} не собирает, не обрабатывает и
@@ -113,7 +113,7 @@ export default function PaymentPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold mb-3">4. ПОРЯДОК ОПЛАТЫ ЗАКАЗА</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">4. ПОРЯДОК ОПЛАТЫ ЗАКАЗА</h2>
               <div className="space-y-2">
                 <p>
                   4.1. Оплата Заказа осуществляется единовременно в
@@ -140,7 +140,7 @@ export default function PaymentPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold mb-3">
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">
                 5. ВОЗВРАТ ДЕНЕЖНЫХ СРЕДСТВ
               </h2>
               <div className="space-y-2">
@@ -172,7 +172,7 @@ export default function PaymentPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold mb-3">
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">
                 6. ПОДДЕРЖКА ПОЛЬЗОВАТЕЛЕЙ
               </h2>
               <div className="space-y-2">
@@ -218,7 +218,7 @@ export default function PaymentPage() {
             </section>
 
             <section className="mt-12 pt-8 border-t border-gray-200">
-              <h2 className="text-lg font-bold mb-3">Реквизиты получателя</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">Реквизиты получателя</h2>
               <div className="space-y-1 font-medium">
                 {getFullRequisites().map((line, i) => (
                   <p key={i}>{line}</p>

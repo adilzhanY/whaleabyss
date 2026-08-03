@@ -757,6 +757,27 @@ h6 {
   }
 }
 
+/* ---------------------------------------------------------------------------
+ * Legal documents — /privacy, /public_offer, /payment.
+ *
+ * There is deliberately NO card here. These pages are a wall of text, and a
+ * white sheet on a white page was invisible chrome that only ate width: on a
+ * 360px phone its `p-8` sat on top of .site-gutter + .site-container and left
+ * a 248px text column (69% of the screen). The text now runs straight on the
+ * page, so the only side margin is the standard 24px site gutter and the
+ * column is 312px (87%).
+ * ------------------------------------------------------------------------- */
+
+/* The titles are long Russian compounds that cannot break mid-word:
+ * «конфиденциальности» alone is wider than the phone text column at the
+ * `text-4xl` these used to carry, so the h1 overflowed its container. Scale it
+ * with the viewport instead of stepping at breakpoints; the cap is the old
+ * sm:text-5xl. */
+.legal-title {
+  font-size: clamp(1.375rem, 6vw, 3rem);
+  line-height: 1.12;
+}
+
 /* Service card: white body + gradient border via the padding-box/border-box
  * trick (the card element has border-2 border-transparent). Hover swaps to a
  * light-blue body and saturated border — previously done with JS handlers. */

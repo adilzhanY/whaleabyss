@@ -30,11 +30,11 @@ export default function PrivacyPage() {
         <div className="site-container">
         <Breadcrumb />
         <div
-          className="mx-auto max-w-4xl bg-white p-8 sm:p-12 text-black"
+          className="mx-auto max-w-4xl text-black"
           style={{ fontFamily: "var(--font-primary), sans-serif" }}
         >
-          <div className="mb-12 text-center">
-            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-blue-950 mb-4" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
+          <div className="mb-8 sm:mb-12 text-center">
+            <h1 className="legal-title font-black tracking-tight text-blue-950 mb-4 text-balance break-words" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
               Политика конфиденциальности
             </h1>
           </div>
@@ -42,7 +42,7 @@ export default function PrivacyPage() {
           <div className="space-y-8 text-sm sm:text-base leading-relaxed text-black">
             {/* 1. ОБЩИЕ ПОЛОЖЕНИЯ */}
             <section>
-              <h2 className="text-lg font-bold mb-3">1. ОБЩИЕ ПОЛОЖЕНИЯ</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">1. ОБЩИЕ ПОЛОЖЕНИЯ</h2>
               <div className="space-y-2">
                 <p>
                   1.1. Настоящая Политика конфиденциальности (далее —
@@ -78,7 +78,7 @@ export default function PrivacyPage() {
 
             {/* 2. ОПРЕДЕЛЕНИЯ */}
             <section>
-              <h2 className="text-lg font-bold mb-3">
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">
                 2. ОСНОВНЫЕ ПОНЯТИЯ
               </h2>
               <div className="space-y-2">
@@ -114,7 +114,7 @@ export default function PrivacyPage() {
 
             {/* 3. ЦЕЛИ ОБРАБОТКИ */}
             <section>
-              <h2 className="text-lg font-bold mb-3">3. ЦЕЛИ ОБРАБОТКИ ПЕРСОНАЛЬНЫХ ДАННЫХ</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">3. ЦЕЛИ ОБРАБОТКИ ПЕРСОНАЛЬНЫХ ДАННЫХ</h2>
               <div className="space-y-2">
                 <p>
                   3.1. Оператор обрабатывает персональные данные
@@ -158,7 +158,7 @@ export default function PrivacyPage() {
 
             {/* 4. СОСТАВ ДАННЫХ */}
             <section>
-              <h2 className="text-lg font-bold mb-3">4. СОСТАВ ОБРАБАТЫВАЕМЫХ ДАННЫХ</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">4. СОСТАВ ОБРАБАТЫВАЕМЫХ ДАННЫХ</h2>
               <div className="space-y-2">
                 <p>
                   4.1. Персональные данные, разрешённые к обработке в
@@ -223,7 +223,7 @@ export default function PrivacyPage() {
 
             {/* 5. ПРАВОВЫЕ ОСНОВАНИЯ */}
             <section>
-              <h2 className="text-lg font-bold mb-3">
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">
                 5. ПРАВОВЫЕ ОСНОВАНИЯ ОБРАБОТКИ
               </h2>
               <div className="space-y-2">
@@ -249,7 +249,7 @@ export default function PrivacyPage() {
 
             {/* 6. ПОРЯДОК ОБРАБОТКИ */}
             <section>
-              <h2 className="text-lg font-bold mb-3">
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">
                 6. ПОРЯДОК ОБРАБОТКИ И ХРАНЕНИЯ
               </h2>
               <div className="space-y-2">
@@ -283,7 +283,7 @@ export default function PrivacyPage() {
 
             {/* 7. ПЕРЕДАЧА ТРЕТЬИМ ЛИЦАМ */}
             <section>
-              <h2 className="text-lg font-bold mb-3">7. ПЕРЕДАЧА ТРЕТЬИМ ЛИЦАМ</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">7. ПЕРЕДАЧА ТРЕТЬИМ ЛИЦАМ</h2>
               <div className="space-y-2">
                 <p>
                   7.1. Оператор не передаёт персональные данные Пользователя
@@ -327,7 +327,7 @@ export default function PrivacyPage() {
 
             {/* 8. ПРАВА ПОЛЬЗОВАТЕЛЯ */}
             <section>
-              <h2 className="text-lg font-bold mb-3">8. ПРАВА ПОЛЬЗОВАТЕЛЯ</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">8. ПРАВА ПОЛЬЗОВАТЕЛЯ</h2>
               <div className="space-y-2">
                 <p>8.1. Пользователь имеет право:</p>
                 <ul className="list-disc pl-5 space-y-1">
@@ -372,7 +372,7 @@ export default function PrivacyPage() {
 
             {/* 9. COOKIES И ВЕБ-АНАЛИТИКА */}
             <section>
-              <h2 className="text-lg font-bold mb-3">9. ИСПОЛЬЗОВАНИЕ COOKIES И ВЕБ-АНАЛИТИКИ</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">9. ИСПОЛЬЗОВАНИЕ COOKIES И ВЕБ-АНАЛИТИКИ</h2>
               <div className="space-y-2">
                 <p>
                   9.1. Сайт использует файлы cookie. Они делятся на две категории:
@@ -443,7 +443,7 @@ export default function PrivacyPage() {
 
             {/* 10. БЕЗОПАСНОСТЬ ПЛАТЕЖЕЙ */}
             <section>
-              <h2 className="text-lg font-bold mb-3">
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">
                 10. БЕЗОПАСНОСТЬ ПЛАТЕЖЕЙ
               </h2>
               <div className="space-y-2">
@@ -466,7 +466,7 @@ export default function PrivacyPage() {
 
             {/* 11. ИЗМЕНЕНИЯ ПОЛИТИКИ */}
             <section>
-              <h2 className="text-lg font-bold mb-3">11. ИЗМЕНЕНИЯ ПОЛИТИКИ</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">11. ИЗМЕНЕНИЯ ПОЛИТИКИ</h2>
               <div className="space-y-2">
                 <p>
                   11.1. Оператор имеет право вносить изменения в настоящую
@@ -488,7 +488,7 @@ export default function PrivacyPage() {
 
             {/* КОНТАКТНЫЕ ДАННЫЕ */}
             <section className="mt-12 pt-8 border-t border-gray-200">
-              <h2 className="text-lg font-bold mb-3">КОНТАКТНЫЕ ДАННЫЕ ОПЕРАТОРА</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">КОНТАКТНЫЕ ДАННЫЕ ОПЕРАТОРА</h2>
               <div className="space-y-1 font-medium">
                 {getFullRequisites().map((line, i) => (
                   <p key={i}>{line}</p>

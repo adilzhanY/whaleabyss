@@ -35,14 +35,14 @@ export default function PublicOfferPage() {
         <div className="site-container">
         <Breadcrumb />
         <div
-          className="mx-auto max-w-4xl bg-white p-8 sm:p-12 text-black"
+          className="mx-auto max-w-4xl text-black"
           style={{ fontFamily: "var(--font-primary), sans-serif" }}
         >
-          <div className="mb-12 text-center">
-            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-blue-950 mb-4" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
+          <div className="mb-8 sm:mb-12 text-center">
+            <h1 className="legal-title font-black tracking-tight text-blue-950 mb-4 text-balance break-words" style={{ fontFamily: "var(--font-primary), sans-serif" }}>
               АГЕНТСКИЙ ДОГОВОР
             </h1>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
               (Публичная оферта)
             </p>
           </div>
@@ -50,7 +50,7 @@ export default function PublicOfferPage() {
           <div className="space-y-8 text-sm sm:text-base leading-relaxed text-black">
             {/* 1. ОБЩИЕ ПОЛОЖЕНИЯ */}
             <section>
-              <h2 className="text-lg font-bold mb-3">1. ОБЩИЕ ПОЛОЖЕНИЯ</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">1. ОБЩИЕ ПОЛОЖЕНИЯ</h2>
               <div className="space-y-2">
                 <p>
                   1.1. Настоящая оферта является официальным предложением
@@ -89,7 +89,7 @@ export default function PublicOfferPage() {
 
             {/* 2. ТЕРМИНЫ */}
             <section>
-              <h2 className="text-lg font-bold mb-3">2. ТЕРМИНЫ И ОПРЕДЕЛЕНИЯ</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">2. ТЕРМИНЫ И ОПРЕДЕЛЕНИЯ</h2>
               <div className="space-y-2">
                 <p>
                   2.1. <b>Сайт</b> — совокупность размещённых в сети Интернет
@@ -213,7 +213,7 @@ export default function PublicOfferPage() {
 
             {/* 3. ПРЕДМЕТ ОФЕРТЫ */}
             <section>
-              <h2 className="text-lg font-bold mb-3">3. ПРЕДМЕТ ОФЕРТЫ</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">3. ПРЕДМЕТ ОФЕРТЫ</h2>
               <div className="space-y-2">
                 <p>
                   3.1. По Договору Агент обязуется по поручению Принципала
@@ -251,7 +251,7 @@ export default function PublicOfferPage() {
 
             {/* 4. ПОРЯДОК ОКАЗАНИЯ УСЛУГ */}
             <section>
-              <h2 className="text-lg font-bold mb-3">
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">
                 4. УСЛОВИЯ И ПОРЯДОК ОКАЗАНИЯ УСЛУГ
               </h2>
               <div className="space-y-2">
@@ -409,7 +409,7 @@ export default function PublicOfferPage() {
 
             {/* 5. ПРАВА И ОБЯЗАННОСТИ СТОРОН */}
             <section>
-              <h2 className="text-lg font-bold mb-3">5. ПРАВА И ОБЯЗАННОСТИ СТОРОН</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">5. ПРАВА И ОБЯЗАННОСТИ СТОРОН</h2>
               <div className="space-y-3">
                 <p className="font-semibold">5.1. Агент обязан:</p>
                 <p>
@@ -487,7 +487,7 @@ export default function PublicOfferPage() {
 
             {/* 6. ВОЗВРАТ ДЕНЕЖНЫХ СРЕДСТВ */}
             <section>
-              <h2 className="text-lg font-bold mb-3">6. ВОЗВРАТ ДЕНЕЖНЫХ СРЕДСТВ</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">6. ВОЗВРАТ ДЕНЕЖНЫХ СРЕДСТВ</h2>
               <div className="space-y-2">
                 <p>
                   6.1. В случае отказа Принципала от исполнения Договора
@@ -533,7 +533,7 @@ export default function PublicOfferPage() {
 
             {/* 7. ПЕРСОНАЛЬНЫЕ ДАННЫЕ */}
             <section>
-              <h2 className="text-lg font-bold mb-3">
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">
                 7. ОБРАБОТКА ПЕРСОНАЛЬНЫХ ДАННЫХ
               </h2>
               <div className="space-y-2">
@@ -583,7 +583,7 @@ export default function PublicOfferPage() {
 
             {/* 8. ИЗМЕНЕНИЕ ЗАКАЗА */}
             <section>
-              <h2 className="text-lg font-bold mb-3">
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">
                 8. ИЗМЕНЕНИЕ ЗАКАЗА. ОТКАЗ ОТ ИСПОЛНЕНИЯ ДОГОВОРА
               </h2>
               <div className="space-y-2">
@@ -647,7 +647,7 @@ export default function PublicOfferPage() {
 
             {/* 9. ФОРС-МАЖОР */}
             <section>
-              <h2 className="text-lg font-bold mb-3">
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">
                 9. ОБСТОЯТЕЛЬСТВА НЕПРЕОДОЛИМОЙ СИЛЫ (ФОРС-МАЖОР)
               </h2>
               <div className="space-y-2">
@@ -696,7 +696,7 @@ export default function PublicOfferPage() {
 
             {/* 10. ДОПОЛНИТЕЛЬНЫЕ УСЛОВИЯ */}
             <section>
-              <h2 className="text-lg font-bold mb-3">10. ДОПОЛНИТЕЛЬНЫЕ УСЛОВИЯ</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">10. ДОПОЛНИТЕЛЬНЫЕ УСЛОВИЯ</h2>
               <div className="space-y-2">
                 <p>
                   10.1. При размещении Заказа Принципал удостоверяет, что
@@ -794,7 +794,7 @@ export default function PublicOfferPage() {
 
             {/* РЕКВИЗИТЫ */}
             <section className="mt-12 pt-8 border-t border-gray-200">
-              <h2 className="text-lg font-bold mb-3">11. Реквизиты Агента</h2>
+              <h2 className="text-base sm:text-lg font-bold text-blue-950 mb-3">11. Реквизиты Агента</h2>
               <div className="space-y-1 font-medium">
                 {getFullRequisites().map((line, i) => (
                   <p key={i}>{line}</p>

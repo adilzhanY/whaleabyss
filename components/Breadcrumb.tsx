@@ -52,7 +52,9 @@ export default function Breadcrumb({ items }: { items?: Crumb[] }) {
   }
 
   return (
-    <div className="flex items-center gap-2 text-sm text-slate-400 mb-6">
+    // Wraps: «Главная › Политика конфиденциальности» is wider than a 360px
+    // phone, and without flex-wrap it pushed the page into a sideways scroll.
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-400 mb-6">
       {breadcrumbs.map((crumb, index) => {
         const isLast = index === breadcrumbs.length - 1;
         return (

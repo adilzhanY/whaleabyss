@@ -62,8 +62,14 @@ function DocRow({
       >
         <Icon className="size-4" />
       </span>
-      <span className="min-w-0 flex-1 text-sm font-bold text-slate-900">{title}</span>
-      <span className="shrink-0 text-xs text-slate-400">ред. {date}</span>
+      {/* Title and date share one line only when there is room for both. On a
+       * phone «Политика конфиденциальности» is wider than the space the date
+       * leaves it, and the unbreakable word overflowed its box and ran under
+       * the date — so below sm the date drops onto its own line. */}
+      <span className="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center sm:gap-3">
+        <span className="text-sm font-bold text-slate-900 break-words">{title}</span>
+        <span className="shrink-0 text-xs text-slate-400 sm:ml-auto">ред. {date}</span>
+      </span>
       <ChevronRight className="size-4 shrink-0 text-slate-300" />
     </Link>
   );

@@ -17,10 +17,16 @@ export interface CategoryTile {
 }
 
 /**
- * One tile per real category for the home page «Чем поможем?» grid, largest
- * first (the layout renders the first tile double-size). «Актуальное» is a
- * spotlight that duplicates services from their native categories, so it is
- * not a tile.
+ * One tile per real category for the home page «Чем поможем?» grid, in the
+ * admin's order — `getServiceCategories` reads them ordered by
+ * `categories.order`, which is the drag-and-drop list on
+ * /admin/services/categories, and the layout renders the FIRST tile double-size.
+ * So which category gets the 2×2 hero is an editorial decision made in the
+ * admin, not a `.sort()` here (it used to be largest-first, which pinned the
+ * hero to «Задания» forever).
+ *
+ * «Актуальное» is a spotlight that duplicates services from their native
+ * categories, so it is not a tile.
  */
 export const getCategoryTiles = cache(async (): Promise<CategoryTile[]> => {
   const cats = await getServiceCategories();
@@ -33,8 +39,7 @@ export const getCategoryTiles = cache(async (): Promise<CategoryTile[]> => {
       minPrice: Math.min(...c.items.map((i) => i.price)),
       image: c.items.find((i) => i.background)?.background ?? '',
       images: [...new Set(c.items.map((i) => i.background).filter(Boolean))].slice(0, 4),
-    }))
-    .sort((a, b) => b.count - a.count);
+    }));
 });
 
 /**

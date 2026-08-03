@@ -1,6 +1,6 @@
 "use client";
 
-import { ShoppingBag, Loader2, CalendarDays, Sparkles } from "lucide-react";
+import { ShoppingBag, Loader2, CalendarDays, Sparkles, ArrowRight } from "lucide-react";
 import { Chip } from "@heroui/react";
 import { useAddToCartWithAddons } from "@/components/QuestAddonModal";
 import Link from "next/link";
@@ -16,6 +16,14 @@ interface ServiceCardProps {
   categorySlug?: string;
   /** Among the most-ordered services — see `lib/bestsellers.ts`. */
   isBestseller?: boolean;
+  /**
+   * `'solo'` — the card is the ONLY one in its section, so /services lays it on
+   * its side (`.svc-grid--solo` in globals.css): artwork left, text middle, buy
+   * block right. It's the one place with room for the description, so the card
+   * renders it here and nowhere else — printing it on all ~108 catalogue cards
+   * and hiding it with CSS would ship the whole catalogue's copy twice.
+   */
+  layout?: "solo";
 }
 
 /**
@@ -28,7 +36,8 @@ function splitName(raw: string): { name: string; full: boolean } {
 	return m ? { name: raw.slice(0, m.index).trim(), full: true } : { name: raw, full: false };
 }
 
-export default function ServiceCard({ item, categorySlug, isBestseller }: ServiceCardProps) {
+export default function ServiceCard({ item, categorySlug, isBestseller, layout }: ServiceCardProps) {
+  const isSolo = layout === "solo";
   const { name: displayName, full: isHundred } = splitName(item.subtitle || item.title || "");
   const { add: addToCartWithAddons, pending } = useAddToCartWithAddons();
   const minRank = parseMinAdventureRank(item.description);
@@ -90,7 +99,7 @@ export default function ServiceCard({ item, categorySlug, isBestseller }: Servic
     >
       {/* Image: category chip anchored bottom-left, discount ribbon top-left */}
       <div
-        className="relative mb-3 sm:mb-4 w-full overflow-hidden shrink-0 h-30 sm:h-45"
+        className="service-card__media relative mb-3 sm:mb-4 w-full overflow-hidden shrink-0 h-30 sm:h-45"
         style={{
           borderRadius: "0.875rem",
           background: hasQuestCover || containArt
@@ -148,15 +157,15 @@ export default function ServiceCard({ item, categorySlug, isBestseller }: Servic
       {/* Name leads, price supports. The name is clamped to two lines with a
           reserved two-line height so the price row sits on the same baseline
           across the whole grid row. */}
-      <div className="flex-1 mb-3 sm:mb-4 min-w-0"
+      <div className="service-card__body flex-1 mb-3 sm:mb-4 min-w-0"
         style={{ fontFamily: "var(--font-primary), sans-serif" }}>
         <div className="flex items-start gap-1.5">
           {hasQuestCover ? (
-            <p className="min-w-0 flex-1 text-[15px] sm:text-base font-medium leading-snug line-clamp-2 min-h-[2.75em] text-slate-500">
+            <p className="service-card__name min-w-0 flex-1 text-[15px] sm:text-base font-medium leading-snug line-clamp-2 min-h-[2.75em] text-slate-500">
               {regionLabel ? `${regionLabel} · задание` : "Задание"}
             </p>
           ) : (
-            <p className="min-w-0 flex-1 text-[15px] sm:text-base font-semibold leading-snug line-clamp-2 min-h-[2.75em] text-slate-900">
+            <p className="service-card__name min-w-0 flex-1 text-[15px] sm:text-base font-semibold leading-snug line-clamp-2 min-h-[2.75em] text-slate-900">
               {displayName}
             </p>
           )}
@@ -201,17 +210,39 @@ export default function ServiceCard({ item, categorySlug, isBestseller }: Servic
             )}
           </div>
         )}
+        {/* Only the sideways card has room for prose. On a 213px catalogue tile
+            the same two lines would push the price row off the fold. */}
+        {isSolo && item.description && (
+          <p className="service-card__desc mt-3 line-clamp-2 text-sm leading-relaxed text-slate-500">
+            {item.description}
+          </p>
+        )}
+        {isSolo && (
+          <span
+            className="service-card__more mt-2.5 inline-flex items-center gap-1.5 text-sm font-bold"
+            style={{ color: "var(--accent-primary)" }}
+          >
+            Подробнее об услуге
+            <ArrowRight className="h-4 w-4" strokeWidth={2.4} />
+          </span>
+        )}
       </div>
 
       {/* Price + CTA. Old price sits inline (not stacked) so a discount never
           changes the card height. The row wraps when the pair doesn't fit
           (e.g. «100 ₽/день» + «Выбрать даты» on narrow columns) - the button
           drops to its own line instead of painting over the price. */}
-      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
+      <div className="service-card__foot flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
+        {/* Labels the buy column once it stands on its own at the right edge. */}
+        {isSolo && (
+          <span className="service-card__price-cap hidden text-[12.5px] text-slate-400 sm:inline">
+            Стоимость
+          </span>
+        )}
         <div className="flex items-baseline gap-1.5"
           style={{ fontFamily: "var(--font-primary), sans-serif" }}>
           <span
-            className={`text-[16px] font-bold whitespace-nowrap ${
+            className={`service-card__price text-[16px] font-bold whitespace-nowrap ${
               isOnDiscount ? "text-red-600" : "text-blue-950"
             }`}
           >

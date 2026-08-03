@@ -70,6 +70,47 @@ function plural(n: number, one: string, few: string, many: string) {
 	return many;
 }
 
+/** Columns the «Чем поможем?» bento uses on desktop — see `.home-tiles`. */
+const TILE_COLS = 3;
+
+/**
+ * How many of the LAST tiles have to span two columns for the grid to close
+ * without holes. The first tile is 2×2 (4 cells), the rest are 1×1, so the run
+ * is `tiles.length + 3` cells and each widened tile adds one more.
+ *
+ * At three columns with the current six categories this is **zero**: 4 + 5 = 9
+ * cells = exactly three rows. That is the point of the three-column grid — the
+ * four-column one needed three tiles stretched to 2 cells to fill its 12, which
+ * is how «Прочее» ended up a 3.9:1 letterbox.
+ */
+function wideTileCount(total: number): number {
+	return (TILE_COLS - ((total + 3) % TILE_COLS)) % TILE_COLS;
+}
+
+/**
+ * Mobile (two columns) runs a different rhythm: full-width tile, then a pair,
+ * repeating — «Исследование регионов», then «Задания» + «Прочее», then «Театр»,
+ * then «Витая Бездна» + «Мрачный Натиск». A flat 2×3 block gave every category
+ * the same weight and buried the lead one.
+ *
+ * The trailing tile also goes full width when it would otherwise sit alone in a
+ * pair row, so the grid never ends on a hole.
+ */
+function isMobileWide(i: number, total: number): boolean {
+	return i % 3 === 0 || (i === total - 1 && i % 3 === 1);
+}
+
+function tileClassName(i: number, total: number): string {
+	return [
+		"home-tile",
+		i === 0 ? "home-tile-big" : "",
+		i > 0 && i >= total - wideTileCount(total) ? "home-tile-wide" : "",
+		isMobileWide(i, total) ? "home-tile-mwide" : "",
+	]
+		.filter(Boolean)
+		.join(" ");
+}
+
 export default function HomeClient({
 	tiles,
 	bestsellers,
@@ -561,19 +602,16 @@ export default function HomeClient({
 							<ArrowRight className="h-4 w-4" />
 						</Link>
 					</div>
-					{/* The big tile takes 4 cells; widen the last few singles so the
-					    4-column grid always closes without holes, whatever the number
-					    of categories. */}
+					{/* Tile order is the admin's (categories.order), so the 2×2 hero is
+					    whatever sits at the top of /admin/services/categories. The big
+					    tile takes 4 cells; widen the last few singles only when the
+					    category count doesn't close the grid on its own. */}
 					<div className="home-tiles">
 						{tiles.map((tile, i) => (
 							<Link
 								key={tile.slug}
 								href={`/services#${tile.slug}`}
-								className={`home-tile ${i === 0 ? "home-tile-big" : ""} ${
-									i > 0 && i >= tiles.length - ((4 - ((3 + tiles.length) % 4)) % 4)
-										? "home-tile-wide"
-										: ""
-								}`}
+								className={tileClassName(i, tiles.length)}
 								style={
 									i === 0 && tile.images.length >= 4
 										? undefined

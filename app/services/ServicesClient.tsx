@@ -41,16 +41,23 @@ const SORT_LABELS: Record<SortKey, string> = {
 };
 
 /**
- * Column caps for a section, so a category with one or two services doesn't
- * render as a five-column row that is four-fifths empty — which is exactly what
- * «Актуальное» (1 service) used to do at the very top of the catalog.
- * Tailwind needs static class names, hence the lookup.
+ * A section of 1–4 services gets FEWER, WIDER columns instead of a five-column
+ * row that is mostly empty — «Актуальное» holds a single service and sits at the
+ * top of the catalog, where a lone 213px card next to a kilometre of whitespace
+ * read as a rendering bug.
+ *
+ * The card scales with the column (`.svc-grid--lg` in globals.css swaps the
+ * artwork's fixed 180px height for its aspect ratio), and a single service turns
+ * the card on its side entirely — artwork left, name and price right
+ * (`.svc-grid--solo`). Five and up is the normal grid, untouched.
+ *
+ * Tailwind needs static class names, hence the lookup rather than arithmetic.
  */
 function gridClassFor(count: number): string {
-  if (count === 1) return "grid-cols-1 max-w-[240px]";
-  if (count === 2) return "grid-cols-2 max-w-[510px]";
-  if (count === 3) return "grid-cols-2 sm:grid-cols-3 max-w-[780px]";
-  if (count === 4) return "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 max-w-[1040px]";
+  if (count === 1) return "svc-grid--solo grid-cols-1";
+  if (count === 2) return "svc-grid--lg grid-cols-2 max-w-[764px]";
+  if (count === 3) return "svc-grid--lg grid-cols-2 sm:grid-cols-3 max-w-[1060px]";
+  if (count === 4) return "svc-grid--lg grid-cols-2 sm:grid-cols-3 md:grid-cols-4";
   return "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5";
 }
 
@@ -146,12 +153,13 @@ export default function ServicesClient({
     [priceKey]
   );
 
-  // Sections ordered biggest-first: «Задания» (62) and «Исследование регионов»
-  // (24) are 84% of the catalog but used to sit below sections of 1–5 items.
-  const orderedCategories = useMemo(
-    () => [...categories].sort((a, b) => b.items.length - a.items.length),
-    [categories]
-  );
+  // Section order is the admin's, not the code's: `lib/services.ts` reads the
+  // categories ordered by `categories.order`, which is what the drag-and-drop
+  // list on /admin/services/categories writes. It used to be re-sorted here
+  // biggest-first, so «Актуальное» (1 service) landed at the very bottom and no
+  // amount of dragging in the admin could move it — small sections are handled
+  // by giving them wider cards (gridClassFor) instead of by hiding them.
+  const orderedCategories = categories;
 
   const filteredCategories = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -264,7 +272,12 @@ export default function ServicesClient({
               <div className={`grid gap-3 sm:gap-6 ${gridClassFor(bestsellers.length)}`}>
                 {bestsellers.map((item) => (
                   <div key={`best-${item.id}`} className="w-full h-full">
-                    <ServiceCard item={item} categorySlug={item.categorySlug} isBestseller />
+                    <ServiceCard
+                      item={item}
+                      categorySlug={item.categorySlug}
+                      isBestseller
+                      layout={bestsellers.length === 1 ? "solo" : undefined}
+                    />
                   </div>
                 ))}
               </div>
@@ -385,6 +398,7 @@ export default function ServicesClient({
                           item={item}
                           categorySlug={category.slug}
                           isBestseller={bestsellerSet.has(item.id)}
+                          layout={category.items.length === 1 ? "solo" : undefined}
                         />
                       </div>
                     ))}

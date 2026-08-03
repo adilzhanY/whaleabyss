@@ -112,7 +112,14 @@ function enrichItemUI(
 }
 
 export const getServiceCategories = cache(async (): Promise<ServiceCategory[]> => {
-  const allCategories = await db.select().from(categories);
+  // `categories.order` is what the admin drags around on
+  // /admin/services/categories, so the catalogue must come back in that order —
+  // /services renders the sections in the order it receives them. Title breaks
+  // the tie for rows that were never dragged (order defaults to 0).
+  const allCategories = await db
+    .select()
+    .from(categories)
+    .orderBy(categories.order, categories.title);
   const allServices = await db.select().from(services).where(eq(services.isTestService, false));
 
   // Which services are quest-gated. Kept as two plain queries + a JS intersect

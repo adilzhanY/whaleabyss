@@ -279,3 +279,16 @@ export const boosterDocuments = pgTable('booster_documents', {
 }, (t) => [
   unique('booster_documents_booster_doc_type_unique').on(t.boosterId, t.docType),
 ]);
+
+// Ledger of instalments paid against the project's fixed debt (see lib/debt.ts
+// for the принципал and the creditor). Money moves off-platform in USDT; these
+// rows are only the record of it, so `paidAt` is the date the transfer was
+// actually made and may well be earlier than `createdAt`.
+export const debtPayments = pgTable('debt_payments', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  // USDT. Decimal is read back as a string — Number() it before arithmetic.
+  amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
+  paidAt: timestamp('paid_at', { withTimezone: true }).notNull(),
+  note: text('note'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});

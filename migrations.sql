@@ -219,3 +219,17 @@ ALTER TABLE users ADD CONSTRAINT users_email_lowercase
 -- a 1e6 keyspace. register/route.ts now burns the code after 5 misses.
 -- Run via add_otp_attempts.mjs.
 ALTER TABLE otps ADD COLUMN IF NOT EXISTS attempts integer NOT NULL DEFAULT 0;
+
+-- 2026-08-08: /admin/debt — ledger of USDT instalments against the project's
+-- fixed debt (принципал + creditor live in lib/debt.ts, not in a table: there
+-- is exactly one debt). `paid_at` is the date the transfer was actually made,
+-- anchored at midday UTC so a date-only value can't render as the previous day
+-- in a western timezone. Run via add_debt_payments.mjs.
+CREATE TABLE IF NOT EXISTS debt_payments (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  amount numeric(10,2) NOT NULL,
+  paid_at timestamptz NOT NULL,
+  note text,
+  created_at timestamptz DEFAULT now()
+);
+INSERT INTO debt_payments (amount, paid_at) VALUES ('78.00', '2026-07-15T12:00:00Z');

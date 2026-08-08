@@ -18,6 +18,7 @@ import {
   Star,
   Users,
   Swords,
+  HandCoins,
 } from "lucide-react";
 import ThemeSwitch from "./_components/ThemeSwitch";
 import { useAdminHeader } from "./_components/PageHeader";
@@ -39,6 +40,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/promocodes", label: "Промокоды", icon: Ticket, matches: ["/admin/promocodes"] },
   { href: "/admin/events", label: "События", icon: Calendar, matches: ["/admin/events"] },
   { href: "/admin/reviews", label: "Отзывы", icon: Star, matches: ["/admin/reviews"] },
+  { href: "/admin/debt", label: "Долг", icon: HandCoins, matches: ["/admin/debt"] },
   { href: "/admin/testing", label: "Тестирование", icon: TestTube, matches: ["/admin/testing"] },
 ];
 
@@ -378,6 +380,7 @@ function pageTitle(pathname: string): string {
   if (pathname.startsWith("/admin/events")) return "События";
   if (pathname === "/admin/reviews/new") return "Новый фейк отзыв";
   if (pathname.startsWith("/admin/reviews")) return "Управление отзывами";
+  if (pathname.startsWith("/admin/debt")) return "Долг";
   if (pathname === "/admin/testing/new") return "Новая тестовая услуга";
   if (pathname === "/admin/testing/checkout") return "Тест оплаты";
   if (pathname.startsWith("/admin/testing")) return "Тестирование";

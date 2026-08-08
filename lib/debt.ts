@@ -4,7 +4,7 @@
  * принципал lives here as a constant rather than in a table of its own — a
  * second creditor is the point at which this becomes a `debts` row instead.
  */
-export const DEBT_TOTAL_USDT = 739;
+export const DEBT_TOTAL_USDT = 684;
 export const DEBT_CREDITOR = 'Адильжан';
 
 /** Formats an amount the way the whole /admin/debt screen prints money. */

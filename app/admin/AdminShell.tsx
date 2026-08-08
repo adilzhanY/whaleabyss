@@ -19,6 +19,7 @@ import {
   Users,
   Swords,
   HandCoins,
+  ArrowLeft,
 } from "lucide-react";
 import ThemeSwitch from "./_components/ThemeSwitch";
 import { useAdminHeader } from "./_components/PageHeader";
@@ -74,6 +75,7 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isDrawer, setIsDrawer] = useState(false);
 
   // ── Instant navigation ──────────────────────────────────────────────────
   // `navTarget` is the optimistic active tab: set the moment the user presses
@@ -104,6 +106,20 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
     ? NAV_ITEMS.find((i) => i.href === navTarget) ?? null
     : NAV_ITEMS.find((i) => isActive(i, pathname)) ?? null;
 
+  // Below lg the sidebar is a drawer, not a rail — the persisted «свернуть»
+  // state must not follow it there, or opening the drawer after collapsing on
+  // desktop hands the phone a 76px icon strip with no labels. `rail` is that
+  // desktop-only reading of `collapsed`, and everything visual keys off it.
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023.98px)");
+    const sync = () => setIsDrawer(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  const rail = collapsed && !isDrawer;
+
   // ── Sliding pill indicator ──────────────────────────────────────────────
   // One absolutely-positioned pill behind the links, moved with a CSS
   // transition on top/height — measured from the DOM so it survives any
@@ -120,7 +136,7 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
       `[data-href="${activeItem.href}"]`
     );
     if (el) setPill({ top: el.offsetTop, height: el.offsetHeight });
-  }, [activeItem, collapsed]);
+  }, [activeItem, rail]);
 
   // Persist sidebar collapsed state across page navigations.
   useEffect(() => {
@@ -139,20 +155,36 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
     setMobileOpen(false);
   }, [pathname]);
 
-  const sidebarWidth = collapsed ? "w-[76px]" : "w-[248px]";
+  // Lock the page behind the drawer: without this the body keeps scrolling
+  // under the panel, which is most of why the admin drawer felt less settled
+  // than the public one.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [mobileOpen]);
+
+  const sidebarWidth = collapsed ? "lg:w-[76px]" : "lg:w-[248px]";
 
   return (
     <div
       className="min-h-screen flex bg-slate-50 text-slate-900"
       style={{ fontFamily: "Onest, sans-serif" }}
     >
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 bg-slate-900/40 z-30 lg:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
+      {/* Mobile overlay — always mounted so it can fade with the panel instead
+          of popping in and out (same recipe as the public Header drawer). */}
+      <div
+        aria-hidden={!mobileOpen}
+        onClick={() => setMobileOpen(false)}
+        className={[
+          "fixed inset-0 z-30 bg-slate-900/40 backdrop-blur-sm lg:hidden",
+          "transition-opacity duration-300 ease-in-out",
+          mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none",
+        ].join(" ")}
+      />
 
       {/* Sidebar */}
       <aside
@@ -167,7 +199,9 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
           "lg:sticky lg:top-0 lg:bottom-auto lg:h-screen lg:self-start",
           "flex flex-col",
           "bg-white border-r border-slate-200",
-          "transition-[width,transform] duration-300 ease-out",
+          "transition-[width,transform] duration-300 ease-in-out",
+          // Drawer proportions below lg, rail/panel widths from lg up.
+          "w-[82%] max-w-sm shadow-2xl lg:max-w-none lg:shadow-none",
           sidebarWidth,
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         ].join(" ")}
@@ -190,7 +224,7 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
           <div
             className={[
               "min-w-0 overflow-hidden transition-[opacity,max-width] duration-200",
-              collapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[160px]",
+              rail ? "opacity-0 max-w-0" : "opacity-100 max-w-[160px]",
             ].join(" ")}
           >
             <div className="text-[15px] font-semibold tracking-tight whitespace-nowrap truncate">
@@ -214,7 +248,7 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
                 key={item.href}
                 href={item.href}
                 data-href={item.href}
-                title={collapsed ? item.label : undefined}
+                title={rail ? item.label : undefined}
                 onMouseEnter={() => router.prefetch(item.href)}
                 onTouchStart={() => router.prefetch(item.href)}
                 onMouseDown={(e) => {
@@ -242,7 +276,7 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
                 <span
                   className={[
                     "text-sm font-medium whitespace-nowrap overflow-hidden transition-[opacity,max-width] duration-200",
-                    collapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[180px]",
+                    rail ? "opacity-0 max-w-0" : "opacity-100 max-w-[180px]",
                   ].join(" ")}
                 >
                   {item.label}
@@ -263,22 +297,34 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
 
         {/* Collapse toggle */}
         <div className="p-3 border-t border-slate-100 space-y-2">
+          {/* «На сайт» lives in the top bar from lg up; inside the drawer below
+              it, so it is reachable at every width and never duplicated. */}
+          <Link
+            href="/"
+            className="lg:hidden flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 shrink-0" strokeWidth={2.25} />
+            <span className="text-sm font-medium whitespace-nowrap">
+              Вернуться на сайт
+            </span>
+          </Link>
+
           <button
             onClick={() => setCollapsed((v) => !v)}
             className="hidden lg:flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
-            title={collapsed ? "Развернуть" : "Свернуть"}
+            title={rail ? "Развернуть" : "Свернуть"}
           >
             <ChevronLeft
               className={[
                 "w-5 h-5 transition-transform duration-300",
-                collapsed ? "rotate-180" : "rotate-0",
+                rail ? "rotate-180" : "rotate-0",
               ].join(" ")}
               strokeWidth={2.25}
             />
             <span
               className={[
                 "text-sm font-medium whitespace-nowrap overflow-hidden transition-[opacity,max-width] duration-200",
-                collapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[120px]",
+                rail ? "opacity-0 max-w-0" : "opacity-100 max-w-[120px]",
               ].join(" ")}
             >
               Свернуть
@@ -289,7 +335,7 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
           <div
             className={[
               "rounded-2xl bg-slate-50 border border-slate-200 p-2.5 flex items-center gap-2.5",
-              collapsed ? "justify-center" : "",
+              rail ? "justify-center" : "",
             ].join(" ")}
           >
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 text-white text-sm font-semibold flex items-center justify-center shrink-0">
@@ -298,7 +344,7 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
             <div
               className={[
                 "flex-1 min-w-0 overflow-hidden transition-[opacity,max-width] duration-200",
-                collapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[200px]",
+                rail ? "opacity-0 max-w-0" : "opacity-100 max-w-[200px]",
               ].join(" ")}
             >
               <div className="text-sm font-semibold truncate">{userName}</div>
@@ -310,7 +356,7 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
               className={[
                 "shrink-0 w-9 h-9 rounded-full flex items-center justify-center",
                 "text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors",
-                collapsed ? "hidden" : "flex",
+                rail ? "hidden" : "flex",
               ].join(" ")}
             >
               <LogOut className="w-[18px] h-[18px]" strokeWidth={2.25} />
@@ -344,7 +390,7 @@ export default function AdminShell({ userName, userEmail, userAvatar, children }
           <ThemeSwitch />
           <button
             onClick={() => router.push("/")}
-            className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+            className="hidden lg:inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"
             title="Вернуться на сайт"
           >
             ← На сайт

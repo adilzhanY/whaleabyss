@@ -1,534 +1,158 @@
-# 🐋 Whale Abyss - Full-Stack E-Commerce Platform
-
 <div align="center">
-
-![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black?style=for-the-badge&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue?style=for-the-badge&logo=postgresql)
-![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-green?style=for-the-badge)
-![Production Ready](https://img.shields.io/badge/Status-Production%20Ready-success?style=for-the-badge)
-
-**A production-grade e-commerce platform for Genshin Impact boosting services**
-
-[Live Demo](https://whaleabyss.ru) • [Features](#-key-features) • [Tech Stack](#-tech-stack) • [Architecture](#-architecture)
-
+  <img src="docs/shots/hero.png" alt="Whale Abyss, the abyss cleared" width="100%" />
 </div>
 
----
+<div align="center">
+  <br/>
+  <a href="https://whaleabyss.ru"><img src="https://img.shields.io/badge/live-whaleabyss.ru-0A1E3C?style=for-the-badge&labelColor=0A1E3C&color=0B5191" alt="Live at whaleabyss.ru" /></a>
+  <img src="https://img.shields.io/badge/Next.js-16-0A1E3C?style=for-the-badge&labelColor=0A1E3C&color=0B5191" alt="Next.js 16" />
+  <img src="https://img.shields.io/badge/TypeScript-strict-0A1E3C?style=for-the-badge&labelColor=0A1E3C&color=0B5191" alt="TypeScript strict" />
+  <img src="https://img.shields.io/badge/PostgreSQL-Drizzle-0A1E3C?style=for-the-badge&labelColor=0A1E3C&color=0B5191" alt="PostgreSQL with Drizzle" />
+</div>
 
-## 📊 Project Stats
+<br/>
 
-- **36,000+** lines of TypeScript/TSX code
-- **80+** components and pages
-- **35+** API endpoints
-- **13** database tables with complex relationships
-- **500+** active users capacity
-- **100%** type-safe with TypeScript
-- **Solo developed** from concept to production
+<div align="center">
+  <h3>Most portfolio projects simulate a business.<br/>This one runs one.</h3>
+  <p><b>Whale Abyss</b> is a live storefront for Genshin Impact boosting: players pay
+  real money, boosters clear the content, an admin panel splits the revenue, and a
+  Telegram bot reports every order. 100+ paid orders, 230+ registered users,
+  one developer, one small VM.</p>
+</div>
 
----
-
-## 🎯 Overview
-
-Whale Abyss is a **full-stack e-commerce platform** built from scratch to handle real-world business operations. This isn't a tutorial project—it's a **production application** serving real customers with real payments, featuring a complete admin panel, automated notifications, and a sophisticated order management system.
-
-### What Makes This Project Stand Out
-
-- ✅ **Real Payment Integration** - Freekassa payment gateway with webhook verification
-- ✅ **Production Database** - PostgreSQL with Drizzle ORM and complex relations
-- ✅ **Admin Dashboard** - Full CRUD operations for services, orders, users, reviews, and events
-- ✅ **Telegram Bot Integration** - Real-time order notifications with inline keyboards
-- ✅ **Email System** - Automated transactional emails with Nodemailer
-- ✅ **Authentication System** - NextAuth.js with OTP verification and password reset
-- ✅ **Cloud Storage** - Yandex S3 integration for image uploads
-- ✅ **Bot-Resistant Signup** - Yandex SmartCaptcha gating OTP delivery (server-verified)
-- ✅ **Booster Operations** - Roster management + automatic commission payouts on order completion
-- ✅ **Privacy Compliance** - Opt-out cookie consent with consent-gated Yandex.Metrika analytics
-- ✅ **State Management** - Zustand with persistence and DB synchronization
-- ✅ **Responsive Design** - Mobile-first approach with Tailwind CSS
-- ✅ **Type Safety** - 100% TypeScript with strict mode enabled
+<br/>
 
 ---
 
-## 🚀 Key Features
+## A storefront that sells while you scroll
 
-### 🛒 Customer-Facing Features
+<img src="docs/shots/framed/home.png" alt="Home page with the live order showcase" width="100%" />
 
-#### **Service Catalog**
-- Dynamic service listings with categories
-- Advanced search and filtering
-- Service detail pages with rich descriptions
-- Real-time pricing and availability
-- Image optimization with Next.js Image
+The first screen answers the three questions a buyer actually has: what is this,
+can I trust it, and what does it cost. The hero card on the right is not a static
+picture: it cycles through a real order's life (paid → in progress → done, with the
+«booster on the account» badge) so a visitor sees what buying feels like before
+spending a ruble. Under the fold: the three-step explainer, the catalogue, reviews.
 
-#### **Shopping Cart**
-- Persistent cart with localStorage and database sync
-- Real-time cart updates
-- Quantity management
-- Promo code validation
-- Cart synchronization across devices for authenticated users
+## 108 services, curated like a shop window
 
-#### **Checkout & Payments**
-- Secure checkout flow
-- Freekassa payment gateway integration
-- Multiple payment methods (SBP, cards)
-- Order confirmation emails
-- Payment status tracking
-- Webhook signature verification for security
+<img src="docs/shots/framed/services.png" alt="Services catalogue" width="100%" />
 
-#### **User Account Management**
-- User registration with email OTP verification
-- Yandex SmartCaptcha step before OTP is sent (server-side token verification)
-- Secure authentication with NextAuth.js
-- Password reset flow with token-based verification
-- Profile management (avatar upload, game username, Telegram)
-- Order history with status tracking
-- Active and past orders separation
+Region exploration, world quest chains, Spiral Abyss floors, event clears and
+per-day subscriptions, in admin-ordered sections with a «Хит» rail on top.
+Search and category filters run server-side; the admin reorders sections and
+spotlights a service into «Актуальное» without redeploying anything.
 
-#### **Reviews System**
-- User reviews with 5-star ratings
-- Review moderation (pending/approved/rejected)
-- Anonymous and authenticated reviews
-- Review statistics and analytics
+## A product page that knows the game
 
-#### **Events & Promotions**
-- Time-limited promotional events
-- Service-specific discounts
-- Event banners with custom backgrounds
-- Automatic event activation/deactivation
+<img src="docs/shots/framed/service.png" alt="Service page for a region clear" width="100%" />
 
-#### **Privacy & Cookie Consent**
-- Opt-out cookie consent banner (bottom-left on desktop, modal on mobile/tablet)
-- Choice persisted per browser; analytics (Yandex.Metrika) gated on consent
-- Privacy policy discloses Yandex.Metrika + Webvisor and opt-out methods
+Every service carries its real constraints: the Adventure Rank it requires, the
+world quests that gate the region, the exact zones included in a 100% clear.
+Exploration services open a quest-addon dialog on add-to-cart, and the customer's
+choice («already done», «I'll do them myself», or buying the quests as lines)
+travels with the order all the way to the booster's Telegram notification.
 
-### 🎛️ Admin Panel Features
+## A cart that refuses to lie
 
-#### **Dashboard**
-- Real-time statistics overview
-- Order management with status updates
-- Revenue tracking
-- User analytics
+<img src="docs/shots/framed/cart.png" alt="Cart with two services and the totals card" width="100%" />
 
-#### **Order Management**
-- Complete order lifecycle tracking
-- Status updates (pending → paid → in_progress → completed)
-- Order refunds with Freekassa API
-- Search and filter by status, date, user
-- Detailed order views with customer information
-- Order notes and internal comments
-- **Manual order creation** for off-site payments (server-computed totals, promocode validation)
-- **Booster assignment** per order with assign/re-assign flow (from the orders table and dashboard)
+The client's numbers are decoration. `POST /api/checkout` recomputes every line
+price and the total from the database, validates promocodes against the buyer,
+and rejects with a 409 any quest-gated service that arrives without its
+declaration, so a lost modal can never become an ambiguous paid order. Guest
+carts survive signing in (merged, not overwritten), and cart syncs are
+serialised so two racing requests can't resurrect deleted items.
 
-#### **User Management**
-- User list with search and filters
-- User detail pages with complete profiles
-- Order history per user
-- Review history per user
-- Statistics: total spent, order count, top 3 services
-- Role management (user/admin/booster)
+## Proof, not promises
 
-#### **Booster Management**
-- Admin-managed booster (качер) roster — no login required for boosters
-- Create / edit / activate / deactivate, with filter + search
-- Booster detail page: profile, assigned orders, completed count, and balance
-- Configurable commission percent (default 40%) and payout details (ИНН/реквизиты for самозанятые)
-- **Automatic commission payout**: completing an order credits the booster's share to their balance (idempotent, independent of revenue accounting)
+<img src="docs/shots/framed/reviews.png" alt="Reviews page, 5.0 rating" width="100%" />
 
-#### **Service Management**
-- CRUD operations for services
-- Category management
-- Image upload to Yandex S3
-- Price management
-- Test service flagging (hidden from public)
-- Service activation/deactivation
+167 reviews with a 5.0 average, migrated verbatim from the shop's Telegram
+channel and joined by on-site ones since. Buyers leave theirs after checkout;
+everything is moderated in the admin panel.
 
-#### **Promo Code System**
-- Create and manage promo codes
-- Percentage-based discounts
-- Expiration dates
-- Usage tracking per user
-- One-time use enforcement
+<table>
+<tr>
+<td width="34%"><img src="docs/shots/framed/service-mobile.png" alt="Service page on a phone" /></td>
+<td valign="top">
 
-#### **Event Management**
-- Create promotional events
-- Set discount percentages
-- Schedule start/end dates
-- Upload custom event banners
-- Link services to events
-- Event activation toggle
+### Built for the phone it will be read on
 
-#### **Review Moderation**
-- Approve/reject reviews
-- Review statistics with rating distribution
-- Search and filter reviews
-- Bulk moderation actions
+Most customers arrive from Telegram and VK on a phone, so every page is designed
+mobile-first: the drawer navigation, the floating cart button with a live count,
+tap-sized controls everywhere. The desktop version is the adaptation, not the
+other way around.
 
-#### **Testing Tools**
-- Create test orders for development
-- Test service management
-- Payment flow testing
+The whole UI speaks one design language: a single family of form controls, one
+button system, one card radius, defined once in a global stylesheet instead of
+per-page classes. That is why a redesign here is an edit, not a hunt.
 
-### 🤖 Automation & Integrations
-
-#### **Telegram Bot**
-- Real-time order notifications to admin (including manually-created orders)
-- Inline keyboard for quick status updates
-- Order status changes directly from Telegram
-- Follow-up action buttons (complete/cancel)
-- Completing an order from Telegram also triggers the booster commission payout
-- Webhook mode for production
-- Polling mode for development
-
-#### **Email System**
-- Order confirmation emails
-- Payment success notifications
-- OTP verification emails
-- Password reset emails
-- Custom email templates
-- SMTP integration with Zoho
-
-#### **Payment Webhooks**
-- Freekassa webhook integration
-- Signature verification for security
-- Automatic order status updates
-- Payment failure handling
-- Success/failure redirect pages
+</td>
+</tr>
+</table>
 
 ---
 
-## 🏗️ Tech Stack
+## The half a screenshot can't show
 
-### **Frontend**
-- **Next.js 16** - React framework with App Router
-- **TypeScript** - Type-safe development
-- **Tailwind CSS 4** - Utility-first styling
-- **Zustand** - Lightweight state management
-- **React Hook Form** - Form handling
-- **Lucide React** - Icon library
-- **Next Image** - Optimized image loading
+The public site is maybe a third of the codebase. Behind `/admin` and `/portal`
+(role-gated at the edge and re-checked server-side) the actual business runs:
 
-### **Backend**
-- **Next.js API Routes** - RESTful API endpoints
-- **NextAuth.js** - Authentication system
-- **Drizzle ORM** - Type-safe database queries
-- **PostgreSQL** - Relational database
-- **Node.js** - Runtime environment
+- **A profit dashboard** that names its formula: revenue minus booster
+  commissions, per week or month, with deltas that always name their baseline.
+- **A booster roster with a 40/60 split.** Completing an order credits the
+  booster's balance exactly once, computed from pre-discount line prices so a
+  customer's promocode never shrinks the booster's cut.
+- **A booster portal** where качеры see their assigned orders, flip them to
+  completed, and toggle «я на аккаунте», which the customer sees live.
+- **A Telegram bot** that notifies the admin chat about every paid order with
+  full context, behind a secret-token-verified webhook.
+- **Test orders and manual orders**, flagged in the schema and excluded from
+  every money query, so the admin can rehearse flows or record an off-site sale
+  without corrupting revenue.
+- **Order lifecycle cleanup**: abandoned checkouts auto-cancel after an hour,
+  are deleted after Freekassa's 24h retry window closes, and a late webhook can
+  still legitimately re-open and fulfill a cancelled order.
 
-### **Integrations**
-- **Freekassa** - Payment gateway
-- **Telegraf** - Telegram bot framework
-- **Nodemailer** - Email sending
-- **AWS SDK** - Yandex S3 storage
-- **Yandex SmartCaptcha** - Bot protection on registration
-- **Yandex.Metrika** - Web analytics (consent-gated, Webvisor)
-- **bcrypt** - Password hashing
+## Built like it matters
 
-### **DevOps & Tools**
-- **Git** - Version control
-- **ESLint** - Code linting
-- **TypeScript Compiler** - Type checking
-- **Turbopack** - Fast bundler
+| | |
+|---|---|
+| **Runtime** | Next.js 16 (App Router) · React Server Components · TypeScript strict · 45 pages · 63 API routes |
+| **Data** | PostgreSQL · Drizzle ORM · 18 tables · server-side pagination and filtering in SQL |
+| **Auth** | NextAuth credentials + Yandex ID OAuth · email OTP with SmartCaptcha · roles: user, booster, admin |
+| **Payments** | Freekassa SCI with signature-verified webhooks · СБП · server-side price recomputation |
+| **Security** | CSP + security headers · per-user rate limiting on every costly route · constant-time webhook auth |
+| **Ops** | GitHub Actions deploy gated on `tsc` · out-of-place build with health-checked atomic swap and rollback · pm2 + nginx on one Yandex Cloud VM |
+| **Images** | Yandex Cloud S3 · content-hashed immutable URLs · a year of browser cache with zero staleness |
 
----
+## A few decisions worth naming
 
-## 📐 Architecture
-
-### **Database Schema**
-
-```
-users (authentication, profiles, roles)
-  ├── orders (order management; booster_id, booster_earning)
-  │   └── order_items (line items with services)
-  ├── reviews (user feedback)
-  ├── cart_items (persistent shopping cart)
-  └── promocode_usage (promo tracking)
-
-services (product catalog)
-  ├── categories (service grouping)
-  └── event_services (promotional links)
-
-boosters (admin-managed roster; commission %, balance, payout details)
-events (time-limited promotions)
-promocodes (discount codes)
-otps (email verification)
-password_reset_tokens (password recovery)
-```
-
-**13 tables** with foreign key relationships, cascading deletes, and proper indexing.
-
-### **API Architecture**
-
-**30+ RESTful endpoints** organized by domain:
-
-```
-/api
-├── auth/
-│   ├── register (POST)
-│   ├── send-otp (POST - SmartCaptcha-gated)
-│   ├── forgot-password (POST)
-│   ├── reset-password (POST)
-│   └── [...nextauth] (NextAuth handlers)
-├── user/
-│   ├── profile (GET, PATCH)
-│   ├── avatar (POST)
-│   ├── orders (GET)
-│   └── delete (DELETE)
-├── cart/
-│   ├── sync (POST)
-│   ├── load (GET)
-│   └── clear (DELETE)
-├── checkout (POST)
-├── payment/
-│   └── freekassa/
-│       ├── notify (POST - webhook)
-│       ├── success (GET)
-│       └── fail (GET)
-├── reviews (GET, POST)
-├── events (GET)
-├── promocode/validate (POST)
-├── telegram/webhook (POST)
-└── admin/
-    ├── orders/ (CRUD + refund + manual create + validate-promocode)
-    ├── boosters/ (CRUD + detail with stats)
-    ├── users/ (Read + detail)
-    ├── services/ (CRUD + upload)
-    ├── promocodes/ (CRUD)
-    ├── events/ (CRUD)
-    └── reviews/ (Read + moderate)
-```
-
-### **Security Features**
-
-- **Authentication**: Session-based with NextAuth.js
-- **Authorization**: Role-based access control (RBAC)
-- **Middleware**: Edge middleware for admin route protection
-- **Password Security**: bcrypt hashing with salt
-- **OTP Verification**: Time-limited email codes
-- **Payment Security**: Webhook signature verification
-- **SQL Injection Prevention**: Parameterized queries with Drizzle
-- **XSS Protection**: React's built-in escaping
-- **CSRF Protection**: NextAuth.js CSRF tokens
-
-### **State Management Strategy**
-
-- **Server State**: React Server Components (default)
-- **Client State**: Zustand for cart and UI state
-- **Form State**: React Hook Form with validation
-- **Cache Strategy**: React cache() for expensive queries
-- **Persistence**: localStorage + database sync for cart
-
----
-
-## 🎨 UI/UX Highlights
-
-- **Custom Design System** - Consistent spacing, colors, and typography
-- **Onest Font Family** - Modern, clean typography
-- **Responsive Layout** - Mobile-first approach
-- **Loading States** - Skeleton screens and spinners
-- **Error Handling** - User-friendly error messages
-- **Toast Notifications** - Real-time feedback
-- **Modal Dialogs** - Confirmation prompts
-- **Pagination** - Efficient data loading
-- **Search & Filters** - Advanced filtering capabilities
-- **Breadcrumbs** - Clear navigation hierarchy
-
----
-
-## 📊 Database Design Highlights
-
-### **Complex Relationships**
-- One-to-Many: Users → Orders, Orders → OrderItems
-- Many-to-Many: Events ↔ Services (through event_services)
-- Self-referential: Promocode usage tracking
-
-### **Data Integrity**
-- Foreign key constraints with cascading deletes
-- Unique constraints on emails, usernames, slugs
-- Default values and timestamps
-- Enum types for status fields
-
-### **Performance Optimizations**
-- Indexed columns for fast lookups
-- Efficient join queries
-- Pagination for large datasets
-- Connection pooling with node-postgres
-
----
-
-## 🔧 Development Practices
-
-### **Code Quality**
-- **TypeScript Strict Mode** - Maximum type safety
-- **ESLint Configuration** - Code style enforcement
-- **Component Organization** - Logical file structure
-- **Naming Conventions** - Consistent and descriptive
-- **Code Reusability** - DRY principles
-
-### **Database Management**
-- **Migration Scripts** - Version-controlled schema changes
-- **Idempotent Migrations** - Safe to run multiple times
-- **Seed Scripts** - Test data generation
-- **Backup Strategy** - Regular database backups
-
-### **Git Workflow**
-- **Meaningful Commits** - Clear commit messages
-- **Feature Branches** - Isolated development
-- **Version Control** - Complete project history
-
----
-
-## 🚀 Deployment & Production
-
-### **Environment Configuration**
-- Environment variables for secrets
-- Separate dev/prod configurations
-- Database connection pooling
-- Error logging and monitoring
-
-### **Performance**
-- Next.js Image optimization
-- Static page generation where possible
-- API route optimization
-- Database query optimization
-
-### **Scalability**
-- Designed for 500+ concurrent users
-- Efficient database queries
-- Stateless API design
-- Horizontal scaling ready
-
----
-
-## 📈 Business Logic Implementation
-
-### **Order Lifecycle**
-```
-pending → paid → in_progress → completed
-                ↓
-            cancelled / refunded
-```
-
-### **Payment Flow**
-1. User creates order (status: pending)
-2. Redirect to Freekassa payment page
-3. User completes payment
-4. Freekassa sends webhook to /api/payment/freekassa/notify
-5. Verify signature and update order status to 'paid'
-6. Send Telegram notification to admin
-7. Send confirmation email to user
-8. Admin processes order (in_progress → completed)
-
-### **Cart Synchronization**
-- Guest users: localStorage only
-- Authenticated users: localStorage + database
-- On login: merge localStorage cart with database cart
-- Real-time sync on cart changes
-
-### **Promo Code Logic**
-- Validate code exists and not expired
-- Check if user already used this code
-- Apply discount percentage to cart total
-- Track usage in promocode_usage table
-
----
-
-## 🎓 What I Learned
-
-Building this project solo taught me:
-
-- **Full-stack development** - From database design to UI/UX
-- **Payment integration** - Real-world payment gateway implementation
-- **Authentication & security** - Proper user authentication and authorization
-- **Database design** - Complex relationships and data integrity
-- **API design** - RESTful principles and best practices
-- **State management** - Client and server state synchronization
-- **Real-time features** - Webhooks and bot integrations
-- **Production deployment** - Environment management and scaling
-- **Problem solving** - Debugging complex issues independently
-- **Project management** - Planning and executing a large project
-
----
-
-## 📝 Project Structure
-
-```
-genshin_abyss/
-├── app/                      # Next.js App Router
-│   ├── (pages)/             # Public pages
-│   ├── admin/               # Admin panel
-│   │   ├── orders/          # Order management
-│   │   ├── users/           # User management
-│   │   ├── services/        # Service management
-│   │   ├── promocodes/      # Promo code management
-│   │   ├── events/          # Event management
-│   │   ├── reviews/         # Review moderation
-│   │   └── testing/         # Testing tools
-│   └── api/                 # API routes
-│       ├── auth/            # Authentication
-│       ├── user/            # User operations
-│       ├── cart/            # Cart operations
-│       ├── payment/         # Payment webhooks
-│       ├── admin/           # Admin API
-│       └── telegram/        # Telegram webhook
-├── components/              # Reusable components
-├── lib/                     # Utilities and core logic
-│   ├── schema.ts           # Database schema
-│   ├── db.ts               # Database connection
-│   ├── auth/               # Auth configuration
-│   ├── freekassa.ts        # Payment integration
-│   ├── telegramClient.ts   # Telegram bot
-│   └── email.ts            # Email service
-├── store/                   # Zustand stores
-├── types/                   # TypeScript types
-├── public/                  # Static assets
-└── scripts/                 # Utility scripts
-```
-
----
-
-## 🎯 Future Enhancements
-
-- [ ] Real-time order tracking with WebSockets
-- [ ] Advanced analytics dashboard
-- [ ] Multi-language support (i18n)
-- [ ] AI-powered service recommendations
-- [ ] Loyalty points system
-- [ ] Referral program
-- [ ] Live chat support
-- [ ] Advanced reporting and exports
-- [ ] API rate limiting
-
----
-
-## 📄 License
-
-This project is private and proprietary. All rights reserved.
-
----
-
-## 👨‍💻 About the Developer
-
-This entire project was **designed, developed, and deployed by a single developer** as a demonstration of full-stack development capabilities. From database architecture to UI/UX design, from payment integration to bot automation—every line of code, every design decision, and every feature was implemented solo.
-
-**Skills Demonstrated:**
-- Full-stack TypeScript development
-- Database design and optimization
-- RESTful API architecture
-- Payment gateway integration
-- Real-time notifications
-- Authentication & authorization
-- Cloud storage integration
-- Email automation
-- Bot development
-- Production deployment
-- UI/UX design
-- Project management
+- **The server holds every invariant.** Client-side gates (the quest modal, the
+  cart) are UX affordances; checkout re-derives prices, discounts and addon
+  declarations from the database and rejects what does not hold. This rule was
+  paid for: a silent client-side fallback once produced a paid order nobody
+  could interpret, and the 409 backstop is what ended that class of bug.
+- **A failed deploy is a no-op, not an outage.** The build lands in a separate
+  directory, is verified, then swapped in atomically; the health check hits a
+  prerendered route (the one that actually breaks) and rolls back on failure.
+- **The session token is a cache, never a source of truth.** Role, name and
+  avatar are re-read from the database on every request, so a stale 30-day JWT
+  can't show yesterday's identity.
+- **Rate limits key on user id, not IP.** Half of Russian mobile traffic shares
+  carrier NAT, and X-Forwarded-For is client-controlled; identity is the only
+  honest key. IP buckets remain as a backstop for anonymous calls.
+- **Degradations on the money path are loud.** If the addons list can't load,
+  the add is refused with a retry, never silently downgraded, and the Telegram
+  notification flags any order whose shape looks wrong.
 
 ---
 
 <div align="center">
-
-[⬆ Back to Top](#-whale-abyss---full-stack-e-commerce-platform)
-
+  <sub>Built by <a href="https://github.com/adilzhanY">Adilzhan</a> · live at
+  <a href="https://whaleabyss.ru">whaleabyss.ru</a> · every screenshot is the
+  production site, staged with its own real catalogue data ·
+  refresh them with <code>scripts/readme/snap.mjs</code> + <code>build-shots.py</code>
+  (see <a href="docs/shots/HOW.md">docs/shots/HOW.md</a>)</sub>
 </div>
